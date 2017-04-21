@@ -1,0 +1,5 @@
+1.There is no INV-ADJ transactoin logged when adjusting inventory by using audit count.
+Solution:
+There is a policy polcod ='HOST-TRANS' and polvar='AREA-MOVEMENT-TRANID', polval ='XXXX_CADJ' or polval='CADJ_XXXX' to enable the logging event,
+make sure rtstr1 set with 'INV-ADJ' and rtnum1 = 1.
+
