@@ -1,0 +1,382 @@
+Message-ID: <293077323.12512.1495418737372.JavaMail.MD1NPDCFWEB01$@MD1NPDCFWEB01>
+Subject: Exported From Confluence
+MIME-Version: 1.0
+Content-Type: multipart/related; 
+	boundary="----=_Part_12511_105368159.1495418737372"
+
+------=_Part_12511_105368159.1495418737372
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+Content-Location: file:///C:/exported.html
+
+<html xmlns:o=3D'urn:schemas-microsoft-com:office:office'
+      xmlns:w=3D'urn:schemas-microsoft-com:office:word'
+      xmlns:v=3D'urn:schemas-microsoft-com:vml'
+      xmlns=3D'urn:w3-org-ns:HTML'>
+<head>
+    <meta http-equiv=3D"Content-Type" content=3D"text/html; charset=3Dutf-8=
+">
+    <title>AAP - Command Line Options</title>
+    <!--[if gte mso 9]>
+    <xml>
+        <o:OfficeDocumentSettings>
+            <o:TargetScreenSize>1024x640</o:TargetScreenSize>
+            <o:PixelsPerInch>72</o:PixelsPerInch>
+            <o:AllowPNG/>
+        </o:OfficeDocumentSettings>
+        <w:WordDocument>
+            <w:View>Print</w:View>
+            <w:Zoom>90</w:Zoom>
+            <w:DoNotOptimizeForBrowser/>
+        </w:WordDocument>
+    </xml>
+    <![endif]-->
+    <style>
+                <!--
+        @page Section1 {
+            size: 8.5in 11.0in;
+            margin: 1.0in;
+            mso-header-margin: .5in;
+            mso-footer-margin: .5in;
+            mso-paper-source: 0;
+        }
+
+        table {
+            border: solid 1px;
+            border-collapse: collapse;
+        }
+
+        table td, table th {
+            border: solid 1px;
+            padding: 5px;
+        }
+
+        td {
+            page-break-inside: avoid;
+        }
+
+        tr {
+            page-break-after: avoid;
+        }
+
+        div.Section1 {
+            page: Section1;
+        }
+
+        /* Confluence print stylesheet. Common to all themes for print medi=
+a */
+/* Full of !important until we improve batching for print CSS */
+
+@media print {
+    #main {
+        padding-bottom: 1em !important; /* The default padding of 6em is to=
+o much for printouts */
+    }
+
+    body {
+        font-family: Arial, Helvetica, FreeSans, sans-serif;
+        font-size: 10pt;
+        line-height: 1.2;
+    }
+
+    body, #full-height-container, #main, #page, #content, .has-personal-sid=
+ebar #content {
+        background: #fff !important;
+        color: #000 !important;
+        border: 0 !important;
+        width: 100% !important;
+        height: auto !important;
+        min-height: auto !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        display: block !important;
+    }
+
+    a, a:link, a:visited, a:focus, a:hover, a:active {
+        color: #000;
+    }
+
+    #content h1,
+    #content h2,
+    #content h3,
+    #content h4,
+    #content h5,
+    #content h6 {
+        font-family: Arial, Helvetica, FreeSans, sans-serif;
+        page-break-after: avoid;
+    }
+
+    pre {
+        font-family: Monaco, "Courier New", monospace;
+    }
+
+    #header,
+    .aui-header-inner,
+    #navigation,
+    #sidebar,
+    .sidebar,
+    #personal-info-sidebar,
+    .ia-fixed-sidebar,
+    .page-actions,
+    .navmenu,
+    .ajs-menu-bar,
+    .noprint,
+    .inline-control-link,
+    .inline-control-link a,
+    a.show-labels-editor,
+    .global-comment-actions,
+    .comment-actions,
+    .quick-comment-container,
+    #addcomment {
+        display: none !important;
+    }
+
+    /* CONF-28544 cannot print multiple pages in IE */
+    #splitter-content {
+        position: relative !important;
+    }
+
+    .comment .date::before {
+        content: none !important; /* remove middot for print view */
+    }
+
+    h1.pagetitle img {
+        height: auto;
+        width: auto;
+    }
+
+    .print-only {
+        display: block;
+    }
+
+    #footer {
+        position: relative !important; /* CONF-17506 Place the footer at en=
+d of the content */
+        margin: 0;
+        padding: 0;
+        background: none;
+        clear: both;
+    }
+
+    #poweredby {
+        border-top: none;
+        background: none;
+    }
+
+    #poweredby li.print-only {
+        display: list-item;
+        font-style: italic;
+    }
+
+    #poweredby li.noprint {
+        display: none;
+    }
+
+    /* no width controls in print */
+    .wiki-content .table-wrap,
+    .wiki-content p,
+    .panel .codeContent,
+    .panel .codeContent pre,
+    .image-wrap {
+        overflow: visible !important;
+    }
+
+    /* TODO - should this work? */
+    #children-section,
+    #comments-section .comment,
+    #comments-section .comment .comment-body,
+    #comments-section .comment .comment-content,
+    #comments-section .comment p {
+        page-break-inside: avoid;
+    }
+
+    #page-children a {
+        text-decoration: none;
+    }
+
+    /**
+     hide twixies
+
+     the specificity here is a hack because print styles
+     are getting loaded before the base styles. */
+    #comments-section.pageSection .section-header,
+    #comments-section.pageSection .section-title,
+    #children-section.pageSection .section-header,
+    #children-section.pageSection .section-title,
+    .children-show-hide {
+        padding-left: 0;
+        margin-left: 0;
+    }
+
+    .children-show-hide.icon {
+        display: none;
+    }
+
+    /* personal sidebar */
+    .has-personal-sidebar #content {
+        margin-right: 0px;
+    }
+
+    .has-personal-sidebar #content .pageSection {
+        margin-right: 0px;
+    }
+
+    .no-print, .no-print * {
+        display: none !important;
+    }
+}
+-->
+    </style>
+</head>
+<body>
+    <h1>AAP - Command Line Options</h1>
+    <div class=3D"Section1">
+        <p>Command Line Options:</p>=20
+<div class=3D"table-wrap">
+<table class=3D"confluenceTable">
+<tbody>=20
+<tr>=20
+<th class=3D"confluenceTh"><p> Argument </p></th>=20
+<th class=3D"confluenceTh"><p> Name </p></th>=20
+<th class=3D"confluenceTh"><p> Description </p></th>=20
+</tr>=20
+<tr>=20
+<td class=3D"confluenceTd"><p> -T &lt;trace levels&gt; </p></td>=20
+<td class=3D"confluenceTd"><p> Trace Flags </p></td>=20
+<td class=3D"confluenceTd"><p> <span style=3D"color: rgb(255,0,0);">(New 20=
+05.1.0)</span> Turns on tracing at startup of the framework. If no trace le=
+vels are included, uses default of SWDAXRPC.<br class=3D"atl-forced-newline=
+"> Trace Level Switches: W - Application Flow Messages; M - Connection Mana=
+ger Flow Messages; X - Server Flow Messages; A - Server Arguments; S - SQL =
+Calls ; C - Command Profiling; R - Performance Statistics; P - Print Proces=
+s ID in Messages </p></td>=20
+</tr>=20
+<tr>=20
+<td class=3D"confluenceTd"><p> -F &lt;trace file&gt; </p></td>=20
+<td class=3D"confluenceTd"><p> Trace File Name </p></td>=20
+<td class=3D"confluenceTd"><p> <span style=3D"color: rgb(255,0,0);">(New 20=
+05.1.0)</span> Indicates the name of the trace file when the -T argument is=
+ used. If the -T argument is used, but this argument is left off, the defau=
+lt filename is "DLxStartup.log". </p></td>=20
+</tr>=20
+<tr>=20
+<td class=3D"confluenceTd"><p> -S &lt;string&gt; </p></td>=20
+<td class=3D"confluenceTd"><p> Server Name </p></td>=20
+<td class=3D"confluenceTd"><p> Name of an LES server configuration as defin=
+ed in the registry. </p></td>=20
+</tr>=20
+<tr>=20
+<td class=3D"confluenceTd"><p> -A &lt;string&gt; </p></td>=20
+<td class=3D"confluenceTd"><p> Host / URL </p></td>=20
+<td class=3D"confluenceTd"><p> Network name or IP address of the applicatio=
+n server. <br> <span style=3D"color: rgb(255,0,0);">(2010.1) This is now th=
+e url of the moca server, which migrated to http protocols in 2010.1 (e.g. =
+<a class=3D"external-link" href=3D"http://someserver:4500/service" rel=3D"n=
+ofollow">http://someserver:4500/service</a>)</span></p></td>=20
+</tr>=20
+<tr>=20
+<td class=3D"confluenceTd"><p> -P &lt;int&gt; </p></td>=20
+<td class=3D"confluenceTd"><p> Port Number </p></td>=20
+<td class=3D"confluenceTd"><p> Port of the application server. <span style=
+=3D"color: rgb(255,0,0);">Obsolete in 2010.1</span></p></td>=20
+</tr>=20
+<tr>=20
+<td class=3D"confluenceTd"><p> -E &lt;string&gt; </p></td>=20
+<td class=3D"confluenceTd"><p> Server Environment String </p></td>=20
+<td class=3D"confluenceTd"><p> String passed to the server upon execution o=
+f every command. This string is appended to the required environment values=
+ and consists of a pipe (|) delimited list of name/value pairs. (e.g. DEVCO=
+D=3DSHPSTA-01 | VAR=3DVALUE) </p></td>=20
+</tr>=20
+<tr>=20
+<td class=3D"confluenceTd"><p> -U &lt;string&gt; </p></td>=20
+<td class=3D"confluenceTd"><p> User ID </p></td>=20
+<td class=3D"confluenceTd"><p> ID used for automatic login. </p></td>=20
+</tr>=20
+<tr>=20
+<td class=3D"confluenceTd"><p> -W &lt;string&gt; </p></td>=20
+<td class=3D"confluenceTd"><p> Password </p></td>=20
+<td class=3D"confluenceTd"><p> Password for automatic login. </p></td>=20
+</tr>=20
+<tr>=20
+<td class=3D"confluenceTd"><p> -L &lt;string&gt; </p></td>=20
+<td class=3D"confluenceTd"><p> Locale ID </p></td>=20
+<td class=3D"confluenceTd"><p> Id of the locale that the framework will use=
+. </p></td>=20
+</tr>=20
+<tr>=20
+<td class=3D"confluenceTd"><p> -C &lt;path&gt; </p></td>=20
+<td class=3D"confluenceTd"><p> Cache Path </p></td>=20
+<td class=3D"confluenceTd"><p> Location of the cache files used by the fram=
+ework. </p></td>=20
+</tr>=20
+<tr>=20
+<td class=3D"confluenceTd"><p> -I &lt;path&gt; </p></td>=20
+<td class=3D"confluenceTd"><p> Image Path </p></td>=20
+<td class=3D"confluenceTd"><p> Location of the icons and pictures used by t=
+he framework. </p></td>=20
+</tr>=20
+<tr>=20
+<td class=3D"confluenceTd"><p> -X &lt;appl_id&gt; </p></td>=20
+<td class=3D"confluenceTd"><p> Startup Application ID </p></td>=20
+<td class=3D"confluenceTd"><p> The ID of the application to automatically s=
+tart in the framework. </p></td>=20
+</tr>=20
+<tr>=20
+<td class=3D"confluenceTd"><p> -t N </p></td>=20
+<td class=3D"confluenceTd"><p> Toolbar Visible </p></td>=20
+<td class=3D"confluenceTd"><p> If a value of "N" is seen here, the toolbar =
+is hidden at startup. </p></td>=20
+</tr>=20
+<tr>=20
+<td class=3D"confluenceTd"><p> -s N </p></td>=20
+<td class=3D"confluenceTd"><p> Sessionbar Visible </p></td>=20
+<td class=3D"confluenceTd"><p> If a value of "N" is seen here, the SessionB=
+ar is hidden at startup. </p></td>=20
+</tr>=20
+<tr>=20
+<td class=3D"confluenceTd"><p> -n N </p></td>=20
+<td class=3D"confluenceTd"><p> NavigationBar Visible </p></td>=20
+<td class=3D"confluenceTd"><p> If a value of "N" is seen here, the Navigati=
+onBar is hidden at startup. </p></td>=20
+</tr>=20
+<tr>=20
+<td class=3D"confluenceTd"><p> -b </p></td>=20
+<td class=3D"confluenceTd"><p> Hide Status Bar </p></td>=20
+<td class=3D"confluenceTd"><p> If this argument is present, the status bar =
+is hidden at startup. </p></td>=20
+</tr>=20
+<tr>=20
+<td class=3D"confluenceTd"><p> - l </p></td>=20
+<td class=3D"confluenceTd"><p> Performance flag </p></td>=20
+<td class=3D"confluenceTd"><p> If this argument is present, it activates fo=
+rm load performance logging which can be accessed by pressing Shift-F2 once=
+ a form has loaded. </p></td>=20
+</tr>=20
+<tr>=20
+<td class=3D"confluenceTd"><p> -p &lt;string&gt; </p></td>=20
+<td class=3D"confluenceTd"><p> Parameters </p></td>=20
+<td class=3D"confluenceTd"><p> The parameters to pass to application being =
+started. </p></td>=20
+</tr>=20
+<tr>=20
+<td class=3D"confluenceTd"><p> -a </p></td>=20
+<td class=3D"confluenceTd"><p> Single Application Mode </p></td>=20
+<td class=3D"confluenceTd"><p> Disables the Navigation Bar and Application =
+Menus so the framework will only run one application. Requires a -X argumen=
+t specifying the application to run</p></td>=20
+</tr>=20
+<tr>=20
+<td class=3D"confluenceTd"><p> -D </p></td>=20
+<td class=3D"confluenceTd"><p> Debug Mode </p></td>=20
+<td class=3D"confluenceTd"><p> Framework will look for form assemblies with=
+out the versioning. Typically used in development and debugging of forms. <=
+/p></td>=20
+</tr>=20
+</tbody>
+</table>
+</div>
+    </div>
+</body>
+</html>
+------=_Part_12511_105368159.1495418737372--
