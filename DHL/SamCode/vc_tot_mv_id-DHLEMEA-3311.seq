@@ -1,0 +1,24 @@
+#use $DCSDIR/include
+#include <dcsddl.h>
+#include <dcscolwid.h>
+#include <dcstbldef.h>
+#include <sqlDataTypes.h>
+#include <varcolwid.h>
+
+#define SEQ vc_tot_mv_id
+#define SEED 1
+#define INC 1
+#define MAX 999999999999
+
+mset command on
+[CREATE_SEQUENCE(SEQ, SEED, INC, MAX)
+] catch( ERR_TABLE_ALREADY_EXISTS )
+RUN_DDL
+
+
+[INSERT INTO sysctl(numcod, prefix, prelen, prlflg, seqlen,
+                   suflen, btsflg, lstseq, seqflg,grp_nam)
+            VALUES('vc_tot_mv_id','TMV', 0, 0, 27,
+                   0, 0, 0, 0,'DHLEMEA-3311')
+] catch( -1 )
+RUN_DDL

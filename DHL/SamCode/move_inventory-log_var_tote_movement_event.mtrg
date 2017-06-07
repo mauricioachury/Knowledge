@@ -1,0 +1,91 @@
+<trigger>
+<name>log_var_tote_movement_event</name>
+<on-command>move inventory</on-command>
+<fire-sequence>8400</fire-sequence>
+<local-syntax>
+<![CDATA[
+    
+    if (@srcdtl)
+    {
+        publish data
+         where vc_custom_where = " and invdtl.dtlnum = " || "'" || @srcdtl || "'" 
+        
+    }
+    else if (@dstsub)
+    {
+        publish data
+         where vc_custom_where = " and invdtl.subnum = " || "'" || @dstsub || "'"
+          
+    }
+    else if (@dstlod)
+    {
+        publish data
+         where vc_custom_where = " and invsub.lodnum = " || "'" || @dstlod || "'" 
+           
+    }    
+    else if (@dtlnum)
+    {
+        publish data
+         where vc_custom_where = " and invdtl.dtlnum = " || "'" || @dtlnum || "'" 
+         
+    }      
+    else if (@subnum)
+    {
+        publish data
+         where vc_custom_where = " and invdtl.subnum = " || "'" || @subnum || "'"
+    }    
+    else if (@lodnum)
+    {
+        publish data
+         where vc_custom_where = " and invsub.lodnum = " || "'" || @lodnum || "'"
+    }
+    |
+    [select distinct invlod.lodnum
+       from invlod,
+            invsub,
+            invdtl,
+            locmst,
+            poldat_view
+      where invlod.lodnum = invsub.lodnum
+        and invsub.subnum = invdtl.subnum
+        and locmst.stoloc = invlod.stoloc
+        and locmst.wh_id = invlod.wh_id
+        and poldat_view.polcod = 'VAR-DHL'
+        and poldat_view.polvar = 'WCS-INTEGRATION'
+        and poldat_view.polval = 'TOTE-DROP-WRKZON'
+        and poldat_view.rtstr1 = locmst.arecod
+        and poldat_view.wh_id = locmst.wh_id
+        and not exists(select 'X'
+                         from var_totmov
+                        where lodnum = invdtl.lodnum 
+                          and cmp_dt is not null)
+        @vc_custom_where:raw
+    ] catch(@?)
+    |
+    if(@? = 0)
+    {
+        generate next number where numcod = 'vc_rpl_task_id'
+        |        
+        get integrator system id
+        where systyp = 'WMD'
+        |
+        sl_log event
+         where evt_id = 'VC_REPLENISHMENT_TASK'
+           and lodnum = @lodnum     
+           and taskid = @nxtnum
+           and ifd_data_ptr = NULL
+           and sys_id = @sys_id catch(-1403)
+    }   
+    
+]]>
+</local-syntax>
+
+<documentation>
+
+<seealso cref="sl_log event">
+</seealso>
+
+</documentation>
+
+</trigger>
+
