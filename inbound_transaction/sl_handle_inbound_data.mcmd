@@ -1,0 +1,123 @@
+<command>
+
+<name>sl_handle inbound_data</name>
+
+<type>Local Syntax</type>
+
+<local-syntax>
+<![CDATA[ 
+
+    sl_instr
+     where look_for = '<p:Upload '
+       and str = @data
+    |
+    if (@pos > 0)
+    {
+        sl_instr
+         where look_for = '<ReplenishmentLineEvent>'
+           and str = @data
+        |
+        if (@pos > 0)
+        {
+            save session variable
+             where name = 'vc_jms_wcs_tag'
+               and value = 'VC_REPLENISHMENT_LINE_INB_IFD'
+        }
+        else
+        {        
+            sl_instr
+             where look_for = '<PickTicketError>'
+               and str = @data
+            |
+            if (@pos > 0)
+            {
+                save session variable
+                 where name = 'vc_jms_wcs_tag'
+                   and value = 'VC_PICKTICKETERROR_INB_IFD'
+            }
+            else
+            {
+            
+                sl_instr
+                 where look_for = '<OrderLineEvent>'
+                   and str = @data
+                |
+                if (@pos > 0)
+                {
+                    save session variable
+                     where name = 'vc_jms_wcs_tag'
+                       and value = 'VC_ORDER_LINE_EVENT_INB_IFD'
+                }
+                else
+                {                
+                    sl_instr
+                     where look_for = '<ReplenishmentTaskError>'
+                       and str = @data
+                    |
+                    if (@pos > 0)
+                    {
+                        save session variable
+                         where name = 'vc_jms_wcs_tag'
+                           and value = 'VC_RPL_TASK_ERROR_INB_IFD'
+                    }
+                    else
+                    {
+                        sl_instr
+                         where look_for = '<CancelPickTicketComplete>'
+                           and str = @data
+                        |
+                        if (@pos > 0)
+                        {
+                            save session variable
+                             where name = 'vc_jms_wcs_tag'
+                               and value = 'VC_CANCELPICKTICKETCMP_INB_IFD'
+                        }
+                        else
+                        {
+                            sl_instr
+                             where look_for = '<CancelPickTicketError>'
+                               and str = @data
+                            |
+                            if (@pos > 0)
+                            {
+                                save session variable
+                                 where name = 'vc_jms_wcs_tag'
+                                   and value = 'VC_CANCELPICKTICKETERR_INB_IFD'
+                            }
+                            else
+                            {
+                                sl_instr
+                                 where look_for = '<ToteMoveError>'
+                                   and str = @data
+                                |
+                                if (@pos > 0)
+                                {
+                                    save session variable
+                                     where name = 'vc_jms_wcs_tag'
+                                       and value = 'VC_TOTE_MOVE_ERROR_INB_IFD'
+                                }
+                                else
+                                {
+                                    save session variable
+                                     where name = 'vc_jms_wcs_tag'
+                                       and value = ''
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }    
+    }
+    else
+    {
+        save session variable
+       where name = 'vc_jms_wcs_tag'
+         and value = ''
+    }
+    |
+    ^sl_handle inbound_data
+    
+]]>
+</local-syntax>
+</command>

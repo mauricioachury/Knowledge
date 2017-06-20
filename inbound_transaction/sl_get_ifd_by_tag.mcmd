@@ -1,0 +1,164 @@
+<command>
+
+<name>sl_get ifd_by_tag</name>
+
+<type>Local Syntax</type>
+
+<local-syntax>
+<![CDATA[ 
+
+    get session variable
+    where name = 'vc_jms_wcs_tag' catch(-1403)
+    |
+    publish data where vc_jms_wcs_tag = @value
+    |
+    get session variable
+         where name = 'tddwnld_seq' catch(-1403)
+    |
+    publish data where vc_dwnld_seq = @value
+    |
+    if(@ifd_tag = 'Upload' and @vc_jms_wcs_tag is not null)
+    {
+         publish data 
+           where ifd_id = @vc_jms_wcs_tag 
+             and ifd_ver = '2010.2'
+    } 
+    else if(@ifd_tag = 'Upload' and @value > 0)
+    {
+        [select dwnld_info
+           from sl_dwnld
+          where dwnld_seq = @vc_dwnld_seq
+        ] catch(-1403)
+        |
+        save session variable
+         where name = 'repl_with'
+           and value = ''
+        |    
+        hide stack variable
+         where name = 'readsize'
+        |
+        hide stack variable
+         where name = 'size'
+        |
+        hide stack variable
+         where name = 'mode'
+        |
+        read file
+         where filename = @dwnld_info catch(@?) >> res
+        |
+        if (rowcount(@res) > 0)
+        {
+            {
+                publish data combination
+                 where res = @res
+                |
+                publish data where TDText=@text
+                |
+                get session variable
+                 where name = 'repl_with' catch(-1403)
+                |
+                if (!@value)
+                {
+                    sl_instr
+                     where look_for = '<ReplenishmentLineEvent>'
+                       and str = @text
+                    |
+                    if (@pos > 0)
+                    {
+                        save session variable
+                         where name = 'repl_with'
+                           and value = 'VC_REPLENISHMENT_LINE_INB_IFD'
+                    }
+                    |
+                    sl_instr
+                     where look_for = '<PickTicketError>'
+                       and str = @text
+                    |
+                    if (@pos > 0)
+                    {
+                        save session variable
+                         where name = 'repl_with'
+                           and value = 'VC_PICKTICKETERROR_INB_IFD'
+                    }
+                    |
+                    sl_instr
+                     where look_for = '<OrderLineEvent>'
+                       and str = @text
+                    |
+                    if (@pos > 0)
+                    {
+                        save session variable
+                         where name = 'repl_with'
+                           and value = 'VC_ORDER_LINE_EVENT_INB_IFD'
+                    }
+                    |
+                    sl_instr
+                     where look_for = '<ReplenishmentTaskError>'
+                       and str = @text
+                    |
+                    if (@pos > 0)
+                    {
+                        save session variable
+                         where name = 'repl_with'
+                           and value = 'VC_RPL_TASK_ERROR_INB_IFD'
+                    }
+		    |
+                    sl_instr
+                     where look_for = '<CancelPickTicketComplete>'
+                       and str = @text
+                    |
+                    if (@pos > 0)
+                    {
+                        save session variable
+                         where name = 'repl_with'
+                           and value = 'VC_CANCELPICKTICKETCMP_INB_IFD'
+                    }
+                    |
+                    sl_instr
+                     where look_for = '<CancelPickTicketError>'
+                       and str = @text
+                    |
+                    if (@pos > 0)
+                    {
+                        save session variable
+                         where name = 'repl_with'
+                           and value = 'VC_CANCELPICKTICKETERR_INB_IFD'
+                    }
+                    |
+                    sl_instr
+                     where look_for = '<ToteMoveError>'
+                       and str = @text
+                    |
+                    if (@pos > 0)
+                    {
+                        save session variable
+                         where name = 'repl_with'
+                           and value = 'VC_TOTE_MOVE_ERROR_INB_IFD'
+                    }
+                }
+                |
+                noop
+            }
+        }
+        |
+        get session variable
+         where name = 'repl_with' catch(-1403)
+        |
+        publish data 
+          where ifd_id = @value 
+            and ifd_ver = '2010.2'
+    }
+    |
+    if(@ifd_id is not null)
+    {
+        publish data 
+          where ifd_id = @ifd_id 
+            and ifd_ver = '2010.2'
+    }
+    else
+    {
+        ^sl_get ifd_by_tag
+    }
+]]>
+</local-syntax>
+</command>
