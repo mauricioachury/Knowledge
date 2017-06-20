@@ -1,0 +1,678 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ActiveReportsLayout 
+	GUIDLIB="{B97D0F4B-6DDE-40EF-A7A7-553B0A0D3C76}" GUIDREP="{11A53D77-97DD-482E-A464-465B5D730720}" 
+	LICENSE="100001003B7FD2001B26564594C48DAC4C674BED2000640065006D006F006C0069006300410052003400350036003200330034000000"
+	PrintWidth="16110"
+	DocumentName="^rptUSRTabletPack^"
+	TOCEnabled="0"
+	ScriptLang="VBScript"
+		UserData="wh_id|^wh_id^||String||Prompt Required~devcod|^devcod^||String||Prompt~tote_id|^tote_id^||String||Prompt@@@@@@PrintToFile=0"
+
+>
+<Watermark
+		>
+</Watermark>
+<Script>
+<![CDATA['=======================================================================
+' Copyright © 2002 RedPrairie Corporation.  All rights reserved.
+' This publication contains proprietary information of RedPrairie
+' Corporation.  No part of this publication may be reproduced,
+' stored in a retrieval system, or transmitted in any form by any
+' means, electronic, mechanical, photocopying, recording or otherwise
+' without the prior written permission of RedPrairie Corporation.
+      '=======================================================================
+
+Sub OnReportStart
+
+End Sub
+]]></Script>
+<PageSettings	LeftMargin="360"
+	RightMargin="360"
+	BottomMargin="720"
+	PaperSize="256"
+	PaperWidth="18720"
+	PaperHeight="14400"
+	Orientation="2"
+>
+</PageSettings>
+<StyleSheet>
+	<Style Name="Normal"
+	Value="font-family: &apos;Arial&apos;; font-style: normal; font-variant: inherit; font-weight: normal; font-size: 10pt; font-size-adjust: inherit; font-stretch: inherit; color: rgb(0,0,0); background-color: rgb(255,255,255); background-image: inherit; background-repeat: inherit; background-attachment: inherit; background-x-position: inherit; background-y-position: inherit; opacity: inherit; word-spacing: inherit; letter-spacing: inherit; text-decoration: none; vertical-align: inherit; text-transform: inherit; text-align: inherit; text-indent: inherit; unicode-bidi: inherit; line-height: inherit; white-space: inherit; ddo-can-grow: inherit; ddo-can-shrink: inherit; ddo-char-set: 0; "
+	/>
+	<Style Name="Heading1"
+	Value="font-family: &apos;inherit&apos;; font-style: inherit; font-variant: inherit; font-weight: bold; font-size: 16pt; font-size-adjust: inherit; font-stretch: inherit; "
+	/>
+	<Style Name="Heading2"
+	Value="font-family: &apos;Times New Roman&apos;; font-style: italic; font-variant: inherit; font-weight: bold; font-size: 14pt; font-size-adjust: inherit; font-stretch: inherit; "
+	/>
+	<Style Name="Heading3"
+	Value="font-family: &apos;inherit&apos;; font-style: inherit; font-variant: inherit; font-weight: bold; font-size: 13pt; font-size-adjust: inherit; font-stretch: inherit; "
+	/>
+	<Style Name="Heading4"
+	/>
+</StyleSheet>
+<Sections>
+	<Section Type="PageHeader" Name="PageHeader"
+		Height="900"
+	>
+		<Control 
+		Type="AR.Label"
+		Name="lblTitle"
+		Left="0"
+		Top="0"
+		Width="15030"
+		Height="720"
+		Caption="Packing"
+		ClassName="Normal"
+		Style="font-size: 18pt; font-weight: bold; text-align: center; "
+		>
+		</Control>
+		<Control 
+		Type="AR.Field"
+		Name="Field9"
+		DataField="devcod"
+		Left="90"
+		Top="0"
+		Width="3240"
+		Height="450"
+		Text="Station#"
+		ClassName="Normal"
+		Style="vertical-align: middle; font-size: 16pt; color: rgb(255,0,0); font-weight: bold; "
+		>
+		</Control>
+		<Control 
+		Type="AR.Barcode"
+		Name="Barcode1"
+		DataField="ordnum"
+		Left="11700"
+		Top="0"
+		Width="3330"
+		Height="720"
+		>
+<![CDATA[0100000001000BF000000000000002000000000000000200000041007200690061006C0000000000000000000000000000000000000000000000000000000000
+		00000000000000000000000000000000000000000000000000008038010000000000000000000000000000000000000000009001010000000000C0C0C0000000
+		0000]]>
+		</Control>
+<Script>
+<![CDATA[
+Sub OnFormat
+    dim i
+    i = rptfunc.Globals("page_num")
+    i = i + 1
+
+    rptfunc.Globals("page_num") = i    
+
+End Sub
+]]></Script>
+	</Section>
+	<Section Type="GroupHeader" Name="grpHeaderWhID"
+		Height="3150"
+		DataField="ordnum"
+		GroupKeepTogether="1"
+		KeepTogether="-1"
+	>
+		<Control 
+		Type="AR.Label"
+		Name="lblclient_id"
+		Left="90"
+		Top="360"
+		Width="1350"
+		Height="360"
+		Caption="Ship-To:"
+		ClassName="Normal"
+		Style="font-weight: bold; text-align: right; vertical-align: middle; "
+		>
+		</Control>
+		<Control 
+		Type="AR.Field"
+		Name="txtclient_id"
+		DataField="ctry_name"
+		Left="1530"
+		Top="360"
+		Width="1890"
+		Height="360"
+		Text="ctry_name"
+		ClassName="Normal"
+		Style="vertical-align: middle; "
+		>
+		</Control>
+		<Control 
+		Type="AR.Label"
+		Name="lblwh_id"
+		Left="90"
+		Top="0"
+		Width="1350"
+		Height="360"
+		Caption="SO:"
+		ClassName="Normal"
+		Style="font-weight: bold; vertical-align: middle; text-align: right; "
+		>
+		</Control>
+		<Control 
+		Type="AR.Field"
+		Name="txtwh_id"
+		DataField="sales_ordnum"
+		Left="1530"
+		Top="0"
+		Width="1890"
+		Height="360"
+		Text="sales_ordnum"
+		ClassName="Normal"
+		Style="vertical-align: middle; "
+		>
+		</Control>
+		<Control 
+		Type="AR.Shape"
+		Name="Shape1"
+		Left="0"
+		Top="2520"
+		Width="15120"
+		Height="540"
+		BackStyle="1"
+		>
+		</Control>
+		<Control 
+		Type="AR.Label"
+		Name="lblasset_typ"
+		Left="1170"
+		Top="2520"
+		Width="1890"
+		Height="540"
+		Caption="Line#"
+		ClassName="Normal"
+		Style="color: rgb(0,0,0); vertical-align: middle; font-weight: bold; background-color: rgb(255,255,255); font-size: 11pt; "
+		>
+		</Control>
+		<Control 
+		Type="AR.Label"
+		Name="Label1"
+		Left="4140"
+		Top="360"
+		Width="2160"
+		Height="360"
+		Caption="Box Count:"
+		ClassName="Normal"
+		Style="font-weight: bold; text-align: right; vertical-align: middle; "
+		>
+		</Control>
+		<Control 
+		Type="AR.Field"
+		Name="Field2"
+		DataField="boxNum"
+		Left="6480"
+		Top="360"
+		Width="2250"
+		Height="360"
+		Text="boxNum"
+		ClassName="Normal"
+		Style="vertical-align: middle; "
+		>
+		</Control>
+		<Control 
+		Type="AR.Label"
+		Name="Label2"
+		Left="4140"
+		Top="0"
+		Width="2160"
+		Height="360"
+		Caption="Tote Count:"
+		ClassName="Normal"
+		Style="font-weight: bold; vertical-align: middle; text-align: right; "
+		>
+		</Control>
+		<Control 
+		Type="AR.Field"
+		Name="Field3"
+		DataField="toteNum"
+		Left="6480"
+		Top="0"
+		Width="2250"
+		Height="360"
+		Text="toteNum"
+		ClassName="Normal"
+		Style="vertical-align: middle; "
+		>
+		</Control>
+		<Control 
+		Type="AR.Label"
+		Name="Label6"
+		Left="10980"
+		Top="0"
+		Width="2070"
+		Height="360"
+		Caption="DN:  "
+		ClassName="Normal"
+		Style="font-weight: bold; vertical-align: middle; text-align: right; "
+		>
+		</Control>
+		<Control 
+		Type="AR.Field"
+		Name="Field5"
+		DataField="ordnum"
+		Left="13050"
+		Top="0"
+		Width="2070"
+		Height="360"
+		Text="ordnum"
+		ClassName="Normal"
+		Style="vertical-align: middle; "
+		>
+		</Control>
+		<Control 
+		Type="AR.Field"
+		Name="Field6"
+		DataField="fldrush"
+		Left="8730"
+		Top="0"
+		Width="2070"
+		Height="720"
+		Text="Urgent"
+		ClassName="Normal"
+		Style="vertical-align: middle; text-align: center; font-weight: bold; font-size: 12pt; "
+		>
+		</Control>
+		<Control 
+		Type="AR.Label"
+		Name="Label9"
+		Left="4320"
+		Top="2520"
+		Width="1890"
+		Height="540"
+		Caption="Item No"
+		ClassName="Normal"
+		Style="color: rgb(0,0,0); vertical-align: middle; font-weight: bold; background-color: rgb(255,255,255); font-size: 11pt; "
+		>
+		</Control>
+		<Control 
+		Type="AR.Label"
+		Name="Label10"
+		Left="8010"
+		Top="2520"
+		Width="1890"
+		Height="540"
+		Caption="QTY(EA)"
+		ClassName="Normal"
+		Style="color: rgb(0,0,0); vertical-align: middle; font-weight: bold; background-color: rgb(255,255,255); font-size: 11pt; text-align: right; "
+		>
+		</Control>
+		<Control 
+		Type="AR.Label"
+		Name="Label11"
+		Left="12420"
+		Top="2520"
+		Width="1890"
+		Height="540"
+		Caption="Item Family"
+		ClassName="Normal"
+		Style="color: rgb(0,0,0); vertical-align: middle; font-weight: bold; background-color: rgb(255,255,255); font-size: 11pt; "
+		>
+		</Control>
+		<Control 
+		Type="AR.Label"
+		Name="Label12"
+		Left="0"
+		Top="810"
+		Width="3240"
+		Height="540"
+		Caption="Special Instruction"
+		ClassName="Normal"
+		Style="color: rgb(0,0,0); vertical-align: middle; font-weight: bold; background-color: rgb(255,255,255); font-size: 14pt; text-decoration: underline; font-style: italic; "
+		>
+		</Control>
+		<Control 
+		Type="AR.Label"
+		Name="Label15"
+		Left="10980"
+		Top="360"
+		Width="2070"
+		Height="360"
+		Caption="Page:  "
+		ClassName="Normal"
+		Style="font-weight: bold; vertical-align: middle; text-align: right; "
+		>
+		</Control>
+		<Control 
+		Type="AR.Label"
+		Name="lblOf"
+		Left="13770"
+		Top="450"
+		Width="270"
+		Height="270"
+		Caption="^rpt_of^"
+		ClassName="Normal"
+		Style="text-align: center; "
+		>
+		</Control>
+		<Control 
+		Type="AR.Field"
+		Name="txtPageNumber"
+		Left="13140"
+		Top="450"
+		Width="540"
+		Height="270"
+		Text="PageNumber"
+		SummaryType="4"
+		SummaryFunc="0"
+		SummaryRunning="2"
+		ClassName="Normal"
+		Style="text-align: center; "
+		>
+		</Control>
+		<Control 
+		Type="AR.Field"
+		Name="txtPageCount"
+		Left="14040"
+		Top="450"
+		Width="540"
+		Height="270"
+		Text="PageCount"
+		SummaryType="4"
+		SummaryFunc="0"
+		SummaryRunning="0"
+		ClassName="Normal"
+		Style="text-align: center; "
+		>
+		</Control>
+		<Control 
+		Type="AR.Shape"
+		Name="Shape6"
+		Left="0"
+		Top="810"
+		Width="2970"
+		Height="630"
+		LineStyle="0"
+		LineWeight="4"
+		>
+		</Control>
+		<Control 
+		Type="AR.Field"
+		Name="Field7"
+		DataField="onotetxt"
+		Left="90"
+		Top="1530"
+		Width="15030"
+		Height="720"
+		Text="onotetxt"
+		ClassName="Normal"
+		Style="text-align: left; vertical-align: middle; "
+		>
+		</Control>
+		<Control 
+		Type="AR.Shape"
+		Name="Shape7"
+		Left="0"
+		Top="1530"
+		Width="15120"
+		Height="810"
+		LineStyle="2"
+		LineWeight="4"
+		>
+		</Control>
+<Script>
+<![CDATA[
+Sub OnFormat
+     
+End Sub
+]]></Script>
+	</Section>
+	<Section Type="Detail" Name="Detail"
+		Height="1380"
+		ColumnSpacing="6"
+		BackStyle="1"
+		CanShrink="1"
+	>
+		<Control 
+		Type="AR.DataControl"
+		Name="DataControl1"
+		Left="-1000"
+		Top="0"
+		Width="720"
+		Height="270"
+		Visible="0"
+		Tag="
+[select distinct p1.ordnum,
+        p1.wh_id
+   from inventory_view iv
+   join pckwrk p1
+     on p1.wrkref = iv.wrkref
+    and p1.wh_id = iv.wh_id
+  where not exists(select 1
+                     from pckwrk p2
+                    where p2.ordnum = p1.ordnum
+                      and p2.pckqty != p2.appqty)
+    and iv.lodnum = @tote_id
+    and iv.wh_id = @wh_id
+    and p1.pckqty = p1.appqty] catch(-1403)
+|
+if (@? = 0)
+{
+    [select count(distinct inventory_view.lodnum) toteNum,
+            count(distinct inventory_view.subnum) boxNum
+       from pckwrk
+       join inventory_view
+         on pckwrk.wrkref = inventory_view.wrkref
+      where pckwrk.ordnum = @ordnum
+        and pckwrk.wh_id = @wh_id]
+    |
+    [select ord.ordnum ordnum,
+            ol.sales_ordnum sales_ordnum,
+            am.ctry_name ctry_name,
+            ol.ordlin ordlin,
+            decode(ord.rush_flg, 1, &apos;URGENT&apos;, NULL) fldrush,
+            ol.prtnum prtnum,
+            ol.ordqty ordqty,
+            pt.prtfam prtfam,
+            onote.nottxt onotetxt
+       from ord
+       join ord_line ol
+         on ol.ordnum = ord.ordnum
+        and ol.client_id = ord.client_id
+        and ol.wh_id = ord.wh_id
+       left
+       join adrmst am
+         on am.adr_id = ord.st_adr_id
+       join prtmst pt
+         on pt.prtnum = ol.prtnum
+       left
+       join (select listagg(ohn.nottxt, &apos;, &apos;) within group(order by ohn.notlin) nottxt,
+                    ohn.ordnum,
+                    ohn.wh_id,
+                    ohn.client_id
+               from ord_note ohn
+              where ohn.nottyp = &apos;PACK&apos;
+              group by ohn.ordnum,
+                    ohn.wh_id,
+                    ohn.client_id) onote
+         on onote.ordnum = ord.ordnum
+        and onote.wh_id = ord.wh_id
+        and onote.client_id = ord.client_id
+      where ord.ordnum = @ordnum
+        and ord.wh_id = @wh_id
+      order by ol.ordlin]
+    |
+    get system timezone offsets
+     where wh_id = @wh_id
+    |
+    publish data
+     where time_offset = &apos;+ &apos; || ((@displaytimzonoffset - @storedtimzonoffset) + (@displaytimzondstoffset - @storedtimzondstoffset)) || &apos;/24&apos;
+    |
+    [select to_char(sysdate @time_offset:raw, &apos;DD/MM/YY HH24:MI:SS&apos;) print_dte
+       from dual]
+    |
+    publish data
+     where ordnum = @ordnum
+       and sales_ordnum = @sales_ordnum
+       and ctry_name = @ctry_name
+       and toteNum = @toteNum
+       and boxNum = @boxNum
+       and ordlin = @ordlin
+       and fldrush = @fldrush
+       and prtnum = @prtnum
+       and ordqty = @ordqty
+       and prtfam = @prtfam
+       and onotetxt = @onotetxt
+       and devcod = @devcod
+       and print_dte = @print_dte
+}"
+		LockType="1"
+		>
+		</Control>
+		<Control 
+		Type="AR.Field"
+		Name="txtasset_typ"
+		DataField="ordlin"
+		Left="1170"
+		Top="90"
+		Width="2340"
+		Height="630"
+		Text="ordlin"
+		ClassName="Normal"
+		Style="vertical-align: middle; font-size: 10pt; "
+		>
+		</Control>
+		<Control 
+		Type="AR.Field"
+		Name="txtser_flg"
+		DataField="prtnum"
+		Left="3780"
+		Top="100"
+		Width="3150"
+		Height="600"
+		Text="prtnum"
+		ClassName="Normal"
+		Style="text-align: left; vertical-align: middle; font-size: 10pt; "
+		>
+		</Control>
+		<Control 
+		Type="AR.Field"
+		Name="txtexpqty"
+		DataField="ordqty"
+		Left="7650"
+		Top="90"
+		Width="1980"
+		Height="630"
+		Text="ordqty"
+		CanGrow="0"
+		ClassName="Normal"
+		Style="text-align: right; vertical-align: middle; font-size: 10pt; "
+		>
+		</Control>
+		<Control 
+		Type="AR.Field"
+		Name="txtidnqty"
+		DataField="prtfam"
+		Left="11430"
+		Top="90"
+		Width="3150"
+		Height="630"
+		Text="prtfam"
+		ClassName="Normal"
+		Style="text-align: center; vertical-align: middle; font-size: 10pt; "
+		>
+		</Control>
+	</Section>
+	<Section Type="GroupFooter" Name="grpFooterWhID"
+		Height="2070"
+	>
+		<Control 
+		Type="AR.Field"
+		Name="Field8"
+		DataField="ordqty"
+		Left="3960"
+		Top="360"
+		Width="3240"
+		Height="540"
+		Text="pckqty"
+		SummaryType="3"
+		SummaryFunc="0"
+		SummaryRunning="0"
+		SummaryGroup="grpHeaderWhID"
+		ClassName="Normal"
+		Style="font-size: 11pt; "
+		>
+		</Control>
+		<Control 
+		Type="AR.Label"
+		Name="Label14"
+		Left="1800"
+		Top="200"
+		Width="2070"
+		Height="500"
+		Caption="Total Qty:  "
+		ClassName="Normal"
+		Style="font-weight: bold; vertical-align: middle; text-align: right; font-size: 11pt; "
+		>
+		</Control>
+		<Control 
+		Type="AR.Field"
+		Name="Field1"
+		DataField="=print_dte"
+		Left="13230"
+		Top="330"
+		Width="2880"
+		Height="540"
+		Text="rpt_print_date"
+		ClassName="Normal"
+		Style="font-size: 11pt; "
+		>
+		</Control>
+		<Control 
+		Type="AR.Shape"
+		Name="Shape4"
+		Left="0"
+		Top="180"
+		Width="15300"
+		Height="630"
+		>
+		</Control>
+		<Control 
+		Type="AR.Shape"
+		Name="Shape5"
+		Left="12150"
+		Top="180"
+		Width="3150"
+		Height="630"
+		>
+		</Control>
+		<Control 
+		Type="AR.Label"
+		Name="Label16"
+		Left="11160"
+		Top="180"
+		Width="2070"
+		Height="540"
+		Caption="Print:  "
+		ClassName="Normal"
+		Style="font-weight: bold; vertical-align: middle; text-align: right; font-size: 11pt; "
+		>
+		</Control>
+<Script>
+<![CDATA[
+Sub OnFormat
+
+End Sub
+]]></Script>
+	</Section>
+	<Section Type="PageFooter" Name="PageFooter"
+		Visible="0"
+		Height="0"
+	>
+		<Control 
+		Type="AR.Line"
+		Name="Line1"
+		X1="0"
+		Y1="0"
+		X2="15120"
+		Y2="0"
+		LineWeight="2"
+		>
+		</Control>
+<Script>
+<![CDATA[
+Sub OnFormat
+
+End Sub
+]]></Script>
+	</Section>
+</Sections>
+</ActiveReportsLayout>
