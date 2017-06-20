@@ -1,0 +1,201 @@
+CSV__TAG__KLUDGE___TABLE_NAME sl_alg_def
+SL_VERSION,alg_id,alg_grp_id,alg_typ_cd,alg_descr,need_evt_flg,need_evt_arg_flg,need_next_eo_seg_flg,need_this_eo_seg_flg,var_arg_list_flg,overstack_arg_flg,always_local_flg,code,code_len
+2010.2,'VC_GET_TOTE_MOVE_ALG','SL_RETR_MTHD_IMPL','MOCA','get tote move data','F','F','F','F','F','F','F','get var tote move data where lodnum = :i_c_lodnum and wh_id = :i_c_wh_id and mv_id = :i_c_mv_id','106'
+
+CSV__TAG__KLUDGE___TABLE_NAME sl_alg_def
+SL_VERSION,alg_id,alg_grp_id,alg_typ_cd,alg_descr,need_evt_flg,need_evt_arg_flg,need_next_eo_seg_flg,need_this_eo_seg_flg,var_arg_list_flg,overstack_arg_flg,always_local_flg,code,code_len
+2010.2,'VC_PRC_TOTE_MOVE','SL_IFD_SEG_PROC','MOCA','process updating tote move record','F','F','F','F','F','F','F','process var tote move after event
+where mv_id = :i_c_mv_id
+ and lodnum = :i_c_lodnum
+ and wh_id = :i_c_wh_id
+ and mode = 'OUB'
+','139'
+
+CSV__TAG__KLUDGE___TABLE_NAME sl_alg_def
+SL_VERSION,alg_id,alg_grp_id,alg_typ_cd,alg_descr,need_evt_flg,need_evt_arg_flg,need_next_eo_seg_flg,need_this_eo_seg_flg,var_arg_list_flg,overstack_arg_flg,always_local_flg,code,code_len
+2010.2,'VC_BLOCK_VC_TOTE_MOVEMENT','SL_IFD_BLOCK','MOCA','Blocks the IFD VC_TOTE_MOVEMENT_IFD if the details on the load are not valid for a certain reason.','F','F','F','F','F','F','T','publish data
+ where lodnum = :i_c_lodnum
+   and wh_id = :i_c_wh_id
+   and mv_id = :i_c_mv_id
+|
+process var tote validation
+  where wh_id = @wh_id
+    and lodnum = @lodnum
+    and mv_id = @mv_id catch(@?)
+|
+if (@? != 0)
+{
+    publish data
+     where erronum = @?
+    |
+    get mls text
+     where locale_id = @@locale_id
+       and mls_id = ''err'' || @erronum
+    |
+    publish data
+     where exceptionMsg = @mls_text
+    |
+    raise var ems event for tote move error
+     where lodnum = @lodnum
+       and wh_id = @wh_id
+       and mv_id = @mv_id
+       and errmsg = @exceptionMsg
+    ;
+    publish data
+     where blkval = ''T''
+}
+else
+{
+    publish data
+     where blkval = ''F''
+}','2803'
+
+CSV__TAG__KLUDGE___TABLE_NAME sl_alg_in_bnd_var
+SL_VERSION,alg_id,in_bnd_var_id,bnd_var_tag
+2010.2,'VC_GET_TOTE_MOVE_ALG','I_C_LODNUM',''
+
+CSV__TAG__KLUDGE___TABLE_NAME sl_alg_in_bnd_var
+SL_VERSION,alg_id,in_bnd_var_id,bnd_var_tag
+2010.2,'VC_GET_TOTE_MOVE_ALG','I_C_WH_ID',''
+
+CSV__TAG__KLUDGE___TABLE_NAME sl_alg_in_bnd_var
+SL_VERSION,alg_id,in_bnd_var_id,bnd_var_tag
+2010.2,'VC_GET_TOTE_MOVE_ALG','I_C_MV_ID',''
+
+CSV__TAG__KLUDGE___TABLE_NAME sl_alg_in_bnd_var
+SL_VERSION,alg_id,in_bnd_var_id,bnd_var_tag
+2010.2,'VC_PRC_TOTE_MOVE','I_C_LODNUM',''
+
+CSV__TAG__KLUDGE___TABLE_NAME sl_alg_in_bnd_var
+SL_VERSION,alg_id,in_bnd_var_id,bnd_var_tag
+2010.2,'VC_PRC_TOTE_MOVE','I_C_MV_ID',''
+
+CSV__TAG__KLUDGE___TABLE_NAME sl_alg_in_bnd_var
+SL_VERSION,alg_id,in_bnd_var_id,bnd_var_tag
+2010.2,'VC_PRC_TOTE_MOVE','I_C_WH_ID',''
+
+CSV__TAG__KLUDGE___TABLE_NAME sl_alg_in_bnd_var
+SL_VERSION,alg_id,in_bnd_var_id,bnd_var_tag
+2010.2,'VC_BLOCK_VC_TOTE_MOVEMENT','I_C_LODNUM',''
+
+CSV__TAG__KLUDGE___TABLE_NAME sl_alg_in_bnd_var
+SL_VERSION,alg_id,in_bnd_var_id,bnd_var_tag
+2010.2,'VC_BLOCK_VC_TOTE_MOVEMENT','I_C_MV_ID',''
+
+CSV__TAG__KLUDGE___TABLE_NAME sl_alg_in_bnd_var
+SL_VERSION,alg_id,in_bnd_var_id,bnd_var_tag
+2010.2,'VC_BLOCK_VC_TOTE_MOVEMENT','I_C_WH_ID',''
+
+CSV__TAG__KLUDGE___TABLE_NAME sl_retr_mthd_def
+SL_VERSION,retr_mthd_id,retr_mthd_descr
+2010.2,'VC_GET_TOTE_MOVE_ALG','Get Tote Move Data'
+
+CSV__TAG__KLUDGE___TABLE_NAME sl_retr_mthd_impl_def
+SL_VERSION,retr_mthd_id,retr_mthd_impl_genid,sys_id,ifd_id,ifd_ver,ifd_seg_id,retr_mthd_impl_cd,alg_id
+2010.2,'VC_GET_TOTE_MOVE_ALG','SYS_DCS','DCS','','','','ALG','VC_GET_TOTE_MOVE_ALG'
+
+CSV__TAG__KLUDGE___TABLE_NAME sl_evt_def
+SL_VERSION,evt_id,evt_descr,log_evt_flg,evt_grp_id
+2010.2,'VC_TOTE_MOVEMENT','Send Tote Movement Information to Dematic','T','CUSTOMER'
+
+CSV__TAG__KLUDGE___TABLE_NAME sl_evt_arg_def
+SL_VERSION,evt_id,evt_arg_id,evt_arg_descr,data_typ_cd,require_flg
+2010.2,'VC_TOTE_MOVEMENT','LODNUM','','C','T'
+
+CSV__TAG__KLUDGE___TABLE_NAME sl_evt_arg_def
+SL_VERSION,evt_id,evt_arg_id,evt_arg_descr,data_typ_cd,require_flg
+2010.2,'VC_TOTE_MOVEMENT','MV_ID','','C','T'
+
+CSV__TAG__KLUDGE___TABLE_NAME sl_evt_arg_def
+SL_VERSION,evt_id,evt_arg_id,evt_arg_descr,data_typ_cd,require_flg
+2010.2,'VC_TOTE_MOVEMENT','WH_ID','','C','T'
+
+CSV__TAG__KLUDGE___TABLE_NAME sl_eo_def
+SL_VERSION,eo_id,eo_ver,eo_descr,evt_id,always_create_flg
+2010.2,'VC_TOTE_MOVEMENT','2010.2','Send Tote Movement Information to Dematic','VC_TOTE_MOVEMENT',''
+
+CSV__TAG__KLUDGE___TABLE_NAME sl_eo_seg
+SL_VERSION,eo_id,eo_ver,eo_seg_id,eo_seg_descr,parent_eo_id,parent_eo_ver,parent_eo_seg_id,blk_alg_id,blk_alg_eval_cd,retr_mthd_id,eo_seg_ordr
+2010.2,'VC_TOTE_MOVEMENT','2010.2','ROOT_SEG','p:Download Gegment','','','','','','SL_DUMMY_RM','1'
+
+CSV__TAG__KLUDGE___TABLE_NAME sl_eo_seg
+SL_VERSION,eo_id,eo_ver,eo_seg_id,eo_seg_descr,parent_eo_id,parent_eo_ver,parent_eo_seg_id,blk_alg_id,blk_alg_eval_cd,retr_mthd_id,eo_seg_ordr
+2010.2,'VC_TOTE_MOVEMENT','2010.2','VC_TOTE_MOVEMENT_SEG','Send Tote Movement Information to Dematic','VC_TOTE_MOVEMENT','2010.2','ROOT_SEG','','','VC_GET_TOTE_MOVE_ALG','1'
+
+CSV__TAG__KLUDGE___TABLE_NAME sl_eo_fld
+SL_VERSION,eo_id,eo_ver,eo_seg_id,eo_fld_id,eo_fld_descr,data_typ_cd,eo_fld_ordr,eo_fld_sql_ordr,eo_fld_len,eo_fld_max_chars
+2010.2,'VC_TOTE_MOVEMENT','2010.2','ROOT_SEG','XMLNS','XMLNS','C','10','','30',''
+
+CSV__TAG__KLUDGE___TABLE_NAME sl_eo_fld
+SL_VERSION,eo_id,eo_ver,eo_seg_id,eo_fld_id,eo_fld_descr,data_typ_cd,eo_fld_ordr,eo_fld_sql_ordr,eo_fld_len,eo_fld_max_chars
+2010.2,'VC_TOTE_MOVEMENT','2010.2','VC_TOTE_MOVEMENT_SEG','MV_ID','MV_ID','C','10','','120','30'
+
+CSV__TAG__KLUDGE___TABLE_NAME sl_eo_fld
+SL_VERSION,eo_id,eo_ver,eo_seg_id,eo_fld_id,eo_fld_descr,data_typ_cd,eo_fld_ordr,eo_fld_sql_ordr,eo_fld_len,eo_fld_max_chars
+2010.2,'VC_TOTE_MOVEMENT','2010.2','VC_TOTE_MOVEMENT_SEG','CONTAINERID','CONTAINERID','C','20','','120','30'
+
+CSV__TAG__KLUDGE___TABLE_NAME sl_eo_fld
+SL_VERSION,eo_id,eo_ver,eo_seg_id,eo_fld_id,eo_fld_descr,data_typ_cd,eo_fld_ordr,eo_fld_sql_ordr,eo_fld_len,eo_fld_max_chars
+2010.2,'VC_TOTE_MOVEMENT','2010.2','VC_TOTE_MOVEMENT_SEG','DESTINATIONID','DESTINATIONID','C','30','','120','30'
+
+CSV__TAG__KLUDGE___TABLE_NAME sl_eo_fld
+SL_VERSION,eo_id,eo_ver,eo_seg_id,eo_fld_id,eo_fld_descr,data_typ_cd,eo_fld_ordr,eo_fld_sql_ordr,eo_fld_len,eo_fld_max_chars
+2010.2,'VC_TOTE_MOVEMENT','2010.2','VC_TOTE_MOVEMENT_SEG','ORDERSTATUS','ORDERSTATUS','C','40','','120','30'
+
+CSV__TAG__KLUDGE___TABLE_NAME sl_eo_col
+SL_VERSION,eo_id,eo_ver,eo_seg_id,eo_fld_id,retr_mthd_id,retr_mthd_impl_genid,sys_id,ifd_id,ifd_ver,ifd_seg_id,sql_component_seq,sql_crsr_col,grp_by_flg
+2010.2,'VC_TOTE_MOVEMENT','2010.2','ROOT_SEG','XMLNS','SL_DUMMY_RM','SYS_DCS','DCS','','','','0',':i_c_sys_absent_ind_char','F'
+
+CSV__TAG__KLUDGE___TABLE_NAME sl_eo_col
+SL_VERSION,eo_id,eo_ver,eo_seg_id,eo_fld_id,retr_mthd_id,retr_mthd_impl_genid,sys_id,ifd_id,ifd_ver,ifd_seg_id,sql_component_seq,sql_crsr_col,grp_by_flg
+2010.2,'VC_TOTE_MOVEMENT','2010.2','VC_TOTE_MOVEMENT_SEG','CONTAINERID','VC_GET_TOTE_MOVE_ALG','SYS_DCS','DCS','','','','0','ContainerID','F'
+
+CSV__TAG__KLUDGE___TABLE_NAME sl_eo_col
+SL_VERSION,eo_id,eo_ver,eo_seg_id,eo_fld_id,retr_mthd_id,retr_mthd_impl_genid,sys_id,ifd_id,ifd_ver,ifd_seg_id,sql_component_seq,sql_crsr_col,grp_by_flg
+2010.2,'VC_TOTE_MOVEMENT','2010.2','VC_TOTE_MOVEMENT_SEG','MV_ID','VC_GET_TOTE_MOVE_ALG','SYS_DCS','DCS','','','','0','MV_ID','F'
+
+CSV__TAG__KLUDGE___TABLE_NAME sl_eo_col
+SL_VERSION,eo_id,eo_ver,eo_seg_id,eo_fld_id,retr_mthd_id,retr_mthd_impl_genid,sys_id,ifd_id,ifd_ver,ifd_seg_id,sql_component_seq,sql_crsr_col,grp_by_flg
+2010.2,'VC_TOTE_MOVEMENT','2010.2','VC_TOTE_MOVEMENT_SEG','DESTINATIONID','VC_GET_TOTE_MOVE_ALG','SYS_DCS','DCS','','','','0','DestinationID','F'
+
+CSV__TAG__KLUDGE___TABLE_NAME sl_eo_col
+SL_VERSION,eo_id,eo_ver,eo_seg_id,eo_fld_id,retr_mthd_id,retr_mthd_impl_genid,sys_id,ifd_id,ifd_ver,ifd_seg_id,sql_component_seq,sql_crsr_col,grp_by_flg
+2010.2,'VC_TOTE_MOVEMENT','2010.2','VC_TOTE_MOVEMENT_SEG','ORDERSTATUS','VC_GET_TOTE_MOVE_ALG','SYS_DCS','DCS','','','','0','OrderStatus','F'
+
+CSV__TAG__KLUDGE___TABLE_NAME sl_ifd_def
+SL_VERSION,ifd_id,ifd_ver,ifd_descr,ifd_typ_cd,data_lay_id,ifd_grp_id,eo_id,eo_ver,root_seg_rpt_brk_flg,recursive_flg,post_alg_id,pre_alg_id,ifd_tag,post_proc_flg
+2010.2,'VC_TOTE_MOVEMENT','2010.2','Send Tote Movement Information to Dematic','O','CSV','CUSTOMER','VC_TOTE_MOVEMENT','2010.2','T','T','','','VC_TOTE_MOVEMENT','F'
+
+CSV__TAG__KLUDGE___TABLE_NAME sl_ifd_seg
+SL_VERSION,ifd_id,ifd_ver,ifd_seg_id,ifd_seg_rel_pos,ifd_seg_descr,ifd_seg_ordr,eo_id,eo_ver,eo_seg_id,pre_alg_id,post_alg_id,parent_ifd_id,parent_ifd_ver,parent_ifd_seg_id,blk_alg_id,blk_alg_eval_cd,proc_alg_id,xml_use_seg_tag_flg,ifd_seg_tag,sib_is_rel_flg,sync_with_eo_flg,ifd_seg_ol_attr_cd
+2010.2,'VC_TOTE_MOVEMENT','2010.2','ROOT_SEG','','p:Download segment','1','VC_TOTE_MOVEMENT','2010.2','ROOT_SEG','','','','','','','','','T','p:Download','','','XTXTN'
+
+CSV__TAG__KLUDGE___TABLE_NAME sl_ifd_seg
+SL_VERSION,ifd_id,ifd_ver,ifd_seg_id,ifd_seg_rel_pos,ifd_seg_descr,ifd_seg_ordr,eo_id,eo_ver,eo_seg_id,pre_alg_id,post_alg_id,parent_ifd_id,parent_ifd_ver,parent_ifd_seg_id,blk_alg_id,blk_alg_eval_cd,proc_alg_id,xml_use_seg_tag_flg,ifd_seg_tag,sib_is_rel_flg,sync_with_eo_flg,ifd_seg_ol_attr_cd
+2010.2,'VC_TOTE_MOVEMENT','2010.2','VC_TOTE_MOVEMENT_SEG','','Send Tote Movement Information to Dematic','1','VC_TOTE_MOVEMENT','2010.2','VC_TOTE_MOVEMENT_SEG','','','VC_TOTE_MOVEMENT','2010.2','ROOT_SEG','','','','T','TransportContainer','','','XTXTN'
+
+CSV__TAG__KLUDGE___TABLE_NAME sl_ifd_fld
+SL_VERSION,ifd_id,ifd_ver,ifd_seg_id,ifd_fld_id,ifd_fld_descr,ifd_fld_ordr,ifd_fld_tag,eo_id,eo_ver,eo_seg_id,eo_fld_id,evt_id,evt_arg_id,eo_fld_grp_func,ifd_fld_sql_ordr,ifd_fld_class_cd,data_typ_cd,fld_alg_id,kw_id,pre_alg_bnd_var_id,fld_val,sql_expr,default_expr,change_expr,fld_jus_cd,fld_fmt,fld_trm_cd,pad_char,trm_char,ifd_fld_len,ifd_fld_attr_cd,create_only_flg,ol_fld_tag,ol_grp_func,validation_cmnt,required_flg,default_val_cmnt,ifd_fld_max_chars
+2010.2,'VC_TOTE_MOVEMENT','2010.2','ROOT_SEG','XMLNS1','xmlns:p="http://Dematic.com.au/WCSXMLSchema/DHL"','10','xmlns:p','','','','','','','','','CO','C','','','','http://Dematic.com.au/WCSXMLSchema/DHL','','http://Dematic.com.au/WCSXMLSchema/DHL','','N','','N','','','','XATTR','F','','','','F','',''
+
+CSV__TAG__KLUDGE___TABLE_NAME sl_ifd_fld
+SL_VERSION,ifd_id,ifd_ver,ifd_seg_id,ifd_fld_id,ifd_fld_descr,ifd_fld_ordr,ifd_fld_tag,eo_id,eo_ver,eo_seg_id,eo_fld_id,evt_id,evt_arg_id,eo_fld_grp_func,ifd_fld_sql_ordr,ifd_fld_class_cd,data_typ_cd,fld_alg_id,kw_id,pre_alg_bnd_var_id,fld_val,sql_expr,default_expr,change_expr,fld_jus_cd,fld_fmt,fld_trm_cd,pad_char,trm_char,ifd_fld_len,ifd_fld_attr_cd,create_only_flg,ol_fld_tag,ol_grp_func,validation_cmnt,required_flg,default_val_cmnt,ifd_fld_max_chars
+2010.2,'VC_TOTE_MOVEMENT','2010.2','VC_TOTE_MOVEMENT_SEG','ROUTINGORDERID','Unique ID representing a particular tote movement.','10','RoutingOrderID','VC_TOTE_MOVEMENT','2010.2','VC_TOTE_MOVEMENT_SEG','MV_ID','','','','','EO','C','','','','','','','','N','','N','','','120','','F','','','','F','',''
+
+CSV__TAG__KLUDGE___TABLE_NAME sl_ifd_fld
+SL_VERSION,ifd_id,ifd_ver,ifd_seg_id,ifd_fld_id,ifd_fld_descr,ifd_fld_ordr,ifd_fld_tag,eo_id,eo_ver,eo_seg_id,eo_fld_id,evt_id,evt_arg_id,eo_fld_grp_func,ifd_fld_sql_ordr,ifd_fld_class_cd,data_typ_cd,fld_alg_id,kw_id,pre_alg_bnd_var_id,fld_val,sql_expr,default_expr,change_expr,fld_jus_cd,fld_fmt,fld_trm_cd,pad_char,trm_char,ifd_fld_len,ifd_fld_attr_cd,create_only_flg,ol_fld_tag,ol_grp_func,validation_cmnt,required_flg,default_val_cmnt,ifd_fld_max_chars
+2010.2,'VC_TOTE_MOVEMENT','2010.2','VC_TOTE_MOVEMENT_SEG','CONTAINERID','The identifier of a tote holding all the products, e.g. a trolley barcode.','20','ContainerID','VC_TOTE_MOVEMENT','2010.2','VC_TOTE_MOVEMENT_SEG','CONTAINERID','','','','','EO','C','','','','','','','','N','','N','','','120','','F','','','','F','',''
+
+CSV__TAG__KLUDGE___TABLE_NAME sl_ifd_fld
+SL_VERSION,ifd_id,ifd_ver,ifd_seg_id,ifd_fld_id,ifd_fld_descr,ifd_fld_ordr,ifd_fld_tag,eo_id,eo_ver,eo_seg_id,eo_fld_id,evt_id,evt_arg_id,eo_fld_grp_func,ifd_fld_sql_ordr,ifd_fld_class_cd,data_typ_cd,fld_alg_id,kw_id,pre_alg_bnd_var_id,fld_val,sql_expr,default_expr,change_expr,fld_jus_cd,fld_fmt,fld_trm_cd,pad_char,trm_char,ifd_fld_len,ifd_fld_attr_cd,create_only_flg,ol_fld_tag,ol_grp_func,validation_cmnt,required_flg,default_val_cmnt,ifd_fld_max_chars
+2010.2,'VC_TOTE_MOVEMENT','2010.2','VC_TOTE_MOVEMENT_SEG','DESTINATIONID','Tells WCS what station to deliver this tote.','30','DestinationID','VC_TOTE_MOVEMENT','2010.2','VC_TOTE_MOVEMENT_SEG','DESTINATIONID','','','','','EO','C','','','','','','','','N','','N','','','120','','F','','','','F','',''
+
+CSV__TAG__KLUDGE___TABLE_NAME sl_ifd_fld
+SL_VERSION,ifd_id,ifd_ver,ifd_seg_id,ifd_fld_id,ifd_fld_descr,ifd_fld_ordr,ifd_fld_tag,eo_id,eo_ver,eo_seg_id,eo_fld_id,evt_id,evt_arg_id,eo_fld_grp_func,ifd_fld_sql_ordr,ifd_fld_class_cd,data_typ_cd,fld_alg_id,kw_id,pre_alg_bnd_var_id,fld_val,sql_expr,default_expr,change_expr,fld_jus_cd,fld_fmt,fld_trm_cd,pad_char,trm_char,ifd_fld_len,ifd_fld_attr_cd,create_only_flg,ol_fld_tag,ol_grp_func,validation_cmnt,required_flg,default_val_cmnt,ifd_fld_max_chars
+2010.2,'VC_TOTE_MOVEMENT','2010.2','VC_TOTE_MOVEMENT_SEG','ORDERSTATUS','Tells if this is the last tote for the order.','40','OrderStatus','VC_TOTE_MOVEMENT','2010.2','VC_TOTE_MOVEMENT_SEG','ORDERSTATUS','','','','','EO','C','','','','','','','','N','','N','','','120','','F','','','','F','',''
+
+CSV__TAG__KLUDGE___TABLE_NAME sl_o_ifd_sys_map
+SL_VERSION,ifd_id,ifd_ver,sys_id,blk_alg_id,blk_alg_eval_cd,comm_mode_cd,comm_mthd_id,persist_eo_flg,persist_ifd_flg,ena_flg,grp_ordr,snd_ordr,head_evt_id,tail_evt_id,succ_evt_id,fail_evt_id
+2010.2,'VC_TOTE_MOVEMENT','2010.2','VC_WCS_RP_WCS_OUB','VC_BLOCK_VC_TOTE_MOVEMENT','B','SYNCD','','T','T','T','','','','','',''
+
+CSV__TAG__KLUDGE___COMMIT
