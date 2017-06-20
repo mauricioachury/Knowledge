@@ -1,0 +1,39 @@
+#use $DCSDIR/include
+#include <dcsddl.h>
+#include <dcscolwid.h>
+#include <dcstbldef.h>
+#include <sqlDataTypes.h>
+#include <varcolwid.h>
+
+#define SEQ vc_tot_mv_id
+#define SEED 1
+#define INC 1
+#define MAX 999999999999
+
+mset command on
+[select numcod 
+   from sysctl 
+  where numcod='vc_tot_mv_id']catch(ERR_NO_ROWS_AFFECTED)
+|
+if(@? != ERR_NO_ROWS_AFFECTED)
+{
+    [DROP_SEQUENCE (vc_tot_mv_id)]catch(ERR_CANNOT_DROP_SEQUENCE_NOT_FOUND)
+    |
+    [delete from sysctl
+      where numcod='vc_tot_mv_id']
+}
+RUN_SQL
+mset command off
+
+mset command on
+[CREATE_SEQUENCE(SEQ, SEED, INC, MAX)
+] catch( ERR_TABLE_ALREADY_EXISTS )
+RUN_DDL
+
+
+[INSERT INTO sysctl(numcod, prefix, prelen, prlflg, seqlen,
+                   suflen, btsflg, lstseq, seqflg,grp_nam)
+            VALUES('vc_tot_mv_id','TOTMV', 0, 0, 25,
+                   0, 1, 0, 0,'DHLEMEA-3311')
+] catch( -1 )
+RUN_DDL
