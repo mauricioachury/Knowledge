@@ -1,0 +1,18 @@
+sl_proc inb_file where filename='/opt/redprairie/wmd/sgsint1/les/test/tot_move_error-DHLEMEA-3311.xml'
+ and sys_id='VC_WCS_RP_INPUT_PRI'
+  and called_from_gui_flg='F' 
+  and run_tran_flg='T'
+  and load_all_flg='F'
+  and async_evt_flg='F'
+  and reset_perf_flg='F'
+  and inhibit_no_algs_flg='T'
+  and xml_file_flg='T'
+|
+sl_process dwnld
+where dwnld_seq = @dwnld_seq
+   and user_id ='SAMNI'
+   and run_async = 'F'
+   and dwnld_stat_cd = 'EPROC'
+  and commit_step = 1
+|
+[select 'x' from dual where 1=2]
