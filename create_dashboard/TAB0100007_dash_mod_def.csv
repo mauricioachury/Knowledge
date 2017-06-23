@@ -1,0 +1,2 @@
+module_id,module_typ,module_width,module_height,refresh_sec,dash_dda_id,dda_qual,ws_wsdl,ws_service,ws_port,ws_wsml,ws_function,custom_subscribe,custom_unsubscribe,moca_connect_str,multi_flg,grp_nam
+dshShowLoadCnt,Q,F,200,5,ORDER-STATUS-DSH,,,,,,,,,,1,
