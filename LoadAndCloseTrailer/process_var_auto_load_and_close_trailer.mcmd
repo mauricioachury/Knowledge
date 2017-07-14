@@ -1,0 +1,199 @@
+<command>
+  <name>process var auto load and close trailer</name>
+  <description>process var auto load and close trailer</description>
+  <type>Local Syntax</type>
+  <local-syntax>
+<![CDATA[
+[select schbat
+   from pckbat
+  where batsts <> 'CMPL'
+    and wh_id = nvl(@wh_id, @@wh_id)] catch(-1403)
+|
+if (@? = 0)
+{
+    [select distinct s.ship_id
+       from shipment s,
+            shipment_line sl
+      where s.ship_id = sl.ship_id
+        and s.wh_id = sl.wh_id
+        and not exists (select 'Pick'
+                          from pckwrk_view pv
+                         where pv.ship_id = s.ship_id
+                           and pv.wh_id = s.wh_id)
+        and not exists (select 'RplWrk'
+                          from rplwrk r
+                         where r.ship_id = s.ship_id
+                           and r.wh_id = s.wh_id)
+        and not exists (select 'XdkWrk'
+                          from xdkwrk x
+                         where x.ship_id = s.ship_id
+                           and x.wh_id = s.wh_id)
+        and not exists (select 'PckNotCompleted'
+                          from pckwrk_view pv2
+                         where pv2.schbat = sl.schbat
+                           and pv2.wh_id = sl.wh_id
+                           and pv2.pckqty > pv2.appqty)
+        and exists (select 'PickCmpleted'
+                      from pckwrk_view pv3
+                     where pv3.schbat = sl.schbat
+                       and pv3.wh_id = sl.wh_id
+                       and pv3.appqty >= pv3.pckqty)
+        and s.wh_id = nvl(@wh_id, @@wh_id)
+        and s.shpsts not in ('S', 'L', 'D', 'C','B')
+        and s.stop_id is not null
+        and sl.schbat = @schbat] catch(-1403)
+    |
+    if (@? = 0)
+    {
+        /* Since 'cancel shipment'
+         * will deassign the shipment from stop,
+         * so need to assign it back.
+         */
+        [select stop_id
+           from shipment
+          where ship_id = @ship_id]
+        |
+        {
+            cancel shipment
+              where ship_id = @ship_id
+                and prcmod  = 'DIRECT'
+            ;
+            [update shipment set stop_id = @stop_id
+              where ship_id = @ship_id]
+            |
+            [select 'x'
+               from shipment
+              where stop_id = @stop_id
+                and shpsts <> 'B'
+                and rownum < 2] catch(-1403)
+            |
+            if (@? -1403)
+            {
+                /* If all shipments are cancelled, then we need
+                 * to manually complete the stop.
+                 */
+                [update stop
+                    set stop_cmpl_flg = 1
+                  where stop_id = @stop_id]
+            }
+        }
+    }
+}
+|
+commit
+;
+[select distinct car_move.trlr_id,
+        car_move.car_move_id,
+        car_move.wh_id,
+        car_move.doc_num
+   from car_move
+   join trlr
+     on car_move.trlr_id = trlr.trlr_id 
+   join locmst 
+     on (locmst.rescod = car_move.car_move_id or locmst.rescod = car_move.track_num)
+  where car_move.wh_id = nvl(@wh_id, @@wh_id)
+    and locmst.arecod = @stgare
+    and trlr.trlr_stat not in ('C', 'D')
+    and instr(car_move.doc_num, '|') = 0
+    and not exists(select 1
+                     from shipment s1
+                     join stop st1
+                       on s1.stop_id = st1.stop_id
+                    where st1.car_move_id = car_move.car_move_id
+                      and s1.shpsts not in ('S', 'L', 'D', 'C','B'))
+    and not exists(select 1
+                 from invdtl id
+                 join shipment_line sl
+                   on id.ship_line_id = sl.ship_line_id
+                 join shipment s
+                   on sl.ship_id = s.ship_id
+                 join stop st
+                   on s.stop_id = st.stop_id
+                where st.car_move_id = car_move.car_move_id
+                  and id.invsts = 'H')
+    order by car_move.car_move_id] catch(-1403) >> res
+|
+if (rowcount(@res) > 0)
+{
+    [[import com.redprairie.moca.*;
+      import com.redprairie.moca.util.*;
+      
+      cur_trlr_id = "";
+      cur_car_move_id = "";
+      cur_wh_id = "";
+      cur_doc_num = "";
+      while (res.next())
+      {
+          cur_trlr_id = res.getString("trlr_id");
+          cur_car_move_id = res.getString("car_move_id");
+          cur_wh_id = res.getString("wh_id");
+          cur_doc_num = res.getString("doc_num");
+          errcod = "";
+          issue_flg = 0;
+          
+          MocaResults stopRes = moca.newResults();
+          MocaResults loadedRes = moca.newResults();
+          
+          stopRes = moca.executeCommand("[select stop.stop_id " + 
+                                        "   from stop " +
+                                        "  where stop.car_move_id = '" + cur_car_move_id + "' " +
+                                        "    and stop.stop_cmpl_flg != 1 " +
+                                        "    and exists (select 'x'" +
+                                        "                  from inventory_view iv, " +
+                                        "                       shipment_line sl,  " +
+                                        "                       ship_struct_view ssv " +
+                                        "                 where iv.ship_line_id = sl.ship_line_id " +
+                                        "                   and sl.ship_id = ssv.ship_id " +
+                                        "                   and ssv.stop_id = stop.stop_id) " +
+                                        "  order by stop_seq] catch(-1403)");
+          while(stopRes.next()) 
+          {
+              cur_stop_id = stopRes.getString("stop_id");
+              try
+              {
+                  moca.executeCommand("process immediate loading of stop " +
+                                      "  where wh_id = '" + cur_wh_id + "' " +
+                                      "    and stop_id = '" + cur_stop_id + "' " +
+                                      "    and trlr_id = '" + cur_trlr_id + "' ");
+                  moca.commit();
+              }
+              catch(MocaException e)
+              {
+                  issue_flg = 1;
+                  errcod += e.getErrorCode() + ".";
+				  
+				  moca.rollback();
+                  continue;
+              }
+          }
+          if(issue_flg == 0)
+          {
+              try
+              {
+                  moca.executeCommand("close trailer " +
+                                    "  where trlr_id = '" + cur_trlr_id + "' " +
+                                    "    and trlr_stat = 'C'");
+				  moca.commit();
+              }
+              catch(MocaException e)
+              {
+                  issue_flg = 1;
+                  errcod += e.getErrorCode() + ".";
+				  moca.rollback();
+              }
+          }
+          if(issue_flg == 1)
+          {
+              errcod = cur_doc_num + "|" + errcod;
+              moca.executeCommand("[update car_move " +
+                                  "    set doc_num = '" + errcod.substring(0, errcod.length() > 20 ? 20 : errcod.length()) + "' " +
+                                  "  where car_move_id = '" + cur_car_move_id + "'] catch(-1403)");
+			  moca.commit();
+          }
+      }
+    ]]
+}
+
+]]>
+</local-syntax>
+</command>
