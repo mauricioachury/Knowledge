@@ -11,3 +11,10 @@ b.)kill 问题session，注意可以一直执行上面的查询，当某条记录一直不变时可以考虑kil
 --释放SESSION SQL:
 --alter system kill session 'sid, serial#'; 
 ALTER system kill session '506, 39369'
+
+2. 9.1建order的时候报错：ORA-01792: 表或视图中的最大列数为 1000
+安装好Oracle12C，使用SQL语句进行查询时，当查询的列没有达到1000，但是关联的表过多，关联表的总列数超过了1000的话，会报上面的错误。
+
+解决方案如下：
+1. 用SysDba登录，执行以下这句话就可解决：alter system set "_fix_control"='17376322:OFF'; 这是Oracle12C的一个Bug，也可到官网去下载解决这个Bug的补丁，路径：http://dba.stackexchange.com/questions/128621/understanding-ora-01792-maximum-number-of-columns-in-a-table-or-view-is-1000
+2. Restart the oracle instance.
