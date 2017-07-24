@@ -1,0 +1,9 @@
+Install TCC:
+
+1. Create a btm file named mytccmd.btm:
+alias `make=nmake -f makefile.nt`
+rpset 20121
+
+2. put the file to foler of tcc installation.
+3. In the target field, use:
+C:\TCCLE12\tcc.exe C:\TCCLE12\mytcmd.btm
