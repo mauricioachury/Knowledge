@@ -18,3 +18,74 @@ ALTER system kill session '506, 39369'
 解决方案如下：
 1. 用SysDba登录，执行以下这句话就可解决：alter system set "_fix_control"='17376322:OFF'; 这是Oracle12C的一个Bug，也可到官网去下载解决这个Bug的补丁，路径：http://dba.stackexchange.com/questions/128621/understanding-ora-01792-maximum-number-of-columns-in-a-table-or-view-is-1000
 2. Restart the oracle instance.
+
+
+3. Drop index and recreate.
+[drop index TOLLWMSLAB.PK_VC_SAP_SHIP_CNFRM]
+|
+[create unique index TOLLWMSLAB.PK_VC_SAP_SHIP_CNFRM
+     on TOLLWMSLAB.vc_sap_ship_cnfrm(vc_new_sap_dn, ordnum, ship_id, prtnum)]
+     
+     
+4. Oracle DB object query:
+查询表的索引情况
+
+select t.Index_Name,t.table_name,t.column_name,i.tablespace_name,i.uniqueness from user_ind_columns t,user_indexes i where t.index_name=i.index_name and t.table_name=i.table_name and t.table_name='大写表名：这里不支持小写表名';
+
+
+1、查找表的所有索引（包括索引名，类型，构成列）：
+
+select t.*,i.index_type from user_ind_columns t,user_indexes i where t.index_name = i.index_name and t.table_name = i.table_name and t.table_name = 要查询的表
+
+2、查找表的主键（包括名称，构成列）：
+
+select cu.* from user_cons_columns cu, user_constraints au where cu.constraint_name = au.constraint_name and au.constraint_type = 'P' and au.table_name = 要查询的表
+
+3、查找表的唯一性约束（包括名称，构成列）：
+
+select column_name from user_cons_columns cu, user_constraints au where cu.constraint_name = au.constraint_name and au.constraint_type = 'U' and au.table_name = 要查询的表
+
+4、查找表的外键（包括名称，引用表的表名和对应的键名，下面是分成多步查询）：
+
+select * from user_constraints c where c.constraint_type = 'R' and c.table_name = 要查询的表
+
+查询外键约束的列名：
+
+select * from user_cons_columns cl where cl.constraint_name = 外键名称
+
+查询引用表的键的列名：
+
+select * from user_cons_columns cl where cl.constraint_name = 外键引用表的键名
+
+5、查询表的所有列及其属性
+
+select t.*,c.COMMENTS from user_tab_columns t,user_col_comments c where t.table_name = c.table_name and t.column_name = c.column_name and t.table_name = 要查询的表
+
+
+
+查询oracle表的信息（表，字段，约束，索引）
+1、查询出所有的用户表
+select   *   from   user_tables   可以查询出所有的用户表
+2、查询出用户所有表的索引
+select   *   from   user_indexes
+3、查询用户表的索引(非聚集索引):
+select   *   from   user_indexes where   uniqueness='NONUNIQUE'
+4、查询用户表的主键(聚集索引):
+select   *   from   user_indexes where   uniqueness='UNIQUE'
+5、查询表的索引
+select t.*,i.index_type from user_ind_columns t,user_indexes i where t.index_name = i.index_name and
+t.table_name='NODE'
+6、查询表的主键
+select cu.* from user_cons_columns cu, user_constraints au where cu.constraint_name = au.constraint_name and
+au.constraint_type = 'P' AND cu.table_name = 'NODE'
+7、查找表的唯一性约束（包括名称，构成列）：
+select column_name from user_cons_columns cu, user_constraints au where cu.constraint_name=au.constraint_name and
+cu.table_name='NODE'
+8、查找表的外键
+select * from user_constraints c where c.constraint_type = 'R' and c.table_name='STAFFPOSITION'
+查询外键约束的列名：
+select * from user_cons_columns cl where cl.constraint_name = 外键名称
+查询引用表的键的列名：
+select * from user_cons_columns cl where cl.constraint_name = 外键引用表的键名
+9、查询表的所有列及其属性
+select t.*,c.COMMENTS from user_tab_columns t,user_col_comments c where t.table_name='NODE'
