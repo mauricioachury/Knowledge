@@ -39,3 +39,21 @@ c. 'Device Maintenance'
     and r.evt_arg_id ='TRAILER_ID'
     and to_char(evt_dt,'yyyy-mm-dd') = '2017-02-13'
     and evt_arg_val in (select trlr_id from ship_struct_view ssv where ship_id in (select ship_id from ship_struct_view ssv2 where ssv.car_move_id = ssv2.car_move_id and not exists (select 'x' from pckwrk_view pv where pv.ship_id = ssv.ship_id)))]
+
+5. Moca command performance:
+list command usage
+|
+if ((@execution_count > 100 and @avg_ms > 10000) or @avg_ms > 10000)
+{
+   publish data where component_level = @component_level
+and command = @command
+and type = @type
+and command_path = @command_path
+and execution_count = @execution_count
+and min_ms = @min_ms
+and max_ms = @max_ms
+and avg_ms = @avg_ms
+and total_ms = @total_ms
+and self_ms = @self_ms
+and avg_self_ms = @avg_self_ms
+}
