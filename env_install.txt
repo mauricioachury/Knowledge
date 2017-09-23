@@ -7,3 +7,10 @@ rpset 20121
 2. put the file to foler of tcc installation.
 3. In the target field, use:
 C:\TCCLE12\tcc.exe C:\TCCLE12\mytcmd.btm
+
+Install .net framework 4.0 to resolve error 1461:
+1. Run cmd.exe as administrator.
+2. Run 'net stop wuauserv'.
+3. Rename C:\Windows\SoftwareDistribution to a different name like C:\Windows\SoftDis
+4. Run 'net start wuauserv.
+5. Run install the Microsoft.NET.exe
