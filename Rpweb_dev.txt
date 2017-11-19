@@ -1,0 +1,17 @@
+1. When adding a new component, like sample apps: servicesApp, customerApp, remember to add an entry in priority.yaml file, like:
+  -
+    priority: 99
+    name: services
+    custom: yes
+  -
+    priority: 100
+    name: customer
+    custom: yes
+  - 
+    priority: 101
+    name: opsviz
+    custom: yes
+2. When it pops error: "uncaught exception: Ext.Loader is not enabled,
+ so dependencies cannot be resolved dynamically".
+
+Check the table:resource_bundle to make sure column scripts has correctly spelled path/file name to the js file.
