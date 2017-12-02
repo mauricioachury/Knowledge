@@ -1,0 +1,100 @@
+publish data where prtnum = '6024472'  and stoloc = '1543401'
+&
+publish data where prtnum = '4283808'  and stoloc = '1367401'
+|
+publish data
+  where prt_client_id = 'LEGO-CNRDC'
+    and wh_id = 'LR1'
+|
+[select 'x'
+    from rplcfg
+  where stoloc = @stoloc
+      and wh_id = @wh_id
+      and prtnum <> @prtnum
+      and prt_client_id = @prt_client_id
+      and rownum < 2
+   union
+ select 'x'
+   from inventory_view
+  where stoloc = @stoloc
+    and wh_id = @wh_id
+    and prtnum || prt_client_id <> @prtnum||@prt_client_id
+   union
+ select 'x'
+   from rplcfg
+  where stoloc = @stoloc
+    and wh_id = @wh_id
+    and prtnum = @prtnum
+    and prt_client_id = @prt_client_id] catch(-1403)
+|
+if (@? = 0)
+{
+    publish data
+       where prtnum = @prtnum
+           and stoloc = @stoloc
+           and status = 'Ê§°Ü'
+}
+else
+{
+    [select untpal maxunt
+        from prtftp_view pv where pv.prtnum = @prtnum
+          and pv.prt_client_id = @prt_client_id
+          and pv.wh_id = @wh_id
+          and defftp_flg = 1 ]
+    |
+    [update locmst
+        set loccod = 'E',
+            maxqvl = @maxunt,
+            def_maxqvl = @maxunt,
+            repflg = 1
+      where wh_id = @wh_id
+        and stoloc = @stoloc]
+    |
+    {
+        create replenishment configuration
+         WHERE wh_id = @wh_id
+           AND prtnum = @prtnum
+           AND prt_client_id = @prt_client_id
+           AND stoloc = @stoloc
+           AND invsts = 'A'
+           AND pctflg = '0'
+           AND maxunt = @maxunt
+           AND minunt = '0'
+           AND maxloc = '1'
+           AND inc_pct_flg = '1'
+           AND inc_unt = '0'
+           AND rls_pct = '100' catch(10047)
+        ;
+        [select stoloc polloc
+           from rplcfg r
+          where r.prtnum = @prtnum
+              and r.prt_client_id = @prt_client_id
+              and r.wh_id = @wh_id
+              and r.stoloc is not null
+              and not exists (select 'x'
+                                from poldat_view pv
+                               where pv.polcod='STORE-ASG-LOC-STS-A'
+                                   and pv.polvar='prtnum'
+                                   and polval=@prt_client_id || '|' || @prtnum
+                                   and rtstr1 = r.stoloc
+                                   and rtstr1 = rtstr2
+                                   and rownum <2)] catch(-1403)
+        |
+        if (@? = 0)
+        {
+            create assigned location policy
+            where prtnum= @prtnum
+            and prt_client_id=@prt_client_id
+            and wh_id= @wh_id
+            and begloc= @polloc
+            and endloc= @polloc
+            and locasg=1
+            and seqflg=1 catch(10047)
+        }
+        ;
+        publish data
+          where prtnum = @prtnum
+              and stoloc = @stoloc
+              and status = '³É¹¦'
+    }
+}
