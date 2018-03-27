@@ -1,0 +1,57 @@
+<command>
+
+<name>allocate location</name>
+
+<type>Local Syntax</type>
+
+<local-syntax>
+<![CDATA[
+
+    /* If we are allocating a location for SKU which is assigned
+     * to multiple locations dedicated for different ship_to_loc,
+     * then save the inventory ship_to_loc for 'get primary pick location'
+     * to choose correct stoloc as source of proximity putaway.
+     */
+    if (@lodnum != '' and
+        @wh_id != '' and
+        @arecod = '')
+    {
+        [select distinct d1.colval ship_to_loc
+           from sto_area_hdr h1,
+                sto_area_dtl d1
+          where h1.sto_area_id = d1.sto_area_id
+            and d1.colnam = 'inv_attr_str1'
+            and h1.wh_id = @wh_id
+            and h1.dstare in (select r.arecod
+                                from rplcfg r,
+                                     inventory_view iv
+                               where r.prtnum = iv.prtnum
+                                 and r.prt_client_id = iv.prt_client_id
+                                 and iv.lodnum = @lodnum)] catch(-1403) >> res
+          |
+          if (@? = 0 and rowcount(@res) > 1)
+          {
+              [select distinct inv_attr_str1 ship_to_loc
+                 from inventory_view iv
+                where iv.lodnum = @lodnum]
+              |
+              save session variable
+                where name = 'inv_ship_to_loc'
+                  and value = @ship_to_loc
+          }
+    }
+    |
+    ^allocate location
+      where @*
+
+]]>
+</local-syntax>
+
+<documentation>
+ This command is a wrapper command of standard 'allocate location', this
+ command is aimed to save ship_to_loc for 'get primary pick location' to
+ filter locations which are all assigned to the SKU, but dedicated for
+ storing different ship_to_loc.
+</documentation>
+
+</command>

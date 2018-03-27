@@ -1,0 +1,14 @@
+list command usage >> comres
+|
+publish data combination
+ where res = @comres
+   and comdte = sysdate >> comres
+|
+publish data
+ where date_str = to_char(sysdate, 'YYMMDD_h')
+|
+write csv file
+ where filnam = '$LESDIR/mocaprofile/daily_tracking/' || @date_str || '.csv'
+   and resdata = @comres
+|
+clear command usage

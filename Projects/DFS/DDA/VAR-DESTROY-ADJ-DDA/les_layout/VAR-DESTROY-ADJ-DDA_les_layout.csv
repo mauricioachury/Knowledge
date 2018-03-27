@@ -1,0 +1,3 @@
+layout_id,cust_lvl,num_cols,navigation,border_style,column_offset,row_offset,grp_nam
+var_destroy_dda_warn_grp,10,2,0,3,10,10,
+var_destroy_dda_sum_grp,10,3,0,3,10,10,

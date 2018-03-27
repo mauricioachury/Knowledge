@@ -1,0 +1,3 @@
+mls_id,locale_id,prod_id,appl_id,frm_id,vartn,srt_seq,cust_lvl,mls_text,grp_nam
+id,US_ENGLISH,LES,ddamgtopr,uc_list_inv_for_next_hop_loc,WM,SEAMLES,0,10,ID,
+next_hop,US_ENGLISH,LES,ddamgtopr,uc_list_inv_for_next_hop_loc,WM,SEAMLES,0,10,HOP Location,

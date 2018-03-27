@@ -1,0 +1,5 @@
+colnam,colval,locale_id,lngdsc,short_dsc,grp_nam
+oprcod|wh_id_tmpl,PALRPL|----,US_ENGLISH,Pallet Emergency Replen,,dfs_data
+oprcod|wh_id_tmpl,CTNRPL|----,US_ENGLISH,Case Emergency Replen,,dfs_data
+oprcod|wh_id_tmpl,PALTPF|----,US_ENGLISH,Pallet Topoff Replen,,dfs_data
+oprcod|wh_id_tmpl,CTNTPF|----,US_ENGLISH,Case Topoff Replen,,dfs_data

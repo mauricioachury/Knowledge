@@ -1,0 +1,11 @@
+arecod,wh_id,tblnme,column_name,srtseq,mod_usr_id,moddte,ins_dt,last_upd_dt,ins_user_id,last_upd_user_id
+PKGSGM,SGDC,invdtl,prtnum,1,SAMNI,sysdate,sysdate,sysdate,SAMNI,SAMNI
+PKGSGM,SGDC,invdtl,prt_client_id,2,SAMNI,sysdate,sysdate,sysdate,SAMNI,SAMNI
+PKGSGM,SGDC,invdtl,lotnum,3,SAMNI,sysdate,sysdate,sysdate,SAMNI,SAMNI
+PKGSGM,SGDC,invdtl,invsts,4,SAMNI,sysdate,sysdate,sysdate,SAMNI,SAMNI
+PKGSGM,SGDC,invdtl,untcas,5,SAMNI,sysdate,sysdate,sysdate,SAMNI,SAMNI
+PKGSGM,SGDC,invdtl,ftpcod,6,SAMNI,sysdate,sysdate,sysdate,SAMNI,SAMNI
+PKGSGM,SGDC,invdtl,inv_attr_str1,7,SAMNI,sysdate,sysdate,sysdate,SAMNI,SAMNI
+PKGSGM,SGDC,invdtl,revlvl,8,SAMNI,sysdate,sysdate,sysdate,SAMNI,SAMNI
+PKGSGM,SGDC,invdtl,untpak,9,SAMNI,sysdate,sysdate,sysdate,SAMNI,SAMNI
+PKGSGM,SGDC,invdtl,orgcod,10,SAMNI,sysdate,sysdate,sysdate,SAMNI,SAMNI

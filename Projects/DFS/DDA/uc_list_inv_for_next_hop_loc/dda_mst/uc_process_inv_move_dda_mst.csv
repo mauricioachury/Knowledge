@@ -1,0 +1,2 @@
+dda_id,cust_lvl,dda_typ,dda_usage,topflg,dda_cmd,dda_qual,dda_init_qual,dda_frm,dda_img,init_cmd,init_qual,rqdflg,grp_nam,sum_flds,excelflg,exceltmpl,reference,tnw_typ,grid_pos,publish_data_flg,prof_crit_mode,auto_find,grid_prop,xsl_file
+uc_process_inv_move,10,A,F,1,"process usr inv nxt hop loc","","","","","","",0,dcs_data,"",0,,,0,0,0,2,1,"",""

@@ -1,0 +1,4 @@
+polcod,polvar,polval,wh_id_tmpl,srtseq,rtstr1,rtstr2,rtnum1,rtnum2,rtflt1,rtflt2,moddte,mod_usr_id,grp_nam
+PICK-RELEASE,RELEASE-RULES,P_HOTPICKGM_XXXX_S,SGDC,0,SL_DO NOTHING,,0,0,0,0,sysdate,SAMNI,dfs_data
+PICK-RELEASE,RELEASE-RULES,P_HOTPICKGM_XXXX_D,SGDC,0,SL_DO NOTHING,,0,0,0,0,sysdate,SAMNI,dfs_data
+PICK-RELEASE,RELEASE-RULES,P_PKGSGM_XXXX_S,SGDC,0,SL_DO NOTHING,,0,0,0,0,sysdate,SAMNI,dfs_data

@@ -1,0 +1,5 @@
+wh_id,bldg_id,search_path_typ,arecod,lodlvl,uomcod,prtfam,inv_attr_str1
+SGDC,Greenwich,PICK,HOTPICKGM,S,,,
+SGDC,Greenwich,PICK,HOTPICKGM,D,,,
+SGDC,Greenwich,PICK,PKGSGM,S,,Packaging,
+SGDC,Greenwich,PICK,PKGSGM,S,,GDC,

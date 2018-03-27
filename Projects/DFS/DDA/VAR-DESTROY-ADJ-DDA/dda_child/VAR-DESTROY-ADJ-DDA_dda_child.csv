@@ -1,0 +1,2 @@
+dda_id,dda_typ,dda_child_id,dda_child_typ,cust_lvl,child_flds,srtseq,ena_flg,init_vis_flg,grp_nam
+VAR-DESTROY-ADJ-DDA,Q,VAR-DESTROY-DDA-DTLS,Q,10,"lodnum,wh_id",0,1,1,dcs_data

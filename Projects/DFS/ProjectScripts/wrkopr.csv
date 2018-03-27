@@ -1,0 +1,5 @@
+oprcod,wh_id_tmpl,baspri,exptim,escinc,maxescpri,begdaycod,begtim,enddaycod,endtim,use_src_flg,esc_cmd_flg,esc_cmd,rls_cmd,init_sts,force_ack_loc_flg
+PALRPL,----,55,,,,,,,,1,0,,,PEND,0
+CTNRPL,----,55,,,,,,,,1,0,,,PEND,0
+PALTPF,----,99,,,,,,,,1,0,,,PEND,0
+CTNTPF,----,99,,,,,,,,1,0,,,PEND,0

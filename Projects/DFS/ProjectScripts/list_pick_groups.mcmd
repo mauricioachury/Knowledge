@@ -1,0 +1,525 @@
+<command>
+  <name>list pick groups</name>
+  <description>list pick groups</description>
+  <type>Local Syntax</type>
+  <local-syntax>
+<![CDATA[
+/* PR 59578
+ *
+ * I build a virtual table "picks" which consists of 3 sub select
+ * statements. The second select statement is to list all detail picks
+ * inside kit picks which have been built into pick lists.
+ *
+ * 1) If list_id is passed in
+ *    First select statement will retrieve all regular picks 
+ *       inside pick lists
+ *    Second select statement will retrieve all detail picks 
+ *       inside kit picks which have been built into pick lists.
+ * 2) If list_id is not passed in 
+ *    The first and second select statement might generate duplicate 
+ *    rows, so I have to use distinct in the outer select to remove 
+ *    the duplicate rows.
+ *
+ * In addition, this command supports "LIKE" Query on list_id field.
+ */
+get client in clause for user
+ where usr_id = @@usr_id
+   and @+wh_id
+   and table_prefix = 'pckwrk'
+   and prt_client_id_flg = 0
+|
+[select distinct picks.schbat,
+        picks.pricod,
+        picks.adddte,
+        picks.reldte,
+        picks.cmpdte,
+        picks.wrkref,
+        picks.pcksts,
+        picks.lodlvl,
+        picks.appqty,
+        picks.pckqty,
+        picks.srcare,
+        picks.srcloc,
+        picks.prtnum,
+        picks.prt_client_id,
+        picks.ship_id,
+        picks.ship_line_id,
+        picks.ordnum,
+        picks.client_id,
+        picks.ordlin,
+        picks.ordsln,
+        picks.wkonum,
+        picks.ctnnum,
+        picks.wrktyp,
+        picks.dstare,
+        picks.dstloc,
+        picks.ackdevcod,
+        picks.cmbcod,
+        picks.lblbat,
+        picks.prtdte,
+        picks.wh_id,
+        picks.list_id,
+        picks.list_seqnum,
+        picks.pck_uom,
+        decode(prtmst_view.dspuom, null, picks.appqty, picks.appqty / prtftp_dtl.untqty) dsp_appqty,
+        decode(prtmst_view.dspuom, null, prtmst_view.stkuom, prtmst_view.dspuom) dsp_appqty_uom,
+        decode(prtmst_view.dspuom, null, cast(null as int), prtmst_view.stkuom, cast(null as int), mod(picks.appqty, prtftp_dtl.untqty)) rem_appqty,
+        decode(prtmst_view.dspuom, null, null, prtmst_view.stkuom, null, prtmst_view.stkuom) rem_appqty_uom,
+        decode(prtmst_view.dspuom, null, picks.pckqty, picks.pckqty / prtftp_dtl.untqty) dsp_pckqty,
+        decode(prtmst_view.dspuom, null, prtmst_view.stkuom, prtmst_view.dspuom) dsp_pckqty_uom,
+        decode(prtmst_view.dspuom, null, cast(null as int), prtmst_view.stkuom, cast(null as int), mod(picks.pckqty, prtftp_dtl.untqty)) rem_pckqty,
+        decode(prtmst_view.dspuom, null, null, prtmst_view.stkuom, null, prtmst_view.stkuom) rem_pckqty_uom,
+        prtmst_view.prtfam,
+        prtmst_view.dept_cod,
+        prtftp.ftpcod,
+        ol.vc_internal_po_no,
+        ol.vc_brand_desc,
+        ol.vc_material,
+        ol.vc_item_desc,
+        ol.vc_item_upcean,
+        ol.vc_mcs_so_no,
+        picks.stcust,
+        picks.lodnum,
+        picks.orgcod,
+        picks.mandte,
+        picks.expire_dte,
+        picks.untcas,
+        picks.inv_attr_str1
+   from (select pckbat.schbat,
+                pckbat.pricod,
+                pckwrk.adddte,
+                pckbat.reldte,
+                pckbat.cmpdte,
+                pckwrk.wrkref,
+                pckwrk.pcksts,
+                pckwrk.lodlvl,
+                pckwrk.appqty,
+                pckwrk.pckqty,
+                pckwrk.srcare,
+                pckwrk.srcloc,
+                pckwrk.prtnum,
+                pckwrk.prt_client_id,
+                pckwrk.ship_id,
+                pckwrk.ship_line_id,
+                pckwrk.ordnum,
+                pckwrk.client_id,
+                pckwrk.ordlin,
+                pckwrk.ordsln,
+                pckwrk.wkonum,
+                pckwrk.wkorev,
+                pckwrk.ctnnum,
+                pckwrk.wrktyp,
+                pckwrk.dstare,
+                pckwrk.dstloc,
+                pckwrk.ackdevcod,
+                pckwrk.cmbcod,
+                pckwrk.lblbat,
+                pckwrk.prtdte,
+                pckwrk.wh_id,
+                pckwrk.list_id,
+                pckwrk.list_seqnum,
+                pckwrk.pck_uom,
+                pckwrk.ftpcod,
+                ord.stcust,
+                pckinv.lodnum,
+                pckinv.orgcod,
+                pckinv.inv_attr_str1,
+                pckinv.mandte,
+                pckinv.expire_dte,
+                pckinv.untcas
+           from pckwrk
+           join pckbat
+             on pckwrk.schbat = pckbat.schbat
+           join prtmst_view pv
+             on pckwrk.prtnum = pv.prtnum
+            and pckwrk.prt_client_id = pv.prt_client_id
+            and pckwrk.wh_id = pv.wh_id
+           left outer
+           join ord
+             on ord.ordnum = pckwrk.ordnum
+            and ord.client_id = pckwrk.client_id
+            and ord.wh_id = pckwrk.wh_id
+           left outer
+           join (select iv.prtnum,
+                         iv.prt_client_id,
+                         iv.orgcod,
+                         iv.inv_attr_str1,
+                         iv.untcas,
+                         iv.stoloc,
+                         min(iv.lodnum) lodnum,
+                         min(iv.mandte) mandte,
+                         min(iv.expire_dte) expire_dte
+                   from inventory_view iv,
+                        (select min(fifdte) min_fifdte,
+                                prtnum,
+                                prt_client_id,
+                                stoloc
+                           from inventory_view
+                          group by prtnum,
+                                   prt_client_id,
+                                   stoloc) iv2
+                  where iv.stoloc = iv2.stoloc
+                    and iv.prtnum = iv2.prtnum
+                    and iv.prt_client_id = iv2.prt_client_id
+                    and iv.fifdte = iv2.min_fifdte
+                  group by iv.prtnum,
+                           iv.prt_client_id,
+                           iv.orgcod,
+                           iv.inv_attr_str1,
+                           iv.untcas,
+                           iv.stoloc) pckinv
+             on pckwrk.srcloc = pckinv.stoloc
+            and pckwrk.prtnum = pckinv.prtnum
+            and pckwrk.prt_client_id = pckinv.prt_client_id
+          where pckwrk.appqty < pckwrk.pckqty
+            and pckwrk.wrktyp <> 'K'
+            and pckwrk.wrktyp not in ('R', 'M', 'G', 'T', 'E', 'D')
+            and pckwrk.prtnum != 'KITPART'
+         /* Exclude Box picks to carton */
+            and pckbat.cmpdte is null
+            and (@+pckwrk.ctnnum or (pckwrk.ctnnum in (select nvl(p1.subnum, p1.ctnnum) subnum
+                                                         from pckwrk p1
+                                                        where @+p1.ctnnum)))
+            and (@+pckwrk.wrkref or (pckwrk.wrkref in (select wrkref
+                                                         from pckwrk p
+                                                        where ctnnum in (select nvl(p1.subnum, p1.ctnnum) subnum
+                                                                           from pckwrk p1
+                                                                          where ctnnum in (select nvl(p1.ctnnum, p1.subnum) ctnnum
+                                                                                             from pckwrk p1
+                                                                                            where p1.prtnum != 'KITPART'
+                                                                                              and @+p1.wrkref)))))
+            and @+pckwrk.srcare
+            and @+pckwrk.pcksts
+            and @+pckwrk.lodlvl
+            and @+pckwrk.pck_uom
+            and @+pckwrk.wrktyp
+            and @+pckwrk.ship_line_id
+            and @+pckwrk.ship_id
+            and @+pckwrk.prtnum
+            and @+pckwrk.prt_client_id
+            and @+pckwrk.stcust
+            and @+pckwrk.ordnum
+            and @+pckwrk.client_id
+            and @+pckwrk.srcloc
+            and @+pckwrk.wh_id
+            and @+pckwrk.list_id
+            and @+pckbat.schbat
+            and @+pckbat.adddte:date
+            and @+pckbat.rpldte:date
+            and @+pckbat.reldte:date
+            and @+pckbat.cmpdte:date
+            and @+pckbat.moddte:date
+            and @+pckwrk.adddte:date
+            and @+pckwrk.cmpdte:date
+            and (pckwrk.client_id is null or @client_in_clause:raw)
+            and (ord.cstms_ord_stat is null or ord.cstms_ord_stat = 'FAILURE')
+            and @+pckinv.orgcod
+            and @+pckinv.inv_attr_str1
+            and @+pckinv.untcas
+            and @+pckinv.stoloc
+            and @*
+         UNION ALL
+         select pckbat.schbat,
+                pckbat.pricod,
+                pckwrk.adddte,
+                pckbat.reldte,
+                pckbat.cmpdte,
+                pckwrk.wrkref,
+                pckwrk.pcksts,
+                pckwrk.lodlvl,
+                pckwrk.appqty,
+                pckwrk.pckqty,
+                pckwrk.srcare,
+                pckwrk.srcloc,
+                pckwrk.prtnum,
+                pckwrk.prt_client_id,
+                pckwrk.ship_id,
+                pckwrk.ship_line_id,
+                pckwrk.ordnum,
+                pckwrk.client_id,
+                pckwrk.ordlin,
+                pckwrk.ordsln,
+                pckwrk.wkonum,
+                pckwrk.wkorev,
+                pckwrk.ctnnum,
+                pckwrk.wrktyp,
+                pckwrk.dstare,
+                pckwrk.dstloc,
+                pckwrk.ackdevcod,
+                pckwrk.cmbcod,
+                pckwrk.lblbat,
+                pckwrk.prtdte,
+                pckwrk.wh_id,
+                pckwrk.list_id,
+                pckwrk.list_seqnum,
+                pckwrk.pck_uom,
+                pckwrk.ftpcod,
+                ord.stcust,
+                pckinv.lodnum,
+                pckinv.orgcod,
+                pckinv.inv_attr_str1,
+                pckinv.mandte,
+                pckinv.expire_dte,
+                pckinv.untcas
+           from pckwrk
+           join pckbat
+             on pckwrk.schbat = pckbat.schbat
+           join prtmst_view pv
+             on pckwrk.prtnum = pv.prtnum
+            and pckwrk.prt_client_id = pv.prt_client_id
+            and pckwrk.wh_id = pv.wh_id
+           left outer
+           join ord
+             on ord.ordnum = pckwrk.ordnum
+            and ord.client_id = pckwrk.client_id
+            and ord.wh_id = pckwrk.wh_id
+           left outer
+           join (select iv.prtnum,
+                         iv.prt_client_id,
+                         iv.orgcod,
+                         iv.untcas,
+                         iv.inv_attr_str1,
+                         iv.stoloc,
+                         min(iv.lodnum) lodnum,
+                         min(iv.mandte) mandte,
+                         min(iv.expire_dte) expire_dte
+                   from inventory_view iv,
+                        (select min(fifdte) min_fifdte,
+                                prtnum,
+                                prt_client_id,
+                                stoloc
+                           from inventory_view
+                          group by prtnum,
+                                   prt_client_id,
+                                   stoloc) iv2
+                  where iv.stoloc = iv2.stoloc
+                    and iv.prtnum = iv2.prtnum
+                    and iv.prt_client_id = iv2.prt_client_id
+                    and iv.fifdte = iv2.min_fifdte
+                  group by iv.prtnum,
+                           iv.prt_client_id,
+                           iv.orgcod,
+                           iv.inv_attr_str1,
+                           iv.untcas,
+                           iv.stoloc) pckinv
+             on pckwrk.srcloc = pckinv.stoloc
+            and pckwrk.prtnum = pckinv.prtnum
+            and pckwrk.prt_client_id = pckinv.prt_client_id
+          where pckwrk.appqty < pckwrk.pckqty
+            and pckwrk.wrktyp = 'P'
+            and pckwrk.prtnum != 'KITPART'
+         /* Exclude Box picks to carton */
+            and pckbat.cmpdte is null
+         /* 
+          * @+list_id form supports "LIKE" pattern matching, but if
+          * list_id is not passed in the where clause would be 1=1,
+          * it may cause duplicate rows with the first select statement
+          * Avoid performing the full table scan in the inner query        
+          * by having the required whereclause.                 
+          */
+            and pckwrk.cmbcod in (select cmbcod
+                                    from pckwrk
+                                   where ctnnum in (select subnum
+                                                      from pckwrk
+                                                     where @+list_id
+                                                       and pckwrk.appqty < pckwrk.pckqty
+                                                       and pckwrk.wrktyp = 'K')
+                                     and pckwrk.appqty < pckwrk.pckqty
+                                     and pckwrk.wrktyp = 'P'
+                                     and @+pckwrk.wh_id)
+            and (@+pckwrk.ctnnum or (pckwrk.ctnnum in (select nvl(p1.subnum, p1.ctnnum) subnum
+                                                         from pckwrk p1
+                                                        where @+p1.ctnnum
+                                                          and p1.appqty < p1.pckqty
+                                                          and p1.wrktyp = 'P'
+                                                          and @+p1.wh_id)))
+            and (@+pckwrk.wrkref or (pckwrk.wrkref in (select wrkref
+                                                         from pckwrk p
+                                                        where ctnnum in (select nvl(p1.subnum, p1.ctnnum) subnum
+                                                                           from pckwrk p1
+                                                                          where ctnnum in (select nvl(p1.ctnnum, p1.subnum) ctnnum
+                                                                                             from pckwrk p1
+                                                                                            where p1.prtnum != 'KITPART'
+                                                                                              and p1.wrkref = @wrkref)))))
+            and @+pckwrk.srcare
+            and @+pckwrk.pcksts
+            and @+pckwrk.lodlvl
+            and @+pckwrk.pck_uom
+            and @+pckwrk.wrktyp
+            and @+pckwrk.ship_line_id
+            and @+pckwrk.ship_id
+            and @+pckwrk.prtnum
+            and @+pckwrk.prt_client_id
+            and @+pckwrk.stcust
+            and @+pckwrk.ordnum
+            and @+pckwrk.client_id
+            and @+pckwrk.srcloc
+            and @+pckwrk.wh_id
+            and pckwrk.list_id is null
+         /* should specify list_id is null explicitly */
+            and @+pckbat.schbat
+            and @+pckbat.adddte:date
+            and @+pckbat.rpldte:date
+            and @+pckbat.reldte:date
+            and @+pckbat.cmpdte:date
+            and @+pckbat.moddte:date
+            and @+pckwrk.adddte:date
+            and @+pckwrk.cmpdte:date
+            and (pckwrk.client_id is null or @client_in_clause:raw)
+            and (ord.cstms_ord_stat is null or ord.cstms_ord_stat = 'FAILURE')
+            and @+pckinv.orgcod
+            and @+pckinv.untcas
+            and @+pckinv.inv_attr_str1
+            and @+pckinv.stoloc
+            and @*
+         UNION ALL
+         select pckbat.schbat,
+                pckbat.pricod,
+                pckwrk.adddte,
+                pckbat.reldte,
+                pckbat.cmpdte,
+                pckwrk.wrkref,
+                pckwrk.pcksts,
+                pckwrk.lodlvl,
+                pckwrk.appqty,
+                pckwrk.pckqty,
+                pckwrk.srcare,
+                pckwrk.srcloc,
+                pckwrk.prtnum,
+                pckwrk.prt_client_id,
+                pckwrk.ship_id,
+                pckwrk.ship_line_id,
+                pckwrk.ordnum,
+                pckwrk.client_id,
+                pckwrk.ordlin,
+                pckwrk.ordsln,
+                pckwrk.wkonum,
+                pckwrk.wkorev,
+                pckwrk.ctnnum,
+                pckwrk.wrktyp,
+                pckwrk.dstare,
+                pckwrk.dstloc,
+                pckwrk.ackdevcod,
+                pckwrk.cmbcod,
+                pckwrk.lblbat,
+                pckwrk.prtdte,
+                pckwrk.wh_id,
+                pckwrk.list_id,
+                pckwrk.list_seqnum,
+                pckwrk.pck_uom,
+                pckwrk.ftpcod,
+                ord.stcust,
+                pckinv.lodnum,
+                pckinv.orgcod,
+                pckinv.inv_attr_str1,
+                pckinv.mandte,
+                pckinv.expire_dte,
+                pckinv.untcas
+           from pckwrk
+           join pckbat
+             on pckwrk.schbat = pckbat.schbat
+           join prtmst_view pv
+             on pckwrk.prtnum = pv.prtnum
+            and pckwrk.prt_client_id = pv.prt_client_id
+            and pckwrk.wh_id = pv.wh_id
+           left outer
+           join ord
+             on ord.ordnum = pckwrk.ordnum
+            and ord.client_id = pckwrk.client_id
+            and ord.wh_id = pckwrk.wh_id
+           left outer
+           join (select iv.prtnum,
+                         iv.prt_client_id,
+                         iv.orgcod,
+                         iv.untcas,
+                         iv.inv_attr_str1,
+                         iv.stoloc,
+                         min(iv.lodnum) lodnum,
+                         min(iv.mandte) mandte,
+                         min(iv.expire_dte) expire_dte
+                   from inventory_view iv,
+                        (select min(fifdte) min_fifdte,
+                                prtnum,
+                                prt_client_id,
+                                stoloc
+                           from inventory_view
+                          group by prtnum,
+                                   prt_client_id,
+                                   stoloc) iv2
+                  where iv.stoloc = iv2.stoloc
+                    and iv.prtnum = iv2.prtnum
+                    and iv.prt_client_id = iv2.prt_client_id
+                    and iv.fifdte = iv2.min_fifdte
+                  group by iv.prtnum,
+                           iv.prt_client_id,
+                           iv.orgcod,
+                           iv.inv_attr_str1,
+                           iv.untcas,
+                           iv.stoloc) pckinv
+             on pckwrk.srcloc = pckinv.stoloc
+            and pckwrk.prtnum = pckinv.prtnum
+            and pckwrk.prt_client_id = pckinv.prt_client_id
+          where pckwrk.appqty < pckwrk.pckqty
+            and pckwrk.wrktyp in ('R', 'M', 'T', 'G', 'E', 'D')
+            and pckwrk.prtnum != 'KITPART'
+         /* Exclude Box picks to carton */
+            and pckbat.cmpdte is null
+            and pckwrk.prt_client_id = nvl(@client_id, pckwrk.prt_client_id)
+            and @+pckwrk.srcare
+            and @+pckwrk.pcksts
+            and @+pckwrk.lodlvl
+            and @+pckwrk.pck_uom
+            and @+pckwrk.wrktyp
+            and @+pckwrk.ship_line_id
+            and @+pckwrk.ship_id
+            and @+pckwrk.ctnnum
+            and @+pckwrk.prtnum
+            and @+pckwrk.prt_client_id
+            and @+pckwrk.stcust
+            and @+pckwrk.ordnum
+            and @+pckwrk.srcloc
+            and @+pckwrk.wrkref
+            and @+pckwrk.wh_id
+            and @+pckwrk.list_id
+            and @+pckbat.schbat
+            and @+pckbat.adddte:date
+            and @+pckbat.rpldte:date
+            and @+pckbat.reldte:date
+            and @+pckbat.cmpdte:date
+            and @+pckbat.moddte:date
+            and @+pckwrk.adddte:date
+            and @+pckwrk.cmpdte:date
+            and (pckwrk.client_id is null or @client_in_clause:raw)
+            and (ord.cstms_ord_stat is null or ord.cstms_ord_stat = 'FAILURE')
+            and @+pckinv.orgcod
+            and @+pckinv.inv_attr_str1
+            and @+pckinv.untcas
+            and @+pckinv.stoloc
+            and @*) picks
+   left
+   join prtmst_view
+     on prtmst_view.prtnum = picks.prtnum
+    and prtmst_view.prt_client_id = picks.prt_client_id
+    and prtmst_view.wh_id = picks.wh_id
+   left
+   join prtftp
+     on prtftp.prtnum = prtmst_view.prtnum
+    and prtftp.ftpcod = nvl(picks.ftpcod, prtftp.ftpcod)
+    and prtftp.prt_client_id = prtmst_view.prt_client_id
+    and prtftp.wh_id = prtmst_view.wh_id
+    and prtftp.defftp_flg = decode(picks.ftpcod, null, 1, prtftp.defftp_flg)
+   left
+   join prtftp_dtl
+     on prtftp.prtnum = prtftp_dtl.prtnum
+    and prtftp.ftpcod = prtftp_dtl.ftpcod
+    and prtftp.prt_client_id = prtftp_dtl.prt_client_id
+    and prtftp.wh_id = prtftp_dtl.wh_id
+    and prtftp_dtl.uomcod = nvl(prtmst_view.dspuom, prtmst_view.stkuom)
+   left
+   join ord_line ol
+     on ol.ordnum = picks.ordnum
+    and ol.ordlin = picks.ordlin
+    and ol.ordsln = picks.ordsln];
+]]>
+</local-syntax>
+</command>

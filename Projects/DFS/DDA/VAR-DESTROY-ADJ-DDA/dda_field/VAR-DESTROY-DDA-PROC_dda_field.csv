@@ -1,0 +1,5 @@
+dda_id,cust_lvl,dda_fld_typ,var_nam,srtseq,link_dda_id,link_flds,ena_flg,rqdflg,grp_nam,dflt_flg,dspl_only_flg,fltr_grp,ctxt_flds,pk_fld_flg,pk_layout_flg,aggr_func
+VAR-DESTROY-DDA-PROC,10,S,adj_ref1,2,,"",1,0,dcs_data,0,0,,"",0,0,0
+VAR-DESTROY-DDA-PROC,10,S,adj_ref2,3,,"",1,0,dcs_data,0,0,,"",0,0,0
+VAR-DESTROY-DDA-PROC,10,S,lodnum,0,,"",1,0,dcs_data,1,1,,"",0,0,0
+VAR-DESTROY-DDA-PROC,10,S,reacod,1,,"",1,0,dcs_data,0,0,,"",0,0,0

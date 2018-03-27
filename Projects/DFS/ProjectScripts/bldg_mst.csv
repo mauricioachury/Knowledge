@@ -1,0 +1,2 @@
+bldg_id,wh_id,business_unt,adrnam,fluid_load_flg,sort_attr_locsts,sort_default_flg,u_version,ins_dt,last_upd_dt,ins_user_id,last_upd_user_id
+Greenwich,SGDC,,Greenwich,0,,0,1,sysdate,sysdate,SAMNI,SAMNI

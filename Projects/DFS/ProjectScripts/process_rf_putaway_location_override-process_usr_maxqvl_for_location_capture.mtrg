@@ -1,0 +1,113 @@
+<trigger>
+
+<name>process_var_maxqvl_for_location_capture</name>
+
+<on-command>process rf putaway location override</on-command>
+
+<fire-sequence>2000</fire-sequence>
+
+<local-syntax>
+<![CDATA[
+
+if (@ovr_loc_cod = 'LF')
+{
+   [select 'x'
+      from poldat_view
+     where polcod = 'USR'
+       and polvar = 'LOCATION-OVERRIDE'
+       and polval = 'CAPTURE-MAXQTY-AREA'
+       and rtnum1 = 1
+       and rtstr1 in (select arecod
+                        from locmst lm
+                       where lm.stoloc = @srcloc
+                         and wh_id = @wh_id)
+       and wh_id = @wh_id
+       and rownum < 2] catch(-1403)
+   |
+   if (@? = 0)
+   {
+       [select 'x'
+        from invmov
+       where stoloc = @srcloc
+         and wh_id = @wh_id
+         and lodnum in (select lodnum
+                          from inventory_view
+                         where lodnum = @lodnum
+                        union all
+                        select subnum
+                          from inventory_view
+                         where lodnum = @lodnum
+                        union all
+                        select dtlnum
+                          from inventory_view
+                         where lodnum = @lodnum)] catch(-1403)
+       |
+       if (@? = 0)
+       {
+           /* If the load still pending to the location, then deallocate
+            * the location and reallocate it as the original location is full.
+            * If user provided a location during override, so it is not pending
+            * to current stoloc any more, in which case do not need
+            * to reallocate.
+            */
+           deallocate location
+           where lodnum = @lodnum
+           |
+           publish data
+             where realloc_flg = 1
+       }
+       |
+       [select prtnum,
+               prt_client_id,
+               sum(untqty) totqty
+          from inventory_view iv
+         where iv.stoloc = @srcloc
+         group by prtnum,
+                  prt_client_id] catch(-1403)
+       |
+       if (@? = 0)
+       {
+           [update prtmst
+               set vc_maxqty_for_loc = @totqty
+             where prtnum = @prtnum
+               and prt_client_id = @prt_client_id]
+            ;
+           [update locmst
+               set locsts = 'F',
+                   maxqvl = pndqvl + @totqty
+             where stoloc = @srcloc
+               and wh_id = @wh_id]
+       }
+       |
+       if (@realloc_flg = 1)
+       {
+           allocate location
+             where lodnum = @lodnum
+               and wh_id = @wh_id
+               and invmov_typ = 'RCV'
+       }
+   }
+}
+]]>
+</local-syntax>
+
+<documentation>
+<remarks>
+<![CDATA[
+<p>
+  This trigger will capture the total quantity of the item currently stored
+  in the location as maxqvl of a similar location belongs to same area, so
+  next time when putaway the same item to an empty location from the same area,
+  the captured value will be auto updated to locmst as maxqvl; also this trigger
+  will update the location with status as 'F' and reallocate a new location.
+  This is due to in DFS, there is no accurate footprint information avaiable
+  and given all locations from same area are same size.
+  
+  This logic will be taking affect when operator choose 'LF' as override code.
+  
+</p>
+]]>
+</remarks>
+</documentation>
+
+</trigger>

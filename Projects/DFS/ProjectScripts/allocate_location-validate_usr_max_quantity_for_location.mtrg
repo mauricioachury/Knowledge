@@ -1,0 +1,84 @@
+<trigger>
+
+<name>validate_usr_max_quantity_for_location</name>
+
+<on-command>allocate location</on-command>
+
+<fire-sequence>2000</fire-sequence>
+
+<local-syntax>
+<![CDATA[
+
+   [select 'x'
+      from poldat_view
+     where polcod = 'USR'
+       and polvar = 'LOCATION-OVERRIDE'
+       and polval = 'CAPTURE-MAXQTY-AREA'
+       and rtnum1 = 1
+       and rtstr1 in (select arecod
+                        from locmst lm
+                       where lm.stoloc = @nxtloc
+                         and wh_id = @wh_id)
+       and wh_id = @wh_id
+       and rownum < 2] catch(-1403)
+   |
+   if (@? = 0)
+   {
+       [select prtnum,
+               prt_client_id,
+               sum(untqty) totqty
+          from inventory_view iv
+         where (iv.lodnum = @lodnum
+            or iv.subnum = @lodnum
+            or iv.dtlnum = @lodnum)
+         group by iv.prtnum,
+                  iv.prt_client_id]
+       |
+       [select 'x'
+          from prtmst_view pv
+         where pv.prtnum = @prtnum
+           and pv.prt_client_id = @prt_client_id
+           and pv.wh_id = @wh_id
+           and pv.vc_maxqty_for_loc > 0
+           and pv.vc_maxqty_for_loc < @totqty] catch(-1403)
+       |
+       if (@? = 0)
+       {
+           /*'Process cross dock requirement' will ignore the exception which
+            * will cause the allocated locaiotn being committed, so try
+            * deallocate the location.
+            */
+           if (@lodlvl = 'L')
+           {
+               deallocate location where lodnum = @lodnum
+           }
+           else if (@lodlvl = 'S')
+           {
+               deallocate location where subnum = @lodnum
+           }
+           else if (@lodlvl = 'D')
+           {
+               deallocate location where dtlnum = @lodnum
+           }
+           |
+           /*eINT_PRODUCT_WONT_FIT_IN_LOCATION = 10473*/
+           set return status
+             where status = 10473
+       }
+   }
+]]>
+</local-syntax>
+
+<documentation>
+<remarks>
+<![CDATA[
+<p>
+  This trigger is used to fail the 'allocate location' for a LPN which
+  has quantity for example, 2000, but in the prtmst table, the maxqvl captured
+  for this SKU is 500.
+</p>
+]]>
+</remarks>
+</documentation>
+
+</trigger>

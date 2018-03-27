@@ -1,0 +1,3 @@
+serv_id,wh_id,exitpnt_typ,exitpnt,srcare,dstare,moddte,mod_usr_id
+VAR-AUTO-CLOSE-SHIP,SGDC,SERVICE-BACKGROUND,INVMOV,XXXX,SSTGL,sysdate,SAMNI
+VAR-AUTO-CLOSE-SHIP,SGDC,SERVICE-BACKGROUND,INVMOV,XXXX,SSTGX,sysdate,SAMNI

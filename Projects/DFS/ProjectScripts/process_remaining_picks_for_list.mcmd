@@ -1,0 +1,271 @@
+<command>
+
+<name>process remaining picks for list</name>
+
+<description>Process Remaining Picks For List</description>
+
+<type>Local Syntax</type>
+
+<local-syntax>
+<![CDATA[
+
+    validate stack variable not null
+        where name = 'list_id'
+    |
+    validate stack variable not null
+        where name = 'wh_id'
+    |
+    publish data
+      where tmp_list_id = 'TMP' || substr(@list_id, 4, length(@list_id) - 3)
+    |
+    [select distinct 1
+         from poldat_view
+        where polcod = 'VAR'
+          and polvar = 'ORIGINAL-LIST-PICK-PRIORITY'
+          and polval = 'ENABLED'
+          and wh_id =  @wh_id 
+          and rtnum1 = 1] catch(-1403)
+    |
+    if (@? = 0)
+    {
+        publish data
+         where priority_pick = 1
+    }
+    |
+    {
+        /* We are excluding pallet control picks and Bto picks 
+         *
+         * Get any Pending picks for the list
+         */
+        [select wrkref,
+                vc_effpri org_pri,
+                vc_asg_usr_id org_usr,
+                vc_split_list org_split_list,
+                ackdevcod,
+                assign_grp
+           from pckwrk
+          where list_id = @list_id
+            and wh_id   = @wh_id
+            and appqty  = 0
+            and pcksts  = 'R'
+            and unique_pallet_id is null
+            and slot is null] catch(-1403)
+        |
+        if (@? = 0)
+        {
+            /** Getting the effective priority and the assigned user id of the original list **/
+            [select min(effpri) minpri,
+                    asg_usr_id
+               from wrkque
+              where list_id = @list_id
+                and wh_id = @wh_id
+                and rownum < 2
+              group by asg_usr_id] catch(-1403)
+            |
+            /* Remove the pending picks from the list and complete the list
+             * and update the pck status to L so that these picks would be
+             * used for recreating the list during the execution of process
+             * pick list. update the vc_effpri, vc_asg_usr_id from the work
+             * queue So that the original priority and the user id is
+             * retained by the new list created 
+             */
+            [update pckwrk
+                set list_id     = @tmp_list_id,
+                    list_seqnum = NULL,
+                    pcksts = 'L',
+                    vc_effpri = decode(@priority_pick, 1, @minpri, @org_pri),
+                    vc_asg_usr_id = decode(@priority_pick, 1, nvl(@asg_usr_id, @@usr_id), nvl(@org_usr, @@usr_id)),
+                    vc_split_list = decode(@priority_pick, 1, 1, @org_split_list),
+                    ackdevcod = decode(@priority_pick, 1, NULL, @ackdevcod),
+                    assign_grp = decode(@priority_pick, 1, NULL, @assign_grp)
+              where wrkref  = @wrkref
+                and wh_id   = @wh_id]
+        }
+        ;
+        /* Get partial regular picks for the list
+         */
+        [select wrkref cur_wrkref,
+                cmbcod cur_cmbcod,
+                list_id
+           from pckwrk
+          where list_id = @list_id 
+            and appqty > 0 
+            and appqty < pckqty
+            and subnum is null
+            and unique_pallet_id is null
+            and slot is null] catch(-1403) 
+        | 
+        if (@? = 0)
+        {
+            /** Getting the effective priority and the assigned user id of the original list **/
+            [select min(effpri) minpri,
+                    asg_usr_id
+               from wrkque
+              where list_id = @list_id
+                and wh_id = @wh_id
+                and rownum < 2
+              group by asg_usr_id] catch(-1403)
+            |
+            generate next number 
+                where numcod = 'cmbcod' 
+            | 
+            publish data 
+                where cmbcod = @nxtnum 
+            | 
+            generate next number 
+                where numcod = 'wrkref' 
+            |
+            publish data 
+                where wrkref = @nxtnum 
+            |
+            /* create a new pckwrk and pckmov entries
+             * for the remaining quantity for the partial pick
+             */  
+            [insert into pckwrk
+                 (schbat, wrkref, wrktyp, pcksts, pckqty, pck_catch_qty,
+                  appqty, app_catch_qty, prtnum, prt_client_id, orgcod,
+                  lotnum,invsts, invsts_prg, lodlvl, untcas, untpak,
+                  visflg, splflg,locflg, lodflg, subflg, dtlflg, prtflg,
+                  orgflg, revflg, lotflg, qtyflg, catch_qty_flg,
+                  frsflg, srcloc, srcare, wh_id, dstloc, ship_id,
+                  ship_line_id, client_id, ordnum, ordlin, ordsln,
+                  concod, cmbcod, ftpcod,subucc, devcod, dstare,
+                  stcust, rtcust, lblseq,adddte, wkonum, wkolin,
+                  wkorev, pipflg, list_id, list_seqnum, supnum, vc_effpri,
+                  vc_asg_usr_id,vc_split_list)
+           select schbat, @wrkref, wrktyp,
+                  'L', pckqty - appqty , pck_catch_qty, 0,
+                  app_catch_qty,prtnum, prt_client_id, orgcod,
+                  lotnum, invsts, invsts_prg,lodlvl, untcas,
+                  untpak, visflg, splflg,locflg, lodflg, subflg,
+                  dtlflg, prtflg, orgflg, revflg, lotflg, qtyflg,
+                  catch_qty_flg, frsflg, srcloc, srcare, wh_id,
+                  dstloc, ship_id, ship_line_id, client_id, ordnum,
+                  ordlin, ordsln, concod, @cmbcod, ftpcod,
+                  subucc, devcod, dstare, stcust, rtcust, lblseq,
+                  sysdate, wkonum, wkolin, wkorev, pipflg, @tmp_list_id,
+                  NULL, supnum, decode(@priority_pick, 1, @minpri, @org_pri),
+                  decode(@priority_pick, 1, nvl(@asg_usr_id, @@usr_id), nvl(@org_usr, @@usr_id)),
+                  decode(@priority_pick, 1, 1, @org_split_list)
+             from pckwrk
+            where wrkref = @cur_wrkref
+              and wh_id  = @wh_id ]
+            |
+            /* Create the pckmov record */
+            [insert into pckmov
+                 (cmbcod, seqnum, arecod, stoloc, 
+                  rescod, arrqty, prcqty, wh_id) 
+             select @cmbcod, seqnum, arecod, stoloc, 
+                    rescod, 0, prcqty, wh_id 
+               from pckmov 
+              where cmbcod = @cur_cmbcod]
+        
+            |
+            /* Now that the pick is spilt, the original picks
+             * has to be completed.
+             * Update the appqty of the original pick.
+             */
+            [update pckwrk
+                set pckqty = appqty
+              where wrkref = @cur_wrkref
+                and wh_id  = @wh_id]
+        }
+    }
+    |
+    /* If we have pick left, replan them
+     * into a new list and assign the list
+     * pick to the current user immediately.
+     */
+    [select 'x'
+       from pckwrk
+      where list_id = @tmp_list_id
+        and rownum <2] catch(-1403)
+    |
+    if (@? = 0)
+    {
+        generate next number
+          where numcod = 'list_id'
+        |
+        publish data
+          where new_list_id = @nxtnum
+        |
+        [insert into pcklst (list_id,list_typ,list_sts,max_list_cube,
+                             list_cube_wgt_thr,list_max_add_caswgt,totvol,totwgt,
+                             est_time,adddte,cmpdte,u_version,ins_dt,
+                             last_upd_dt,ins_user_id,last_upd_user_id,extvol,
+                             intvol,one_pass_only,asset_typ,tot_ord,
+                             tot_ordlin,tot_wko,tot_wkolin,tot_ctn)
+        select @new_list_id,list_typ,'P',max_list_cube,
+               list_cube_wgt_thr,list_max_add_caswgt,totvol,totwgt,
+               est_time,adddte,cmpdte,u_version,sysdate,
+               sysdate,ins_user_id,last_upd_user_id,extvol,
+               intvol,one_pass_only,asset_typ,tot_ord,
+               tot_ordlin,tot_wko,tot_wkolin,tot_ctn
+        from pcklst
+       where list_id = @list_id]
+       |
+       {
+           [select wrkref
+              from pckwrk p,
+                   locmst lm
+             where p.srcloc = lm.stoloc
+               and p.wh_id = lm.wh_id
+               and p.list_id = @tmp_list_id
+              order by lm.trvseq]
+           |
+           assign pick to pick list
+             where wrkref = @wrkref
+               and list_id = @new_list_id
+           ;
+           process pick list release
+             where wh_id = @wh_id
+               and list_id = @new_list_id
+           |
+           [update wrkque
+               set asg_usr_id = nvl(asg_usr_id, @@usr_id)
+             where list_id = @new_list_id]
+       }
+    }
+    ;
+     /* Finally complete the list
+      */
+    complete rf pick list
+        where list_id = @list_id
+          and wh_id   = @wh_id
+]]>
+</local-syntax>
+
+<argument name="list_id">List Id</argument>
+<argument name="wh_id">Warehouse Id</argument>
+
+<documentation>
+
+<remarks>
+<![CDATA[
+  <p>
+    This command will process the remaining picks 
+    for the list.
+    The pending picks will be removed from the list
+    and load can be staged
+    For partial picks, new pckwrk and pckmov records
+    will be created with the pckqty as a remaining
+    quantity and original picks will be completed.
+    (appqty is updated as pckqty). 
+    
+    In case of operator cutting the list, the remaining picks
+    will be replanned into a new list and the list pick
+    work needs to be reassigned to the operator immediately.
+    This can avoid system assigning a different list from a
+    different order to the same operator as the original order
+    is not finished.
+  </p>
+]]>
+</remarks>
+
+<exception value="eOK">Normal successful completion</exception>
+ <exception value="eDB_NO_ROWS_AFFECTED">No records found
+ </exception>
+
+</documentation>
+
+</command>

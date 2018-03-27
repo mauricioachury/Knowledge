@@ -1,0 +1,143 @@
+<command>
+
+<name>process inventory consolidation</name>
+
+<description>Process Inventory Consolidation</description>
+
+<type>Local Syntax</type>
+
+<local-syntax>
+<![CDATA[
+    [select count(*) dtlcnt
+       from invdtl ido, invdtl idn
+      where ido.dtlnum = @old_dtlnum
+        and idn.dtlnum = @new_dtlnum
+        and idn.prtnum||idn.prt_client_id != ido.prtnum||ido.prt_client_id]
+    |
+    if (@dtlcnt != 0)
+    {
+	    set return status where status = 10514;
+    }
+    else
+    {
+	    /* Gather info to get to the invsum record */
+        [select distinct prtnum,
+	            prt_client_id,
+	            invsts,
+	            untpak,
+	            untcas,
+	            invlod.stoloc,
+	            invlod.wh_id,
+	            fifdte older_fifdte
+	       from invdtl,
+	            invsub,
+	            invlod
+	      where (dtlnum = @old_dtlnum or dtlnum = @new_dtlnum)
+	        and invlod.lodnum = invsub.lodnum
+	        and invsub.subnum = invdtl.subnum	        
+	      order by fifdte] >> res
+	    |
+	    publish top rows where rows = 1
+	    |
+	    /* Push the quantity to the target detail */
+	    /* Also set the fifdte to the fifdte passed to this command */
+	    [update invdtl
+    	    set rcvkey = @rcvkey,
+	            expire_dte = to_date(@expire_dte),
+	            mandte = to_date(@mandte),
+	            untqty = untqty + @untqty,
+    	            catch_qty = catch_qty + nvl(@catch_qty, 0.0),
+	            age_pflnam = @age_pflnam,
+	            fifdte = to_date(@fifdte)
+    	  where dtlnum = @new_dtlnum ]
+    	|	    
+	    /* Recalculate the newdte and olddte */
+	    /* excluding the one we are deleting */
+	    [select min(invdtl.fifdte) olddte,
+	            max(invdtl.fifdte) newdte
+	       from invdtl,
+	            invsub,
+	            invlod
+	      where invlod.lodnum = invsub.lodnum
+	        and invsub.subnum = invdtl.subnum
+	        and invlod.stoloc = @stoloc
+	        and invlod.wh_id = @wh_id
+	        and invdtl.dtlnum != @old_dtlnum]
+	    |
+	    /* Set the old and new dates on the invsum */
+	    [update invsum
+	        set olddte = to_date(@olddte),
+	            newdte = to_date(@newdte)
+	      where prtnum = @prtnum
+	        and prt_client_id = @prt_client_id
+	        and (invsts = @invsts or invsts is null)
+	        and (untpak = @untpak or untpak = 0)
+	        and (untcas = @untcas or untcas = 0)
+                and stoloc = @stoloc
+	        and wh_id = @wh_id]
+	    |
+    	/* Save the subnum so that we can check if we've taken the last dtl */
+	    [select invsub.subnum old_subnum,
+    	        invsub.lodnum old_lodnum
+	       from invsub, invdtl 
+    	  where invdtl.subnum = invsub.subnum 
+	        and invdtl.dtlnum = @old_dtlnum]
+    	|
+	    [delete from invdtl where dtlnum = @old_dtlnum]
+    	|
+	    /* Clear out any holds */
+    	[delete from invhld where dtlnum = @old_dtlnum] catch (-1403)
+	    |
+    	[delete from invsub
+  	      where subnum = @old_subnum 
+	        and not exists 
+    	        (select 1 from invdtl 
+	              where subnum = @old_subnum)] catch (-1403)
+	    |
+    	if (@? = 0)
+	    {
+            [update invlod
+                set avg_unt_catch_qty = (select nvl(old_invlod.avg_unt_catch_qty, 
+                                            new_invlod.avg_unt_catch_qty) avg_unt_catch_qty
+                                   from invlod old_invlod,
+                                        invlod new_invlod
+                                  where old_invlod.lodnum = @old_lodnum
+                                    and new_invlod.lodnum = @new_lodnum)
+              where invlod.lodnum = @new_lodnum
+                and not exists(select 1 from invsub
+                                where lodnum = @old_lodnum)] catch(-1403)
+            ;
+          /*
+           * Deletes the load only when it is not
+           * a permanent load.
+           * backport WMD-110354 for DFS stock transfer.
+           */
+    	    [delete from invlod 
+	          where lodnum = @old_lodnum
+	            and prmflg != 1
+	            and not exists
+	                (select 1 from invsub
+	                  where lodnum = @old_lodnum)] catch (-1403)
+	    }
+    }
+]]>
+</local-syntax>
+
+<documentation>
+<remarks>
+<![CDATA[
+  <p>
+	This command is used to perform the updates necessary to 
+	consolidate inventory structures at a location.  It is called
+	by the <quote>consolidate inventory at location</quote> command.
+  </p>
+]]>
+</remarks>
+
+<exception value="eOK">Normal successful completion</exception>
+
+<seealso cref="consolidate inventory at location"></seealso>
+<seealso cref="move inventory"></seealso>
+
+</documentation>
+</command>

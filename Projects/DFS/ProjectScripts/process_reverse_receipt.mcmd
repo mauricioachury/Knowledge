@@ -1,0 +1,219 @@
+<command>
+
+<name>process reverse receipt</name>
+
+<description>Process Reverse Receipt</description>
+
+<type>Local Syntax</type>
+<local-syntax>
+<![CDATA[
+        /* Try to remove serial number associated to the load/subload/detail
+         * before it is removed.
+         */
+        remove serial number
+        |
+        /* Lets clear out the asset details for this 
+         * identifier
+         */
+        remove asset details for inventory reverse receipt
+        ;
+        if (@lodnum <> "")
+        {
+            [select 'x'
+             from invlod
+            where lodnum = @lodnum
+              and prmflg = 1
+              and mvlflg = 0] catch(-1403)
+            |
+            if (@? = 0)
+            {
+                /* For non-movable permanent load,
+                 * we move by subnum.
+                 */
+                generate next number
+                where numcod = 'lodnum'
+                |
+                publish data
+                  where dstlod = @nxtnum
+                |
+                [select subnum
+                   from invsub
+                  where lodnum = @lodnum]
+                |
+                move inventory
+                  where srcsub = @subnum
+                    and dstlod = @dstlod
+                    and dstloc = @dstloc
+                    and newdst = 1
+                    and actcod = 'RVRCP' 
+                    and wh_id  = @wh_id
+                |
+                publish data
+                  where new_lodnum = @dstlod
+                  and lodnum     = @dstlod
+            }
+            else
+            {
+                move inventory 
+                where lodnum = @lodnum
+                  and dstloc = @dstloc
+                  and actcod = 'RVRCP' 
+                  and wh_id  = @wh_id
+                |
+                publish data
+                  where new_lodnum = @lodnum
+                    and lodnum     = @lodnum
+            }
+        }
+        else if (@subnum <> "")
+        {
+            /* Create a temporary load to hold the sub we're removing */
+            generate next number
+            where numcod = 'lodnum'
+            |
+            move inventory
+            where subnum = @subnum
+              and dstloc = @dstloc
+              and newdst = 1
+              and dstlod = @nxtnum
+              and actcod = 'RVRCP'
+              and wh_id  = @wh_id
+            |
+            publish data where new_lodnum = @nxtnum
+                           and subnum     = @subnum
+        }
+        else if (@dtlnum <> "")
+        {
+            /* Create a temporary load to hold the sub we're removing */
+            generate next number
+            where numcod = 'lodnum'
+            |
+            move inventory
+            where dtlnum = @dtlnum
+              and dstloc = @dstloc
+              and newdst = 1
+              and dstlod = @nxtnum
+              and actcod = 'RVRCP'
+              and wh_id  = @wh_id
+            |
+            publish data where new_lodnum = @nxtnum
+                           and dtlnum     = @dtlnum
+        }
+        |
+        {
+            /*
+             * Retrieve the affected details so they can be deassigned
+             * from the distro.
+             */
+            [select id.dtlnum
+               from invlod il,
+                    invsub ib,
+                    invdtl id
+              where il.lodnum = @new_lodnum
+                and ib.lodnum = il.lodnum
+                and id.subnum = ib.subnum
+                and distro_id is not null] catch(-1403)
+            |
+            if(@? = 0)
+            {
+                /*
+                 * Deassign these details from their respective distros.
+                 * This has the affect of reversing their applied quantity
+                 * and removing the distro_id from the detail.
+                 */
+                deassign distro detail
+                   where dtlnum = @dtlnum
+            }
+            ;
+            list policies
+            where polcod = 'RECEIVE-INVENTORY'
+              and polvar = 'UNDO-RECEIPTS'
+              and polval = 'REMOVE-INVENTORY-AFTER-REVERSE'
+              and wh_id  = @wh_id catch (-1403)
+            |
+            if (@rtnum1 = 1)
+            {
+                /* deallocate the location first */
+                /* Attempting to delete any invmov entries */
+                if (@lodnum <> "")
+                {
+                    deallocate location
+                         where lodnum = @lodnum catch (-1403)
+                }
+                else if (@subnum <> "")
+                {
+                    deallocate location
+                         where subnum = @subnum catch (-1403)
+                }
+                else if (@dtlnum <> "")
+                {
+                    deallocate location
+                         where dtlnum = @dtlnum catch (-1403)
+                }
+                |
+                remove load  
+                where lodnum = @new_lodnum 
+            }
+        }
+        |
+        /* We need to remove any entries from device context
+         * on reverse receipt since we have undone receipts */
+        [delete from device_context 
+          where devcod    = @@devcod
+            and dev_varnam = 'split_trn_lod|nxtloc'
+            and substr(value, 1, instr(value, '|')-1) = @new_lodnum
+            and wh_id      = @wh_id ] catch(-1403)
+        | 
+        publish data 
+        where trknum = @dstloc
+          and wh_id = @wh_id
+]]>
+</local-syntax>
+
+<argument name="lodnum">Load Number</argument>
+<argument name="subnum">Sub-Load Number</argument>
+<argument name="dtlnum">Detail Number</argument>
+
+<documentation>
+<remarks>
+<![CDATA[
+  <p>
+  This command is used to reverse a piece of inventory off of an invoice.
+  This command will move the inventory back to the truck it was received
+  against, and then remove that inventory from the system.  In addition,
+  the invoice will be updated to reflect the fact that the inventory should
+  no longer be applied against the invoice.
+  </p>
+
+  <p>
+  This command accepts either a load number, sub-load number or detail number.
+  If either a sub-load number or detail number is received, then a 
+  temporary load will be created on the truck to hold the inventory that
+  is being reversed.  Then, if the policy is set, that load will be removed
+  from the system.  This policy exists to handle situations where ASNs are 
+  often received, and it may be more desirable to not remove the load from
+  the system.
+  </p>
+
+  <p>
+  If the lodnum or subnum are associated with assets, we remove the
+  asset details along with this inventory. If the asset type is serialized, 
+  remove associated entries from the ser_asset, rcv_asset, and asset_link tables. 
+  If the asset type is non-serialized then reduce the on_hand_qty and rcvqty in
+  the non_serialized_asset and rcv_asset tables respectively.
+  </p>
+]]>
+</remarks>
+
+<policy polcod="RECEIVE-INVENTORY" polvar="UNDO-RECEIPTS" 
+ polval="REMOVE-INVENTORY-AFTER-REVERSE" rtnum1="1 for remove, 0 for not remove">
+</policy>
+
+<exception value="eOK">Normal successful completion</exception>
+
+<seealso cref="list policies"></seealso>
+<seealso cref="move inventory"></seealso>
+<seealso cref="remove asset details for inventory reverse receipt"></seealso>
+
+</documentation>
+</command>

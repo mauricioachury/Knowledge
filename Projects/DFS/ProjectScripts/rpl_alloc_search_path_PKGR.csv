@@ -1,0 +1,3 @@
+wh_id,bldg_id,search_path_typ,arecod,lodlvl,uomcod,ins_dt,last_upd_dt,ins_user_id,last_upd_user_id,prtfam,inv_attr_str1,dstare
+SGDC,Greenwich,RPL,PKGR,L,,sysdate,sysdate,SAMNI,SAMNI,,,PKGS
+SGDC,Greenwich,RPL,PKGR,S,,sysdate,sysdate,SAMNI,SAMNI,,,HOTPICK

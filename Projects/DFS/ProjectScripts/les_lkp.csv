@@ -1,0 +1,2 @@
+lkp_id,cust_lvl,lkp_cmd,static_cmd_flg,lkp_comp,ret_fld,grp_nam
+l_dept_cod_2,10,list code descriptions where colnam = "dept_cod" catch(-1403) >> res | sort result set where result_set = @res and sort_list = "codval" | publish data where codval = @codval and valdsc = @codval || " " || @lngdsc,1,,,dfs_data

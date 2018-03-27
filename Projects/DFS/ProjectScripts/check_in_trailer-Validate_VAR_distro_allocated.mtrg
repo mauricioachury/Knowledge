@@ -1,0 +1,79 @@
+<trigger>
+  <name>Validate_VAR_distro_allocated</name>
+  <on-command>check in trailer</on-command>
+  <description />
+  <fire-sequence>0</fire-sequence>
+  <local-syntax>
+<![CDATA[
+[select *
+   from poldat
+  where polcod = 'VAR'
+    and polvar = 'DISTRO-VALIDATION'
+    and polval = 'VALIDATE-TRL-CHKIN'
+    and wh_id_tmpl = nvl(@wh_id, @@wh_id)] catch(-1403)
+|
+if (@rtnum1 = 1)
+{
+    [select trknum
+       from trlr,
+            rcvtrk
+      where trlr.trlr_id = rcvtrk.trlr_id
+        and trlr.trlr_cod = 'RCV'
+        and (trlr.trlr_num = @trlr_num or trlr.trlr_id = @trlr_id)] catch(@?)
+    |
+    if (@? = 0)
+    {
+        [select *
+           from distro
+          where @+trknum] catch(-1403)
+        |
+        if (@? = 0)
+        {
+            [select ordnum,
+                    ordlin,
+                    distro_id,
+                    wh_id,
+                    client_id,
+                    ordqty
+               from ord_line
+              where distro_id = @distro_id] catch(-1403)
+            |
+            [select *
+               from shipment_line
+              where linsts != 'B' 
+                and ordnum = @ordnum
+                and ordlin = @ordlin
+                and wh_id = @wh_id
+                and client_id = @client_id] catch(-1403)
+            |
+            if (@? = -1403)
+            {
+                set return status
+                 where status = 9990
+            }
+            |
+            list schbat pick summary
+             WHERE ship_id = @ship_id
+               and ship_line_id = @ship_line_id
+               and wh_id = @wh_id catch(-1403)
+            |
+            if (@? = -1403)
+            {
+                list cross docks
+                 where ship_id = @ship_id
+                   and ship_line_id = @ship_line_id
+                   and wh_id = @wh_id catch(-1403)
+                |
+                if (@? = -1403)
+                {
+                    set return status
+                     where status = 9991
+                }
+            }
+        }
+    }
+}
+]]>
+</local-syntax>
+  <enable>yes</enable>
+</trigger>

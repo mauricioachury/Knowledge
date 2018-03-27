@@ -1,0 +1,383 @@
+<command>
+
+<name>list inventory for display</name>
+
+<description>List Inventory For Display</description>
+
+<type>Local Syntax</type>
+
+<local-syntax>
+<![CDATA[
+    /* We want to push the warehouse ID to the stack here. */
+    [select wh_id
+       from wh
+      where @+wh_id] catch(-1403)
+    |
+    /* the case statments below find the latest lstmove and lstdte  */
+    /* from invsub, invdtl or invlod tables. If null the comparison */
+    /* date used will be stored in compare_date.  NULL comparisons  */
+    /* cannot be done properly against dates.                       */
+    /* The lowest year sql server can store in datetime             */
+    /* type is 1753, so we use that as our base to compare to.      */
+    publish data
+        where compare_date = '17530101000000'
+    |
+    get client in clause for user
+      where usr_id = nvl(@usr_id, @@usr_id)
+        and @+wh_id
+        and table_prefix = 'invdtl' 
+        and prt_client_id_flg = 1
+    |
+    /* If query is by Stoloc, then check whether its a dock door or yard location */ 
+    if(@stoloc != '')
+    {
+        /* This command will return the shipping/storage trailer logical 
+         * location if the passed in stoloc is a dock door or yard_loc.
+         * Otherwise the passed in stoloc is returned as-is.The purpose is to
+         * allow inventory display for shipping/storage trailers based on its 
+         * dock door or yard location rather than its logical
+         * location since the latter is a system generated ID that is not as
+         * easily available for input. 
+         */
+        translate yard location to trailer location
+            where stoloc = @stoloc
+              and wh_id = @wh_id
+    }
+    |
+    /* Add distinct here that it will only show one record for one detail. */
+    [select distinct bldg_mst.wh_id,
+            aremst.bldg_id,
+            aremst.arecod,
+            locmst.stoloc,
+            invlod.lodnum,
+            invsub.subnum,
+            invdtl.dtlnum,
+            invdtl.prtnum,
+            prtdsc.lngdsc,
+            prtmst_view.dept_cod,
+            manfst.traknm,
+            invdtl.untqty,
+            invdtl.ftpcod, 
+            invdtl.lotnum, 
+            invdtl.sup_lotnum, 
+            invdtl.invsts, 
+            invdtl.fifdte,
+            invdtl.mandte,
+            invdtl.expire_dte,
+            round(moca_util.date_diff_days(sysdate, invdtl.expire_dte)) days_to_expire,
+            invdtl.rcvdte,
+            invdtl.revlvl, 
+            invdtl.orgcod, 
+            invdtl.supnum,            
+            invdtl.hld_flg,
+            invdtl.cnsg_flg,
+            invsub.subucc,
+            invsub.subtag,
+            invlod.loducc,            
+            invlod.lodtag,
+            child_asset_link.asset_id ch_asset_id,
+            invsub.asset_typ ch_asset_typ,
+            child_asset_typ.asset_len,
+            child_asset_typ.asset_wid,
+            child_asset_typ.asset_hgt,
+            child_asset_typ.asset_wgt,
+            parent_asset_typ.asset_typ parent_asset_typ,
+            parent_asset_link.asset_id parent_asset_id,
+            parent_asset_typ.asset_len parent_asset_len,
+            parent_asset_typ.asset_wid parent_asset_wid,
+            parent_asset_typ.asset_hgt parent_asset_hgt,
+            parent_asset_typ.asset_wgt parent_asset_wgt,
+            invsub.phyflg, 
+            invdtl.phdflg, 
+            invdtl.catch_qty, 
+            invlod.avg_unt_catch_qty,
+            invdtl.untpak, 
+            invdtl.untcas, 
+            invdtl.age_pflnam,
+            prtmst_view.stkuom,
+            prtmst_view.ser_typ,
+            prtmst_view.lodlvl,
+            prtmst_view.prtstyle,
+            prtmst_view.prtfit,
+            prtmst_view.prtcolor,
+            prtmst_view.prtsize,
+            invdtl.rcvkey, 
+            invdtl.cmpkey,
+            invdtl.ship_line_id,  
+            invdtl.prt_client_id,
+            prtmst_view.catch_unttyp,
+            locmst.pckflg,
+            locmst.useflg,
+            locmst.cipflg,
+            locmst.locsts,
+            invlod.adddte,
+            invdtl.bill_through_dte,
+            invdtl.inv_attr_str1,
+            invdtl.inv_attr_str2,
+            invdtl.inv_attr_str3,
+            invdtl.inv_attr_str4,
+            invdtl.inv_attr_str5,
+            invdtl.inv_attr_str6,
+            invdtl.inv_attr_str7,
+            invdtl.inv_attr_str8,
+            invdtl.inv_attr_str9,
+            invdtl.inv_attr_str10,
+            invdtl.inv_attr_int1,
+            invdtl.inv_attr_int2,
+            invdtl.inv_attr_int3,
+            invdtl.inv_attr_int4,
+            invdtl.inv_attr_int5,
+            invdtl.inv_attr_flt1,
+            invdtl.inv_attr_flt2,
+            invdtl.inv_attr_flt3,
+            invdtl.inv_attr_dte1,
+            invdtl.inv_attr_dte2,
+            case when nvl(invdtl.lstmov, @compare_date:date) 
+                            > nvl(invsub.lstmov, @compare_date:date) 
+                  and nvl(invdtl.lstmov, @compare_date:date) 
+                            > nvl(invlod.lstmov, @compare_date:date) 
+                 then invdtl.lstmov
+                 else  
+                     case when nvl(invsub.lstmov, @compare_date:date) 
+                                    > nvl(invlod.lstmov, @compare_date:date) 
+                           and nvl(invsub.lstmov, @compare_date:date) 
+                                    > nvl(invdtl.lstmov, @compare_date:date)
+                          then invsub.lstmov
+                          else invlod.lstmov
+                     end
+            end lstmov,
+            case when nvl(invdtl.lstdte, @compare_date:date) 
+                            > nvl(invsub.lstdte, @compare_date:date) 
+                  and nvl(invdtl.lstdte, @compare_date:date) 
+                            > nvl(invlod.lstdte, @compare_date:date) 
+                 then invdtl.lstdte
+                 else  
+                     case when nvl(invsub.lstdte, @compare_date:date) 
+                                    > nvl(invlod.lstdte, @compare_date:date) 
+                           and nvl(invsub.lstdte, @compare_date:date) 
+                                    > nvl(invdtl.lstdte, @compare_date:date)
+                          then invsub.lstdte
+                          else invlod.lstdte
+                     end
+            end lstdte,
+            decode(prtmst_view.dspuom, null, invdtl.untqty,
+                   invdtl.untqty/prtftp_dtl.untqty) dsp_untqty,
+            decode(prtmst_view.dspuom, null, prtmst_view.stkuom,
+                   prtmst_view.dspuom) untqty_uom,
+            decode(prtmst_view.dspuom, null, cast(null as int), 
+                   prtmst_view.stkuom, cast(null as int),
+                   mod(invdtl.untqty, prtftp_dtl.untqty)) rem_untqty,
+            decode(prtmst_view.dspuom, null, null,
+                   prtmst_view.stkuom, null,
+                   prtmst_view.stkuom) rem_untqty_uom,
+            invdtl.cstms_cnsgnmnt_id,
+            invdtl.rttn_id,
+            invdtl.dty_stmp_flg,
+            invdtl.cstms_bond_flg,
+            invdtl.distro_id,
+            invdtl.distro_flg
+      from aremst
+      join locmst
+        on (aremst.arecod = locmst.arecod)
+       and (aremst.wh_id  = locmst.wh_id)
+      join bldg_mst
+        on (aremst.bldg_id = bldg_mst.bldg_id)
+       and (aremst.wh_id = bldg_mst.wh_id)
+      join invlod
+        on (locmst.stoloc = invlod.stoloc) 
+       and (locmst.wh_id  = invlod.wh_id)
+      join invsub 
+        on (invlod.lodnum = invsub.lodnum) 
+      join invdtl
+        on (invsub.subnum = invdtl.subnum)
+      left outer join manfst
+        on (invdtl.subnum = manfst.subnum)
+        or (invdtl.wrkref = manfst.wrkref)
+      left outer join prtmst_view
+        on (locmst.wh_id = prtmst_view.wh_id) 
+       and (invdtl.prtnum = prtmst_view.prtnum)
+       and (invdtl.prt_client_id = prtmst_view.prt_client_id)
+      left outer join prtftp
+        on (prtmst_view.prtnum = prtftp.prtnum)
+       and (prtmst_view.wh_id = prtftp.wh_id)
+       and (prtmst_view.prt_client_id = prtftp.prt_client_id)
+       and (invdtl.ftpcod = prtftp.ftpcod
+        or prtftp.defftp_flg = decode(invdtl.ftpcod, NULL, 1, cast(null as int)))
+      left outer join prtftp_dtl
+        on (prtftp.prtnum = prtftp_dtl.prtnum)
+       and (prtftp.wh_id = prtftp_dtl.wh_id)
+       and (prtftp.prt_client_id = prtftp_dtl.prt_client_id)
+       and (prtftp.ftpcod = prtftp_dtl.ftpcod)
+       and (prtftp_dtl.uomcod = nvl(prtmst_view.dspuom, prtmst_view.stkuom))
+      left outer join prtdsc
+        on (prtdsc.colval = /*=varchar(*/prtmst_view.prtnum||'|'
+            ||prtmst_view.prt_client_id||'|'||prtmst_view.wh_id_tmpl) /*=)*/
+      left outer join asset_link parent_asset_link
+        on (parent_asset_link.asset_num = invlod.lodnum)
+      left outer join asset_typ parent_asset_typ
+        on (parent_asset_typ.asset_typ = invlod.asset_typ)        
+      left outer join asset_link child_asset_link
+        on (child_asset_link.asset_num = invsub.subnum)
+      left outer join asset_typ child_asset_typ
+        on (invsub.asset_typ = child_asset_typ.asset_typ)
+      left outer join invhld
+        on (invdtl.dtlnum = invhld.dtlnum)
+      left outer join inv_ser_num
+        on ((inv_ser_num.invtid = invlod.lodnum)
+        or (inv_ser_num.invtid = invsub.subnum)
+        or (inv_ser_num.invtid = invdtl.dtlnum))
+     /* modified to select by prtnum ! = RETURN PART rather
+      * the earlier hardcoded invsts - which is configurable
+      * where as 'RETURNPART' is an internal constant
+      */
+     where invdtl.prtnum != 'RETURNPART'
+       and prtdsc.colnam = 'prtnum|prt_client_id|wh_id_tmpl' 
+       and prtdsc.locale_id = nvl(@locale_id, @@locale_id) 
+       and @client_in_clause:raw
+       and @+invdtl.prtnum
+       and @+invdtl.prt_client_id
+       and @+aremst.arecod 
+       and @+locmst.stoloc 
+       and @+locmst.wh_id
+       and @+invlod.lodnum 
+       and @+invsub.subnum 
+       and @+invdtl.dtlnum
+       and @+manfst.traknm
+       and @+locmst.cntdte:date
+       and @+locmst.lstdte:date
+	   and @+inv_ser_num.ser_lvl
+	   and @+inv_ser_num.ser_num
+       and @+invdtl.fifdte:date
+       and @+invdtl.mandte:date
+       and @+invdtl.expire_dte:date
+       and @+invdtl.adddte:date
+       and @+invdtl.lstdte:date
+       and @+invdtl.inv_attr_dte1:date
+       and @+invdtl.inv_attr_dte2:date
+       and @+invdtl.lstmov:date
+       and @+invdtl.rcvdte:date
+       and @+invsub.adddte:date
+       and @+invsub.lstdte:date
+       and @+invsub.uccdte:date
+       and @+invlod.adddte:date
+       and @+invlod.lstdte:date
+       and @+invlod.uccdte:date
+       and @+invlod.adddte:date
+       and @+invdtl.age_pflnam
+       and @+invdtl.ftpcod
+       and @+invdtl.untqty
+       and @+invdtl.lotnum
+       and @+invdtl.orgcod
+       and @+invdtl.revlvl
+       and @+locmst.velzon
+       and @+locmst.abccod
+       and @+aremst.bldg_id
+       and @+aremst.adjflg
+       and @+parent_asset_link.asset_id
+       and @+invlod.asset_typ
+       and @+invlod.avg_unt_catch_qty
+       and @+invlod.lodtag
+       and @+invdtl.catch_qty
+       and @+invdtl.bill_through_dte
+       and @+invdtl.cmpkey
+       and @+invdtl.invsts
+       and @+invdtl.untpak
+       and @+invdtl.untcas
+       and @+invdtl.phdflg
+       and @+invsub.phyflg
+       and @+invsub.subtag
+       and @+invdtl.ship_line_id
+       and @+prtmst_view.catch_unttyp
+       and @+prtmst_view.lodlvl
+       and @+prtmst_view.ser_typ
+       and @+prtmst_view.ser_lvl
+       and @+prtmst_view.stkuom
+       and @+prtmst_view.dept_cod
+       and @+locmst.cipflg
+       and @+locmst.locsts
+       and @+locmst.pckflg
+       and @+locmst.useflg
+       and @+prtdsc.lngdsc
+       and (@days_to_expire is null
+             or invdtl.expire_dte is null
+             or nvl(round(moca_util.date_diff_days(sysdate, invdtl.expire_dte)), 
+                nvl(cast(@days_to_expire as int),
+                    1)+1
+               )
+          = nvl(cast(@days_to_expire as int), 
+                nvl(round(moca_util.date_diff_days(sysdate, invdtl.expire_dte)), 
+                    nvl(cast(@days_to_expire as int), 
+                        1)+1
+                   )
+               ))
+       and (@min_days_to_expire is null
+             or invdtl.expire_dte is null
+             or nvl(round(moca_util.date_diff_days(sysdate, invdtl.expire_dte)), 
+                nvl(cast(@min_days_to_expire as int),
+                    1)-1
+               ) 
+         >= nvl(cast(@min_days_to_expire as int), 
+                nvl(round(moca_util.date_diff_days(sysdate, invdtl.expire_dte)), 
+                    nvl(cast(@min_days_to_expire as int),
+                        1)-1
+                   )
+               ))
+       and (@max_days_to_expire is null
+             or invdtl.expire_dte is null
+             or nvl(round(moca_util.date_diff_days(sysdate, invdtl.expire_dte)), 
+                nvl(cast(@max_days_to_expire as int),
+                    1)+1
+               ) 
+         <= nvl(cast(@max_days_to_expire as int), 
+                nvl(round(moca_util.date_diff_days(sysdate, invdtl.expire_dte)), 
+                    nvl(cast(@max_days_to_expire as int),
+                        1)+1
+                   )
+               ))
+       and nvl(@held_flg,decode(invhld.dtlnum, null, 0, 1)) = decode(invhld.dtlnum, null, 0, 1)
+       and @+parent_asset_link.asset_id^parent_asset_id
+       and @+invdtl.cstms_cnsgnmnt_id
+       and @+invdtl.rttn_id
+       and @+invdtl.dty_stmp_flg
+       and @+invdtl.cstms_bond_flg
+       and @* 
+   order by bldg_mst.wh_id,
+            aremst.bldg_id,
+            aremst.arecod,
+            locmst.stoloc, 
+            invlod.lodnum, 
+            invsub.subnum, 
+            invdtl.dtlnum] catch (-1403)
+]]>
+</local-syntax>
+
+<argument name="@*">Any invdtl, invlod, invsub field value</argument>
+
+<documentation>
+
+<remarks>
+<![CDATA[
+  <p>
+  This command is used to list the inventory information. </p>
+
+  <p>
+  The results of this command include the inventory load, sub,
+  and detail names and its attributes.  
+  </p>
+  <p>
+  Note, this command respects restricted client access.  The user will
+  only be able to see inventories for clients that he is authorized to see.
+  </p>
+]]>
+</remarks>
+
+<seealso cref="validate storage trailer at dock door"> </seealso>
+
+<retcol name="(all invdtl fields)" type="(varies according to field type)"> </retcol>
+
+<exception value="eOK">Normal successful completion</exception>
+<exception value="eDB_NO_ROWS_AFFECTED">Specified pick batch not found</exception>
+
+</documentation>
+
+</command>

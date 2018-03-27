@@ -1,0 +1,2 @@
+dda_id,cust_lvl,dda_typ,dda_usage,topflg,dda_cmd,dda_qual,dda_init_qual,dda_frm,dda_img,init_cmd,init_qual,rqdflg,grp_nam,sum_flds,excelflg,exceltmpl,reference,tnw_typ,grid_pos,publish_data_flg,prof_crit_mode,auto_find,grid_prop,xsl_file
+VAR-DESTROY-ADJ-DDA,10,Q,F,1,"list usr inventory for Destroy","","","","","","",0,dcs_data,"",0,,,0,0,0,0,2,"",""

@@ -1,0 +1,3 @@
+colnam,colval,locale_id,lngdsc,short_dsc,grp_nam
+arecod|wh_id,HOTPICKGM|SGDC,US_ENGLISH,HOTPICKGM Hot Pick Area for GM,Hot Pick Area GM,dfs_data
+arecod|wh_id,PKGSGM|SGDC,US_ENGLISH,PKGSGM Bags & Packaging for GM,Bags & Pkgs GM,dfs_data

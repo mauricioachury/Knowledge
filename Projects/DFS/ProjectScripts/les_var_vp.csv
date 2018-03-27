@@ -1,0 +1,2 @@
+var_nam,appl_id,frm_id,addon_id,cust_lvl,lkp_id,ena_flg,cod_col,desc_col,add_null_flg,dis_sgl_flg,edt_flg,srt_col,grd_lkp_cols,grp_nam
+dept_cod,LES,LES,LES,10,l_dept_cod_2,1,codval,valdsc,1,0,0,,,dfs_data

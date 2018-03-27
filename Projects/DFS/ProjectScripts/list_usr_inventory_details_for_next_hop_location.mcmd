@@ -1,0 +1,86 @@
+<command>
+  <name>list usr inventory details for next hop location</name>
+  <description>list inventory details for next hop location</description>
+  <type>Local Syntax</type>
+  <local-syntax>
+<![CDATA[
+[select distinct sl.ship_id
+   from distro,
+        ord_line ol,
+        shipment_line sl
+  where sl.ordnum = ol.ordnum
+    and sl.ordsln = ol.ordsln
+    and sl.ordlin = ol.ordlin
+    and sl.wh_id = ol.wh_id
+    and ol.distro_id = distro.distro_id
+    and distro.trknum = @identifier] catch(-1403)
+|
+publish data
+  where ship_id = nvl(@ship_id, @identifier) catch(-1403)
+|
+if (@? = 0)
+{
+    [select distinct iv.lodnum,
+            locmst.arecod,
+            iv.stoloc,
+            pckwrk.wrkref ref,
+            pckwrk.dstare,
+            pckwrk.ship_id,
+            pckwrk.cmbcod,
+            iv.prtnum,
+            iv.subnum,
+            iv.dtlnum
+       from locmst,
+            inventory_view iv,
+            pckwrk
+      where iv.wrkref = pckwrk.wrkref
+        and iv.stoloc = locmst.stoloc
+        and pckwrk.ship_id = @ship_id
+      order by iv.lodnum,
+            iv.subnum,
+            iv.dtlnum] catch(-1403)
+    |
+    [select *
+       from pckmov
+      where pckmov.cmbcod = @cmbcod
+        and pckmov.arecod = @arecod] catch(-1403)
+    |
+    [select @arecod arecod_lod,
+            @dstare arecod_pw,
+            @stoloc stoloc_lod,
+            @lodnum lodnum,
+            pckmov.stoloc,
+            @ref ref,
+            cmbcod,
+            seqnum
+       from pckmov
+      where cmbcod = @cmbcod
+        and pckmov.seqnum = @seqnum + 1] catch(-1403)
+    |
+    if (@? <> '-1403')
+    {
+        [select @identifier identifier,
+                lodnum,
+                stoloc,
+                @stoloc next_hop,
+                dtlnum,
+                subnum,
+                prtnum,
+                untqty,
+                orgcod,
+                lotnum,
+                invsts,
+                fifdte,
+                untcas,
+                untpak,
+                ftpcod,
+                inv_attr_str1
+           from inventory_view
+          where lodnum = @lodnum
+            and prtnum = @prtnum 
+            and dtlnum = @dtlnum]
+    }
+}
+]]>
+</local-syntax>
+</command>

@@ -1,0 +1,64 @@
+<command>
+<name>process var time window for part</name>
+<description>process var time window for part</description>
+<type>Local Syntax</type>
+
+<argument name="prtnum" datatype="string">Part Number</argument>
+<argument name="prt_client_id" datatype="string">Part Client ID</argument>
+
+<local-syntax>
+<![CDATA[
+
+     [select distinct prtfam
+        from prtmst_view pv
+       where pv.prtnum = @prtnum
+         and pv.prt_client_id = @prt_client_id] catch(-1403)
+     |
+     if (@? = 0 and @prtfam != '')
+     {
+         [select rtnum1 fifwin
+            from poldat p
+           where p.polcod = 'VAR'
+             and p.polvar = 'PWY-TIME-WINDOW'
+             and p.polval = 'ITEM-FAMILY-AND-DAYS'
+             and p.rtstr1 = @prtfam
+             and p.rtnum1 > 0] catch(-1403)
+         |
+         if (@? = 0)
+         {
+             [update prtmst
+                 set dte_win_typ = 'F',
+                     timcod = 'D',
+                     fifwin = @fifwin
+              where prtnum = @prtnum
+                and prt_client_id = @prt_client_id]
+         }
+     }
+]]>
+</local-syntax>
+
+<documentation>
+<remarks>
+<![CDATA[
+    <p>
+    This command is used to update below 3 fields on prtmst table:
+        dte_win_typ
+        3 values can be populated, for DFS, only value 'F' will be needed which is receiving date.
+        M: Manufacture date, E: Expiration date, F: Receiving date
+        Timcod
+        3 values can be populated, for DFS, only value 'D' will be needed which means days.
+        M: Minutes, H: Hours, D: Days
+        Fifwin:
+        Defines the window
+        Integer value.
+    </p>
+    <p>
+    This command will be call at the result IFD segment:VC_PRC_HOST_PART when downloading SKU from host.
+    </p>
+]]>
+</remarks>
+
+<exception value="eOK">Normal successful completion</exception>
+
+</documentation>
+</command>

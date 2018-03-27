@@ -1,0 +1,77 @@
+<command>
+<name>allocate inventory and location</name>
+
+<description>Allocate Inventory and Location</description>
+
+<type>Local Syntax</type>
+
+<local-syntax>
+<![CDATA[
+    if (@wrktyp = 'E'
+        and @rule_nam != ''
+        and @dstare != '')
+    {
+        /* If we are replenishing a specific ship_to_loc(inv_attr_str1),
+         * and the dstare also specified ship_to_loc for storage, then
+         * make sure they are matching before continue allocation.
+         */
+        [select 'x'
+           from alloc_rule_dtl
+          where rule_nam = @rule_nam
+            and wh_id = @wh_id
+            and field_name = 'inv_attr_str1'
+            and operator = '='
+            and value not in (select d1.colval
+                                from sto_area_hdr h1,
+                                     sto_area_dtl d1
+                               where h1.sto_area_id = d1.sto_area_id
+                                 and d1.colnam = 'inv_attr_str1'
+                                 and h1.wh_id = @wh_id
+                                 and h1.dstare = @dstare)
+            and exists(select d2.colval
+                         from sto_area_hdr h2,
+                              sto_area_dtl d2
+                        where h2.sto_area_id = d2.sto_area_id
+                          and d2.colnam = 'inv_attr_str1'
+                          and h2.wh_id = @wh_id
+                          and h2.dstare = @dstare)
+            and rownum < 2] catch(-1403)
+        |
+        if (@? = 0)
+        {
+            set return status
+              where status = -1403
+        }
+    }
+    |
+    ^allocate inventory and location
+      where @*
+
+]]>
+</local-syntax>
+
+<argument name="@*"> Any fields used in calls to allocate inventory</argument>
+
+<documentation>
+<remarks>
+<![CDATA[
+    <p>
+    This command wrappers the standard version, because in rpl_path_cfg, we
+    can only speicify prtfam as criteria, which means for same SKU, we may need
+    to replenish to multiple picking face areas, for which corresponding
+    storage rule has been configured for specific ship_to_loc.
+    if we are trying to replenish to an area where does not allow
+    the ship_to_loc, then stop allocation, system should be continue next area
+    for allocation.
+    </p>
+]]>
+</remarks>
+
+<exception value="eOK">Normal successful completion</exception>
+
+<seealso cref="allocate inventory"> </seealso>
+
+</documentation>
+
+</command>
+

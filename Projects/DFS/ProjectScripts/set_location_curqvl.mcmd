@@ -1,0 +1,200 @@
+<command>
+  <name>set location curqvl</name>
+  <description>Set Location Curqvl</description>
+  <type>Local Syntax</type>
+  <local-syntax>
+<![CDATA[
+get location curqvl
+where stoloc = @stoloc
+  and wh_id = @wh_id
+|
+/* For below policy defined area, the assumption is loccod is 'E'(Each)*/
+[select rtnum2 loc_def_maxqvl
+   from poldat_view
+  where polcod = 'USR'
+    and polvar = 'LOCATION-OVERRIDE'
+    and polval = 'CAPTURE-MAXQTY-AREA'
+    and rtnum1 = 1
+    and rtstr1 in (select arecod
+                     from locmst lm
+                    where lm.stoloc = @stoloc
+                      and wh_id = @wh_id)
+    and wh_id = @wh_id] catch(-1403)
+|
+if (@? = 0)
+{
+    [select locsts
+       from locmst
+      where stoloc = @stoloc
+        and wh_id = @wh_id]
+     |
+     if (@locsts = 'F')
+     {
+        if (@curqvl > 0)
+        {
+            /* Partially move inventory out a 'Full' location, keep the location
+             * in 'Full' status. This is aimed to empty the location before
+             * putaway new stock into the same location, for SKU like Beauty
+             * which enabled putaway with time window.
+             */
+            [update locmst
+                set maxqvl = pndqvl + @curqvl
+              where stoloc = @stoloc
+                and wh_id = @wh_id]
+        }
+        else
+        {
+            /* Moved everything out of a 'Full' location, restore the default
+             * location max qvl.
+             */
+            [update locmst
+                set maxqvl = @loc_def_maxqvl
+              where stoloc = @stoloc
+                and wh_id = @wh_id]            
+        }
+     }
+     else if (@locsts = 'E')
+     {
+         /* Store inventory into an 'Empty' location, setup location
+          * maxqvl from prtmst if available.
+          */
+         [select max(nvl(pv.vc_maxqty_for_loc,0)) maxqvl_for_loc
+            from prtmst_view pv,
+                 inventory_view iv
+           where pv.prtnum = iv.prtnum
+             and pv.prt_client_id = iv.prt_client_id
+             and pv.wh_id = @wh_id
+             and iv.stoloc = @stoloc]
+          |
+          if (@maxqvl_for_loc > 0 and @maxqvl_for_loc < @curqvl)
+          {
+              /* Someone override vc_maxqty_for_loc with a small value,
+               * now the location can stores curqvl at least, so update this
+               * value back to prtmst, and use it as maxqvl of the location.
+               */
+              [update prtmst
+                  set vc_maxqty_for_loc = @curqvl
+                where prtnum in (select prtnum
+                                   from inventory_view iv
+                                  where iv.stoloc = @stoloc)
+                  and vc_maxqty_for_loc > 0
+                  and vc_maxqty_for_loc < @curqvl]
+               |
+               publish data
+                 where maxqvl_for_loc = @curqvl
+          }
+          |
+          [update locmst
+              set maxqvl = decode(@maxqvl_for_loc, 0,
+                                  @loc_def_maxqvl, @maxqvl_for_loc)
+            where stoloc = @stoloc
+              and wh_id = @wh_id]
+     }
+     else if (@locsts = 'P' or @locsts = 'I')
+     {
+         if (@curqvl = 0)
+         {
+             /* Moved everything out of a 'Partial' location, restore default
+              * location max qvl.
+              */
+             [update locmst
+                 set maxqvl = @loc_def_maxqvl
+               where stoloc = @stoloc
+                 and wh_id = @wh_id]
+         }
+         else
+         {
+             if (@locsts = 'P')
+             {
+                 /* Move something in or out of the location, update location
+                  * maxqvl with captured value if available.
+                  */
+                 [select max(nvl(pv.vc_maxqty_for_loc,0)) maxqvl_for_loc
+                    from prtmst_view pv,
+                         inventory_view iv
+                   where pv.prtnum = iv.prtnum
+                     and pv.prt_client_id = iv.prt_client_id
+                     and pv.wh_id = @wh_id
+                     and iv.stoloc = @stoloc]
+                  |
+                  if (@maxqvl_for_loc > 0)
+                  {
+                      [update locmst
+                          set maxqvl = @maxqvl_for_loc
+                        where maxqvl > @maxqvl_for_loc
+                          and stoloc = @stoloc
+                          and wh_id = @wh_id] catch(-1403)
+                  }
+             }
+             else if (@locsts = 'I')
+             {
+                 /* This is for scenario where user adjust inventory out of
+                  * the location, before that system set the location status
+                  * to 'Error'.
+                  * Since we do not know before adjust the location status is
+                  * Full or not, so we use quantity to tell if we need to keep
+                  * the location status to 'Full', please note here, system
+                  * already deducted quantity from invdtl table, but not from
+                  * invsum table yet.
+                  * For the union part, it is for adjust adding inventory to
+                  * the location with qty more than captured value, in which
+                  * case it should be 'Full' as well.
+                  */
+                 [select 'x'
+                    from dual
+                   where exists (select 'x'
+                    from locmst lm,
+                         (select sum(untqty) untqty,
+                                 stoloc,
+                                 wh_id
+                            from invsum
+                           group by stoloc,
+                                    wh_id) im
+                   where lm.stoloc = im.stoloc
+                     and lm.wh_id = im.wh_id
+                     and lm.maxqvl <= im.untqty
+                     and @curqvl < im.untqty
+                     and lm.stoloc = @stoloc
+                     and lm.wh_id = @wh_id
+                  union all
+                  select 'x'
+                    from prtmst_view pv,
+                         inventory_view iv
+                   where pv.prtnum = iv.prtnum
+                     and pv.prt_client_id = iv.prt_client_id
+                     and pv.wh_id = @wh_id
+                     and iv.stoloc = @stoloc
+                     and pv.vc_maxqty_for_loc <= @curqvl
+                     and pv.vc_maxqty_for_loc > 0)] catch(-1403)
+                 |
+                 if (@? = 0)
+                 {
+                     /* Keep the maxqvl same as curqvl, so it will be in 'Full'
+                      * when reset location status.
+                      */
+                     [update locmst
+                         set maxqvl = @curqvl
+                       where stoloc = @stoloc
+                         and wh_id = @wh_id]
+                 }
+                 
+             }
+         }
+     }
+}
+|
+[update locmst
+    set curqvl = @curqvl,
+        locsts = decode(locmst.locsts, 'I', 'I', decode(@curqvl, 0, 'E', decode(sign(locmst.maxqvl - @curqvl),'1','P','F')))
+  where stoloc = @stoloc
+    and wh_id = @wh_id]
+]]>
+</local-syntax>
+  <argument name="stoloc" datatype="string" />
+  <argument name="wh_id" datatype="string" />
+  <documentation>
+<remarks></remarks>
+<exception value="eOK">Normal successful completion</exception>
+<seealso cref="move inventory"></seealso>
+</documentation>
+</command>

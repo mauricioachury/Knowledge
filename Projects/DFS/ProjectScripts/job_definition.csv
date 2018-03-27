@@ -1,0 +1,33 @@
+job_id,node_id,name,enabled,type,command,log_file,trace_level,overlap,schedule,start_delay,timer,grp_nam
+USR-TRIGGER-RPL,,Generate Trigger Replenishments,1,timer,"[select r.prtnum,
+        r.invsts,
+        r.arecod,
+        r.stoloc
+   from rplcfg r,
+        locmst lm
+  where r.wh_id = 'SGDC'
+    and r.stoloc = lm.stoloc
+    and r.wh_id = lm.wh_id
+    and r.minunt >= lm.curqvl + lm.pndqvl
+    and lm.arecod in (select arecod
+                        from aremst
+                       where wh_id ='SGDC'
+                         and bldg_id = 'Greenwich')
+    and exists (select 'x'
+                  from invsum im
+                 where im.prtnum = r.prtnum
+                   and im.untqty > im.comqty
+                   and im.arecod in (select arecod
+                           from aremst
+                           where wh_id ='SGDC'
+                             and bldg_id = 'Greenwich'))]
+|
+create triggered replenishment
+ where arecod = @arecod
+   and stoloc = @stoloc
+   and prtnum = @prtnum
+   and invsts = @invsts
+   and wh_id = 'SGDC'
+   and prt_client_id = '----'
+|
+commit;",$LESDIR/log/trigger_rpl.log,,0,,,300,dfs_data

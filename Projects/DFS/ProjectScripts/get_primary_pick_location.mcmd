@@ -1,0 +1,188 @@
+<command>
+    
+<name>get primary pick location</name>
+
+<description>Get The Primary Pick Location</description>
+
+<type>Local Syntax</type>
+    
+<local-syntax>
+<![CDATA[
+
+    [select nvl(@bldg_id,bldg_id) bldg_id
+       from aremst
+      where arecod = @arecod
+        and wh_id = @wh_id
+        and rownum = 1] catch(-1403)
+    |
+    list assigned locations 
+      where prtnum = @prtnum 
+        and wh_id = @wh_id
+        and prt_client_id = @prt_client_id catch(-1403) >> assigned_locs
+    |
+    if(rowcount(@assigned_locs) = 0)
+    {
+        /* We don't have an assigned location so try to find a location where  
+         * we can pick from and in which we have the given part/client in */
+        get picking area list where prtnum = @prtnum
+                                       and prt_client_id = @prt_client_id
+                                       and wh_id = @wh_id
+                                       and bldg_id = @bldg_id catch(-1403) >> picking_locs
+        |
+        if(rowcount(@picking_locs) = 0)
+        {
+            /* So we can't pick this part from anywhere.  We need to pick a 
+             * default pickface */
+            [select rtstr1 primary_pick_location
+               from poldat_view 
+              where polcod = 'ALLOCATE-LOC'
+                and polvar = 'PROXIMITY'
+                and polval = 'DEFAULT-PICK-LOC'
+                and rownum < 2
+                and wh_id  = @wh_id]
+        }
+        else
+        {
+            /* We have a list of areas where inventory is located and
+             * that we can pick from so choose the first one and 
+             * get a location with this inventory in it */
+            publish top rows where resultset = @picking_locs and rows = 1
+            |
+            [select invlod.stoloc primary_pick_location
+               from invlod,
+                    invsub,
+                    invdtl,
+                    locmst
+              where invlod.lodnum = invsub.lodnum
+                and invsub.subnum = invdtl.subnum
+                and invlod.stoloc = locmst.stoloc
+                and invdtl.prtnum = @prtnum
+                and invdtl.prt_client_id = @prt_client_id
+                and locmst.arecod = @arecod
+                and locmst.wh_id = @wh_id
+                and rownum < 2]catch(-1403)
+            |
+            if (@? = -1403)
+            {
+                /* If we can't get any specific picking face.
+                 * We need to pick a default pickface
+                 */
+                [select rtstr1 primary_pick_location
+                   from poldat_view 
+                  where polcod = 'ALLOCATE-LOC'
+                    and polvar = 'PROXIMITY'
+                    and polval = 'DEFAULT-PICK-LOC'
+                    and rownum < 2
+                    and wh_id  = @wh_id]
+            }
+            |
+            publish data
+             where primary_pick_location = @primary_pick_location
+        }
+    }
+    else
+    {
+        /*
+         * When we got 'inv_ship_to_loc' saved from 'allocate location' command,
+         * which means there are multipe assigned locs for the SKU, but we need
+         * the assigned location which matches with the inventory ship_to_loc
+         * to be returned as primary pick location.so e.g when putaway pallet
+         * for Vietnam, make sure use the assigned location for Vietnam returned.
+         */
+        get session variable
+          where name = 'inv_ship_to_loc' catch(-1403)
+        |
+        if (@? = -1403)
+        {
+            publish top rows
+              where resultset = @assigned_locs
+                and rows = 1
+        }
+        else
+        {
+            publish data
+              where inv_ship_to_loc = @value
+            |
+            [[
+              import com.redprairie.moca.*;
+              import com.redprairie.moca.util.*;
+              int totRowCnt = assigned_locs.getRowCount();
+              int rowIdx = 0;
+              String bestloc = "";
+              while(rowIdx < totRowCnt)
+              {
+                  assigned_locs.next();
+                  if (rowIdx == 0)
+                  {
+                      bestloc = assigned_locs.getString("begloc");
+                  }
+                  else
+                  {
+                      String begloc = assigned_locs.getString("begloc");
+                      MocaResults rs = moca.executeCommand(
+                              "[select 'x' " +
+                              "  from sto_area_hdr h1, " +
+                              "       sto_area_dtl d1 " +
+                              " where h1.sto_area_id = d1.sto_area_id " +
+                              "   and d1.colnam = 'inv_attr_str1' " +
+                              "   and h1.wh_id = '" + wh_id + "'" +
+                              "   and d1.colval = '" + inv_ship_to_loc + "'" +
+                              "   and h1.dstare = (select lm.arecod" +
+                              "                      from locmst lm" +
+                              "                     where lm.stoloc = '" + begloc + "'" +
+                              "                       and wh_id = '" + wh_id + "')] catch(-1403)");
+                      if (rs.hasNext())
+                      {
+                          bestloc = begloc;
+                          break;
+                      }
+                  }
+                  rowIdx ++;
+              }
+              bestloc;
+              ]] >> res
+              |
+              publish top rows
+                where res = @res
+                  and count = 1
+              |
+              publish data
+                where begloc = @result
+        }
+    }
+    |
+    publish data where primary_pick_location = nvl(@primary_pick_location,@begloc)
+]]>
+</local-syntax>
+    
+<argument name="@*"></argument>    
+
+<documentation>
+<remarks>
+<![CDATA[
+  <p>
+  This command is used to get the primary pick location for a part.
+  </p>
+  <p>
+  This will first attempt to find an assigned location for the given part.
+  If more than one assigned location is found it will pick the first row
+  returned from list assigned locations.
+  
+  If not assigned location is found this function will look for a location
+  where the part exists ordered by the picking policies (the first location 
+  you could pick the part from).
+  
+  If it still has not found a location it will default to the default picking 
+  location policy.
+  </p>
+
+]]>
+</remarks>
+
+<policy polcod="ALLOCATE-LOC" polvar="PROXIMITY" polval="DEFAULT-PICK-LOC"></policy>
+
+<seealso cref="list assigned locations"></seealso>
+
+</documentation>
+    
+</command>

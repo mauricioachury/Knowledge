@@ -1,0 +1,564 @@
+<command>
+
+<name>process inventory move</name>
+
+<description>Process Inventory Move</description>
+
+<type>Local Syntax</type>
+
+<local-syntax>
+<![CDATA[
+        /* If we're doing moves by part and quantity then nothing */
+        /* changes.  This ends up being a detail move anyway to move */
+        /* inventory */
+        if (@sernum_sublmov = '1' and @srcqty > 0)
+        { 
+            [select dtlnum srcdtl,
+                    '' srcsub,
+                    '' srclod,
+                    '' srcqty,
+                    '' src_catch_qty
+               from invdtl 
+              where subnum = @srcsub]        
+        }
+        else if (@sernum_outcap = '1')
+        {
+            [select subnum srcsub,
+                    '' srclod,
+                    '' srcdtl,
+                    '' srcqty,
+                    '' src_catch_qty,
+                    '' dstsub
+               from invsub 
+              where lodnum = @srclod]
+        }
+        |
+        /* It's possible that we had srcqty passed in as string. Convert it
+         * to number to make sure we got the correct result in following
+         * comparation.
+         */
+        publish data where srcqty = to_number(@srcqty)
+        |
+        if (@prtnum != '' and @srcqty > 0)
+        {
+            /* Hide srcqty if it equal the total quantity of the inventory,
+             * so 'move inventory' can move inventory according to inventory
+             * identifier instead of srcqty which could potentially break
+             * original inventory structure.
+             */
+            if ((@srcdtl and @srcdtl != '') or
+                (@srcsub and @srcsub != '') or
+                (@srclod and @srclod != ''))
+            {   
+                publish data where tempcmd = 
+                'select sum(invdtl.untqty) untqty_sum
+                   from invdtl,
+                        invsub
+                  where invdtl.subnum = invsub.subnum'
+                    and dtlnumclause = " and invdtl.dtlnum = "||"'"||@srcdtl||"'"
+                    and subnumclause = " and invsub.subnum = "||"'"||@srcsub||"'"
+                    and lodnumclause = " and invsub.lodnum = "||"'"||@srclod||"'"
+                |
+                if (@srcdtl and @srcdtl != '')
+                {
+                    publish data where tempcmd = @tempcmd ||@dtlnumclause
+                }
+                |
+                if (@srcsub and @srcsub != '')
+                {
+                    publish data where tempcmd = @tempcmd ||@subnumclause
+                }
+                |
+                if (@srclod and @srclod != '')
+                {
+                    publish data where tempcmd = @tempcmd ||@lodnumclause
+                }
+                | 
+                publish data where cmd = '['||@tempcmd||']'
+                |
+                execute server command
+                |
+                if (@srcqty = @untqty_sum)
+                {
+                    hide stack variable where name = 'srcqty'
+                }
+            }
+            |
+            /* If we attempt to move invetory with wrkref and srcloc only,   */ 
+            /* we will search the inventories in current locations           */
+            /* according to pick work and then the inventories will be       */
+            /* moved with specific lodnum or subnum or dtlnum in terms of    */
+            /* load level.                                                   */
+            /* The following scenarios will be included.                     */
+            /* 1. Move all the inventories in location for specific item.    */
+            /* 2. Move from unique inventory identifier for specific item.   */
+            if (!@srcdtl and !@srcsub and !@srclod and 
+                    (@srcloc and @srcloc != '') and (@srcref or @wrkref))
+            {
+                list available inventory for pick in location
+                    where wrkref = nvl(@srcref, @wrkref)
+                      and wh_id = @wh_id catch (@?) >> res
+                |
+                /* result set may not contain any rows, though the 
+                 * command is sucessful. Hence add the check for 
+                 * rowcount(res) > 0. */ 
+                if (@? = 0 and rowcount(@res) > 0)
+                {
+                    convert column results to string
+                      where res = @res
+                        and colnam = 'dtlnum'
+                    |
+                    convert list to in clause
+                    where column_name = 'dtlnum'
+                        and string = @result_string
+                        and table_prefix = 'invdtl'
+                    |
+                    /* Calculate the total quantity of available inventories */
+                    [select sum(invdtl.untqty) invqty,
+                            prtnum,
+                            prt_client_id,
+                            ftpcod
+                       from invdtl
+                      where @in_clause:raw
+                      group by prtnum,
+                               prt_client_id,
+                               ftpcod]
+                    |
+                    [select pt.lodlvl,
+                            pf.untpal,
+                            pf.untcas
+                       from prtmst_view pt
+                       left join prtftp_view pf
+                         on pt.prtnum = pf.prtnum
+                        and pt.prt_client_id = pf.prt_client_id
+                        and pt.wh_id_tmpl = pf.wh_id
+                      where pt.prtnum = @prtnum
+                        and pt.prt_client_id = @prt_client_id
+                        and pt.wh_id_tmpl = @wh_id
+                        and pf.ftpcod = @ftpcod]
+                    |
+                    /* If pick work requests the quantity of all the inventories */
+                    /* for this item in this location, it will move all of them. */
+                    if (@srcqty = @invqty)
+                    {
+                        publish data combination
+                          where res = @res
+                        |
+                        /* If we have multiple avaliable inventory on srcloc,
+                         * then we invoke move inventory multiple times to 
+                         * move them all.
+                         */
+                        if (@lodlvl = 'L')
+                        {
+                            publish data 
+                              where srclod = @lodnum
+                                and srcqty = @untqty
+                        }
+                        else if (@lodlvl = 'S')
+                        {
+                            publish data 
+                              where srcsub = @subnum
+                                and srcqty = @untqty
+                        }
+                        else if (@lodlvl = 'D')
+                        {
+                            publish data 
+                              where srcdtl = @dtlnum
+                                and srcqty = @untqty
+                        }
+                    }
+                    /* If pick work requests the quantity less then the total    */
+                    /* quantity for the inventories in the location,             */
+                    /* 1. If the inventory lodlvl is L and there is only one load*/
+                    /*    in the location, the partial load that the pick work   */
+                    /*    requested can be picked up.                            */
+                    /* 2. If the inventory lodlvl is S and there is only one case*/
+                    /*    in the location, the partial case that the pick work   */
+                    /*    requested can be picked up.                            */
+                    /* 3. If none of them pass, the error will prompt out to     */
+                    /*    let user enter the invtid. */      
+                    else if (@srcqty < @invqty)
+                    {
+                        /* Check if there is only one load or one case on srcloc. */
+                        convert column results to string
+                          where res = @res
+                            and colnam = decode(@lodlvl,'L','lodnum',
+                                                        'S','subnum','dtlnum')
+                        |
+                        convert list to in clause
+                          where column_name = decode(@lodlvl,'L','lodnum',
+                                                             'S','subnum','dtlnum')
+                            and string = @result_string
+                            and table_prefix = decode(@lodlvl,'L','invsub',
+                                                              'S','invsub','invdtl')
+                        |
+                        /* Get the inventory count by different load level. */
+                        [select count(distinct decode(@lodlvl, 'L', invsub.lodnum,
+                                                               'S', invsub.subnum,
+                                                                    invdtl.dtlnum)) invcnt 
+                           from invsub,
+                                invdtl
+                          where invsub.subnum = invdtl.subnum
+                            and @in_clause:raw] catch (-1403)
+                        |
+                        /* Only one source load or case, then Unique load number
+                         * or case number for specific item is found.
+                         */
+                        if (@invcnt = 1)
+                        {   
+                            [select distinct decode(@lodlvl, 'L', invsub.lodnum,
+                                                             'S', invsub.subnum,
+                                                                  invdtl.dtlnum) invtid 
+                               from invsub,
+                                    invdtl
+                              where invsub.subnum = invdtl.subnum
+                                and @in_clause:raw]
+                            |
+                            publish data 
+                              where srclod = decode(@lodlvl, 'L', @invtid, '')
+                                and srcsub = decode(@lodlvl, 'S', @invtid, '')
+                                and srcdtl = decode(@lodlvl, 'D', @invtid, '')
+                                and srcqty = @srcqty
+                        }
+                        /* User need to confirm which inventory he want to move. */
+                        else
+                        {
+                            set return status 
+                                where status = 11573
+                                  and stoloc = @srcloc
+                                  and lookup_lodlvl 
+                                        = decode(@lodlvl, 'L', 'lodnum',
+                                                          'S', 'subnum',
+                                                          'D', 'dtlnum',
+                                                          'lodnum')
+                        }
+                    }
+                }
+            }
+        }
+        /* If moving at a detail level
+         * and destination subload/load is not specified,
+         * check if this is the only detail
+         * of the subnum/load, if so escalte to subnum/load,
+         * so we always move inventory as higher
+         * level as possible.
+         */
+        else if (@srcdtl and @srcdtl != '')
+        {
+            [select polval
+               from poldat_view
+              where polcod = 'MOVE-INVENTORY'
+                and polvar = 'ATTACHMENT-STRATEGY-FOR-AREAS'
+                and rtstr1 = (select arecod
+                                from locmst
+                               where stoloc = @dstloc
+                                 and wh_id = @wh_id)
+                and wh_id  = @wh_id] catch(-1403)
+            |
+            /* If the attachment strategy associated with
+             * the destination area is not defined or it
+             * is 'NEVER-ATTACH' only then srclod has to 
+             * published.
+             */
+            if ((@? = -1403 or @polval = 'NEVER-ATTACH') and 
+                (@dstlod is null or @dstlod = '') and
+                (@dstsub is null or @dstsub = ''))
+            {
+                [select count(ivd.dtlnum) dtlcnt
+                   from invdtl ivd,
+                        invsub ivs
+                  where ivd.subnum = ivs.subnum
+                    and ivs.lodnum in
+                      (select lodnum
+                         from invdtl ivd1,
+                              invsub ivs1
+                        where ivd1.subnum = ivs1.subnum
+                          and ivd1.dtlnum = @srcdtl)]catch(-1403)
+                |
+                if (@dtlcnt = 1)
+                {
+                    [select lodnum movlod
+                       from invsub,
+                            invdtl
+                      where invdtl.subnum = invsub.subnum
+                        and dtlnum = @srcdtl]
+                    |
+                    publish data
+                      where srcdtl = ''
+                        and srcsub = ''
+                        and srclod = @movlod
+                }
+            }
+            else if (@dstsub is null or @dstsub = '')
+            {
+                [select 'x'
+                   from invdtl
+                  where dtlnum <> @srcdtl
+                    and subnum = (select subnum
+                                    from invdtl
+                                   where dtlnum = @srcdtl)]catch(-1403)
+                |
+                if (@? = -1403)
+                {
+                    [select subnum movsub
+                       from invdtl
+                      where dtlnum = @srcdtl]
+                    |
+                    publish data
+                      where srcdtl = ''
+                        and srcsub = @movsub
+                }
+            }
+        }
+        else if (@srcsub and @srcsub != '')
+        {
+
+            if (@dstsub and @dstsub != '')
+            {
+
+                /* If we've specified a source and destination subload        */
+                /* If the destination subload exists, then we need to look at */
+                /* the mergeondep flag, which determines whether we'll be     */
+                /* just transferring the source sub onto the same load as the */
+                /* destination sub, or attempting to merge the source sub     */
+                /* the destination sub. */
+                /* If the destination identifier does not exist, then error   */
+                /* with eINV_MOVE_USE_RELABEL                                 */
+
+                [select idmflg src_idmflg
+                   from invsub
+                  where subnum = @srcsub]
+                |
+                /* If we are doing picking, we should            */
+                /* not throw user error 10592 as user            */
+                /* has to perform picks normally instead         */
+                /* of using 'relabel funcationality', especially */
+                /* when it comes to list picking.                */
+                if ((@srcref is null or @srcref = '') 
+                     AND (@wrkref is null or @wrkref = ''))
+                {
+                    /* If the source load is a permanent load 
+                     * we should allow to perform a move and need not
+                     * throw the error to use Relabel functionality.
+                     */
+                    [select invlod.prmflg
+                       from invsub
+                      inner join invlod
+                         on invsub.lodnum = invlod.lodnum
+                      where invsub.subnum = @srcsub] catch(-1403)
+                    |
+                    [select lodnum dstlod, 
+                            idmflg dst_idmflg
+                       from invsub
+                      where subnum = @dstsub] catch(-1403)
+                    |
+                    if (@? = -1403 and @prmflg != 1)
+                    {
+                        set return status where status = 10592
+                    }
+                }
+                |
+                if (@mergeondep = 0)
+                {
+                    publish data 
+                      where dstlod = @dstlod
+                        and dstsub = ''
+                }
+                else
+                {
+                    if (@dst_idmflg = 1 or @src_idmflg = 1)
+                    {
+                        publish data
+                          where dstlod = @dstlod
+                            and dstsub = ''
+                    }
+                    else
+                    {
+                        [select dtlnum srcdtl
+                           from invdtl
+                          where subnum = @srcsub]
+                    }
+                }
+            }
+        }
+        else if (@srclod and @srclod != '')
+        {
+            /* If we're attempting to move the contents of a load into a      */
+            /* destination subload, then we'll just move the details into the */
+            /* subload.  We'll let move inventory worry about breaking        */
+            /* serialized cases and such.                                     */
+
+            if (@dstsub and @dstsub != '')
+            {
+                [select invdtl.dtlnum srcdtl
+                   from invdtl, invsub
+                  where invdtl.subnum = invsub.subnum
+                    and invsub.lodnum = @srclod]
+            }
+
+            /* If we're attempting to move a load onto a load,                */
+            /* If the load exists, then use the mergeondep flag to determine  */
+            /* what type of move we're doing, whether it's move the source    */
+            /* load to the same location as the destination load, or          */
+            /* combining the two loads.                                       */
+            /* If the destination identifier does not exist, then error       */
+            /* with eINV_MOVE_USE_RELABEL                                     */
+
+            else if (@dstlod and @dstlod != '')
+            {
+                /* If we are doing picking, we should            */
+                /* not throw user error 10592 as user            */
+                /* has to perform picks normally instead         */
+                /* of using 'relabel funcationality', especially */
+                /* when it comes to list picking.                */
+                if ((@srcref is null or @srcref = '') 
+                     AND (@wrkref is null or @wrkref = ''))
+                {
+                    /* If the source load is a permanent load 
+                     * we should allow to perform a move and need not
+                     * throw the error to use Relabel functionality.
+                     */
+                    [select prmflg
+                       from invlod
+                      where lodnum = @srclod] catch(-1403)
+                    |
+                    [select lodnum
+                       from invlod
+                      where lodnum = @dstlod] catch(-1403)
+                    |
+                    if (@? = -1403 and @prmflg != 1)
+                    {
+                        set return status where status = 10592
+                    }
+                }
+                |
+                if (@mergeondep = 0)
+                {
+                    publish data
+                      where dstlod = ''
+                }
+                else
+                {
+                    [select subnum srcsub
+                       from invsub
+                      where lodnum = @srclod]
+                }
+            }
+        }
+        |
+        {
+            if (@srcref and @srcref != '' and 
+                @src_catch_qty and @src_catch_qty > 0)
+            {
+                set catchqty on shipping
+                where prtnum = @prtnum
+                  and prt_client_id = @prt_client_id
+                  and wh_id = @wh_id
+                  and lodnum = @srclod
+                  and subnum = @srcsub
+                  and dtlnum = @srcdtl
+                  and stoloc = @srcloc
+                  and orgcod = @orgcod
+                  and revlvl = @revlvl
+                  and lotnum = @lotnum
+                  and sup_lotnum = @sup_lotnum
+                  and rttn_id = @rttn_id
+                  and invsts = @invsts
+                  and catch_qty = @src_catch_qty
+                  and qty = @srcqty
+                  and mandte = @mandte
+                  and expire_dte = @expire_dte
+            }
+            ;
+            move inventory
+            where srcloc = @srcloc
+              and srclod = @srclod
+              and srcsub = @srcsub
+              and srcdtl = @srcdtl
+              and srcqty = @srcqty
+              and src_catch_qty = @src_catch_qty
+              and srcref = @srcref
+              and dstloc = @dstloc
+              and dstlod = @dstlod
+              and dstsub = @dstsub
+              and usr_id = @usr_id
+              and actcod = @actcod
+              and movref = @movref
+              and devcod = @devcod
+              and prtnum = @prtnum
+              and prt_client_id = @prt_client_id
+              and orgcod = @orgcod
+              and revlvl = @revlvl
+              and lotnum = @lotnum
+              and sup_lotnum = @sup_lotnum
+              and rttn_id = @rttn_id
+              and invsts = @invsts
+              and frinvs = @invsts
+              and untcas = @untcas
+              and spcind = @spcind
+              and untpak = @untpak
+              and newdst = @newdst
+              and ship_line_id = @ship_line_id
+              and trknum = @trknum
+              and wh_id = @wh_id
+              and asset_typ = @asset_typ
+              and distro_id = @distro_id
+              and ign_restrict = @ign_restrict
+              and mandte = @mandte
+              and expire_dte = @expire_dte
+       }
+]]>
+</local-syntax>
+
+<documentation>
+
+<remarks>
+<![CDATA[
+    <p>
+    Because move inventory, with all of its triggers, cannot support
+    object to object moves of the same load level (case to case, load to load),
+    this command has been provided as a wrapper for that functionality.  If
+    this command detects an object to object move of the same load level
+    is being attempted, then depending on the circumstances, it will change
+    the move by the following algorithm:
+    <ul>
+    <li> If this is a full source subload to new subload move,
+         an error will be returned, stating that the user should use 
+         relabel functionality instead. </li>
+    <li> If this is a subload to subload move, and mergeondep is set to 0, then
+         the source subload is moved to the parent load of the destination
+         subload. </li>
+    <li> If this is subload to subload move, mergeondep is set to 1,
+         and one or both subloads inhibits detail moves, then the source 
+         is is moved to the parent load of the destination subload. </li>
+    <li> If this is a subload to subload move, mergeondep is set to 1,
+         and both subloads allow detail moves, then the source subload is moved
+         into the destination subload.  </li>
+    <li> If this is a full load to new load move,
+         an error will be returned, stating that the user should use 
+         relabel functionality instead. </li>
+    <li> If this a load to load move, and mergeondep is set to 0, 
+         then the source load is moved to the location of the destination load.
+         </li>
+    <li> If this is a load to load move, and mergeondep is set to 1,
+         then the source load is moved to the destination load. </li>
+    </ul>
+    </p>
+    
+    <p>
+    From inventory status is published out from this function so that it will
+    be picked up by the writing of the daily transaction log.  This was done
+    so that the status for the inventory being moved would be shown in the
+    daily transaction log.
+    </p>
+]]>
+</remarks>
+
+<exception value="eINV_MOVE_USE_RELABEL">Invalid move.  Relabel functionality should be used instead.</exception>
+<exception value="Move Inventory Exceptions">Please see move inventory for other exceptions</exception>
+
+<seealso cref="move inventory"> </seealso>
+
+</documentation>
+
+</command>

@@ -1,0 +1,2 @@
+dda_id,action,cust_lvl,action_flds,action_frm,img_link,ena_flg,grp_nam,srtseq,action_init_cmd,action_post_cmd,rqdflg,submit_mls_id,post_mls_id,auto_clear
+VAR-DESTROY-ADJ-DDA,VAR-DESTROY-DDA-PROC,10,"lodnum","","",1,dcs_data,0,"","",0,,,0

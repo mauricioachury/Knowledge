@@ -1,0 +1,69 @@
+<trigger>
+<name>validate_usr_mix_ship_to_location</name>
+<on-command>check inventory mix at location</on-command>
+<fire-sequence>2000</fire-sequence>
+<local-syntax>
+<![CDATA[
+    /* This trigger is created for DFS to handle scenario of multiple assigned
+     * locations for same SKU but should be for different ship_to_loc, standard
+     * logic will store inventory into assigned location with ignoring
+     * the ship_to_loc(inv_attr_str1) validation.
+     */
+    if (@dstloc != '' or @stoloc != '')
+    {
+        /* If the area has ship_to_loc configured*/
+        [select 'x'
+           from sto_area_hdr h,
+                sto_area_dtl d,
+                locmst l
+          where h.sto_area_id = d.sto_area_id
+            and h.dstare = l.arecod
+            and h.wh_id = l.wh_id
+            and l.stoloc = nvl(@dstloc, @stoloc)
+            and l.wh_id = @wh_id
+            and d.colnam = 'inv_attr_str1'
+            and exists (select 'x'
+                          from rplcfg r
+                         where r.wh_id = @wh_id
+                           and r.stoloc = l.stoloc)
+            and rownum < 2] catch(-1403)
+        |
+        if (@? = 0)
+        {
+            /* Make sure ship_to_loc on inventory matches with the
+             * area storage configuration.
+             */
+            [select 'x'
+               from dual
+              where exists
+                    (select 'x'
+                       from inventory_view iv
+                      where iv.lodnum = @lodnum
+                        and iv.inv_attr_str1 not in
+                            (select d.colval
+                               from sto_area_hdr h,
+                                    sto_area_dtl d,
+                                    locmst l
+                              where h.sto_area_id = d.sto_area_id
+                                and h.dstare = l.arecod
+                                and h.wh_id = l.wh_id
+                                and l.stoloc = nvl(@dstloc, @stoloc)
+                                and l.wh_id = @wh_id
+                                and d.colnam = 'inv_attr_str1'))
+            ] catch(-1403)
+            |
+            if (@? = 0)
+            {
+                /* eINT_WOULD_MIX */
+                set return status
+                  where status = 10022
+            }
+        }
+    }
+]]>
+</local-syntax>
+<documentation>
+<seealso cref="check inventory mix at location">
+</seealso>
+</documentation>
+</trigger>

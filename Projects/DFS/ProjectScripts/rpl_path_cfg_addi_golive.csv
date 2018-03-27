@@ -1,0 +1,3 @@
+rpl_path_typ,wh_id,dstare,cfgtyp,cfgval,rplare,rpl_lodlvl,srtseq,hopare,hop_lodlvl,ins_dt,last_upd_dt,ins_user_id,last_upd_user_id
+S,SGDC,SSTGL,PRTFAM,Packaging,HOTPICKGM,S,23,,,sysdate,sysdate,SAMNI,SAMNI
+S,SGDC,SSTGX,PRTFAM,Packaging,HOTPICKGM,S,23,,,sysdate,sysdate,SAMNI,SAMNI

@@ -1,0 +1,52 @@
+colnam,colval,locale_id,lngdsc,short_dsc,grp_nam
+arecod|wh_id,CD|SGDC,US_ENGLISH,CD BEAUTY-DIOR,BEAUTY-DIOR,dfs_data
+arecod|wh_id,EL|SGDC,US_ENGLISH,EL COSMETICS-LAUDER,COSMETICS-LAUDER,dfs_data
+arecod|wh_id,LN|SGDC,US_ENGLISH,LN COSMETICS-LANCOME,COSMETICS-LANCOME,dfs_data
+arecod|wh_id,CQ|SGDC,US_ENGLISH,CQ COSMETICS-CLINIQUE,COSMETICS-CLINIQUE,dfs_data
+arecod|wh_id,GU|SGDC,US_ENGLISH,GU BEAUTY-GUERLAIN,BEAUTY-GUERLAIN,dfs_data
+arecod|wh_id,GV|SGDC,US_ENGLISH,GV BEAUTY GIVENCHY,BEAUTY GIVENCHY,dfs_data
+arecod|wh_id,CMD|SGDC,US_ENGLISH,CMD COSMETICS-MISC DESIGNERS,COSMETICS-MISC,dfs_data
+arecod|wh_id,CWB|SGDC,US_ENGLISH,CWB COSMETICS-WELL-BEING,COSMETICS-WELL-BEING,dfs_data
+arecod|wh_id,KH|SGDC,US_ENGLISH,KH KIEHLS,KIEHLS,dfs_data
+arecod|wh_id,CKB|SGDC,US_ENGLISH,CKB COSMETICS-KOREAN BRANDS,COSMETICS-KOREAN,dfs_data
+arecod|wh_id,CTR|SGDC,US_ENGLISH,CTR COSMETICS-TREND,COSMETICS-TREND,dfs_data
+arecod|wh_id,CEB|SGDC,US_ENGLISH,CEB COSMETICS-EMERGING BRANDS,COSMETICS-EMERGING,dfs_data
+arecod|wh_id,CLOO|SGDC,US_ENGLISH,CLOO COSMETICS-L'OREAL OTHER,COSMETICS-L'OREAL,dfs_data
+arecod|wh_id,CTRD|SGDC,US_ENGLISH,CTRD COSMETICS-TRADITIONAL II,COSMETICS-TRADITION,dfs_data
+arecod|wh_id,VS|SGDC,US_ENGLISH,VS VICTORIA'S SECRET,VICTORIA'S SECRET,dfs_data
+arecod|wh_id,FRA|SGDC,US_ENGLISH,FRA FRAGRANCES,FRAGRANCES,dfs_data
+arecod|wh_id,HFRA|SGDC,US_ENGLISH,HFRA HOME FRAGRANCE,HOME FRAGRANCE,dfs_data
+arecod|wh_id,GNRC|SGDC,US_ENGLISH,GNRC GENERIC,GENERIC,dfs_data
+arecod|wh_id,GFT|SGDC,US_ENGLISH,GFT GIFTS,GIFTS,dfs_data
+arecod|wh_id,CIGARA|SGDC,US_ENGLISH,CIGARA Cigar Room,Cigar Room,dfs_data
+arecod|wh_id,DISTRO|SGDC,US_ENGLISH,DISTRO Pre-D Processing,Pre-D Processing,dfs_data
+arecod|wh_id,DMG|SGDC,US_ENGLISH,DMG Damage,DMG Damage,dfs_data
+arecod|wh_id,DPSG|SGDC,US_ENGLISH,DPSG Duty Paid Singapore,Duty Paid Singapore,dfs_data
+arecod|wh_id,FC|SGDC,US_ENGLISH,FC Food & Candy,Food & Candy,dfs_data
+arecod|wh_id,HOTPICK|SGDC,US_ENGLISH,HOTPICK Hot Pick Area,Hot Pick Area,dfs_data
+arecod|wh_id,LQRD|SGDC,US_ENGLISH,LQRD Liquor Dedicated,Liquor Dedicated,dfs_data
+arecod|wh_id,LQRDC|SGDC,US_ENGLISH,LQRDC Liquor Dedicated case,Liquor DC,dfs_data
+arecod|wh_id,VLQRD|SGDC,US_ENGLISH,VLQRD VTN Liquor Dedicated,VTN Liquor Dedicated,dfs_data
+arecod|wh_id,VLQRDC|SGDC,US_ENGLISH,VLQRDC VTN Liquor Dedicated case,VTN Liquor DC,dfs_data
+arecod|wh_id,LQRR|SGDC,US_ENGLISH,LQRR Liquor Reserve,Liquor Reserve,dfs_data
+arecod|wh_id,PKGS|SGDC,US_ENGLISH,PKGS Bags & Packaging,Bags & Pkgs,dfs_data
+arecod|wh_id,PND|SGDC,US_ENGLISH,PND Pickup and Deposit,Pickup and Deposit,dfs_data
+arecod|wh_id,PRSG|SGDC,US_ENGLISH,PRSG Prestige,Prestige,dfs_data
+arecod|wh_id,PRSGR|SGDC,US_ENGLISH,PRSGR Prestige Reserve,Prestige Reserve,dfs_data
+arecod|wh_id,QCGM|SGDC,US_ENGLISH,QC Quality Control for GM,QC for GM,dfs_data
+arecod|wh_id,QCSWT|SGDC,US_ENGLISH,QCSWT Quality Control for SWT,QC for SWT,dfs_data
+arecod|wh_id,QCPRED|SGDC,US_ENGLISH,QCPRED Quality Control Pre-Distribution,QC Pre-D,dfs_data
+arecod|wh_id,RDTS|SGDC,US_ENGLISH,RDTS Rdt area,Rdt area,dfs_data
+arecod|wh_id,RL|SGDC,US_ENGLISH,RL Reverse Logistics,Reverse Logistics,dfs_data
+arecod|wh_id,RSTG|SGDC,US_ENGLISH,RSTG Receive Stage,Receive Stage,dfs_data
+arecod|wh_id,SOUV|SGDC,US_ENGLISH,SOUV Souvenir Singapore,Souvenir Singapore,dfs_data
+arecod|wh_id,SSTGL|SGDC,US_ENGLISH,SSTGL Ship Stage Local,Ship Stage Local,dfs_data
+arecod|wh_id,SSTGX|SGDC,US_ENGLISH,SSTGX Ship Stage Export,Ship Stage Export,dfs_data
+arecod|wh_id,TOBD|SGDC,US_ENGLISH,TOBD Tobacco Dedicated,Tobacco Dedicated,dfs_data
+arecod|wh_id,TOBDC|SGDC,US_ENGLISH,TOBDC Tobacco Dedicated case,Tobacco DC,dfs_data
+arecod|wh_id,TOBR|SGDC,US_ENGLISH,TOBR Tobacco Reserve,Tobacco Reserve,dfs_data
+arecod|wh_id,WIND|SGDC,US_ENGLISH,WIND Wine & Champagne Dedicated,W&C Dedicated,dfs_data
+arecod|wh_id,VWIND|SGDC,US_ENGLISH,VWIND VTN Wine & Champagne Dedicated,VTN W&C Dedicated,dfs_data
+arecod|wh_id,WINDC|SGDC,US_ENGLISH,WINDC Wine & Champagne Dedicated case,W&C DC,dfs_data
+arecod|wh_id,VWINDC|SGDC,US_ENGLISH,VWINDC VTN Wine & Champagne Dedicated case,VTN W&C DC,dfs_data
+arecod|wh_id,WINR|SGDC,US_ENGLISH,WINR Wine & Champagne Reserve,W&C Reserve,dfs_data

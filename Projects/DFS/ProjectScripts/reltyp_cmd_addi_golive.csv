@@ -1,0 +1,4 @@
+wh_id,reltyp_id,srcare,rel_cmd,extra_args,pricod,grp_cols,ins_dt,last_upd_dt,ins_user_id,last_upd_user_id
+SGDC,C,PKGSGM,CREATE WORK,,,,sysdate,sysdate,SAMNI,SAMNI
+SGDC,A,PKGSGM,CREATE WORK,,,,sysdate,sysdate,SAMNI,SAMNI
+SGDC,Z,PKGSGM,CREATE WORK,,,,sysdate,sysdate,SAMNI,SAMNI

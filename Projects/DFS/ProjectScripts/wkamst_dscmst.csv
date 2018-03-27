@@ -1,0 +1,3 @@
+colnam,colval,locale_id,lngdsc,short_dsc,grp_nam
+wrkare|wh_id,WKASWT|SGDC,US_ENGLISH,WKASWT Work area for SWT,Work Area SWT,dcs_data
+wrkare|wh_id,WKAGM|SGDC,US_ENGLISH,WKAGM Work area for GM,Work Area GM,dcs_data

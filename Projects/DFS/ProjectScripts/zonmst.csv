@@ -1,0 +1,7 @@
+wrkzon,wh_id,wrkare,maxdev,oosflg,trvseq,prithr,maxprithr,moddte,mod_usr_id,u_version,ins_dt,last_upd_dt,ins_user_id,last_upd_user_id
+NFPFWZ,SGDC,WKASWT,999,0,10,,,sysdate,SAMNI,1,sysdate,sysdate,SAMNI,SAMNI
+NFRSWZ,SGDC,WKASWT,999,0,10,,,sysdate,SAMNI,1,sysdate,sysdate,SAMNI,SAMNI
+FPPFWZ,SGDC,WKAGM,999,0,10,,,sysdate,SAMNI,1,sysdate,sysdate,SAMNI,SAMNI
+PRWZ,SGDC,WKAGM,999,0,10,,,sysdate,SAMNI,1,sysdate,sysdate,SAMNI,SAMNI
+LWZ,SGDC,WKAGM,999,0,10,,,sysdate,SAMNI,1,sysdate,sysdate,SAMNI,SAMNI
+HWZ,SGDC,WKAGM,999,0,10,,,sysdate,SAMNI,1,sysdate,sysdate,SAMNI,SAMNI

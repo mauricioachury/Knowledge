@@ -1,0 +1,65 @@
+<command>
+
+<name>generate replenishment</name>
+
+<type>Local Syntax</type>
+
+<local-syntax>
+<![CDATA[
+
+    /* If we top-off/trigger replenish a picking face,
+     * Let us check if we need to bring ship_to_loc as a parameter,
+     * this is needed especially when replenish an empty picking face
+     * location but only for a specific ship_to_loc.
+     */
+    if (@pcktyp = 'TOPOFF-REPLEN'
+        and @dstloc != ''
+        and @prtnum != '')
+    {
+        [select distinct d.colval inv_attr_str1
+           from sto_area_hdr h,
+                sto_area_dtl d,
+                locmst l
+          where h.sto_area_id = d.sto_area_id
+            and h.dstare = l.arecod
+            and h.wh_id = l.wh_id
+            and l.stoloc = nvl(@dstloc, @stoloc)
+            and l.wh_id = @wh_id
+            and d.colnam = 'inv_attr_str1'
+            and exists
+                (select 'x'
+                   from sto_area_dtl d2
+                  where d2.sto_area_id = h.sto_area_id
+                    and d2.colnam = 'prtfam'
+                    and d2.colval in
+                        (select prtfam
+                           from prtmst_view pv
+                          where pv.wh_id = @wh_id
+                            and pv.prtnum = @prtnum
+                            and pv.prt_client_id = @prt_client_id))]catch(-1403) >> res
+        |
+        if (rowcount(@res) = 1)
+        {
+            publish top rows
+              where resultset = @res
+                and rows = 1
+        }
+    }
+    |
+    ^generate replenishment
+      where @+inv_attr_str1
+        and @*
+
+]]>
+</local-syntax>
+
+<documentation>
+ This command is a wrapper command of standard 'generate replenishment', this
+ command is developped for trigger replenishment an assigned picking face
+ location, before calling standard version, check if the assigned location belongs
+ to an area where has specific ship_to_loc(inv_attr_str1) specified as storage
+ rule, if so publish that as a parameter to replenish.
+
+</documentation>
+
+</command>

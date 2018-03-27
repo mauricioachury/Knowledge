@@ -1,0 +1,155 @@
+<command>
+
+<name>check rf invadj for max cntseq</name>
+
+<description>Check rf invadj For Max Cntseq</description>
+
+<type>Local Syntax</type>
+
+<local-syntax>
+<![CDATA[
+
+    /* We will add the uncounted inventory to rf_invadj
+     * when we are not counting against a specific invtid.
+     * count back(CB) will set invtid if picking area is LPN controlled area.
+     */
+    [select 'x' 
+       from cntwrk
+      where cntbat = @cntbat
+        and cnttyp = 'CB'
+        and  wh_id = @wh_id
+        and invtid is null] catch(-1403)
+    |
+    if (@? = 0)
+    {
+        publish data where cnt_loc_flg = 1
+    }
+    else
+    {
+    	[select 'x' 
+         from cntwrk
+        where cntbat = @cntbat
+          and cnttyp = 'CB'
+          and  wh_id = @wh_id] catch(-1403)
+    	|
+    	if (@? = 0)
+    	{
+    		publish data where cnt_loc_flg = 0
+    	}
+    	else
+    	{
+    		publish data where cnt_loc_flg = 1
+    	}
+    }
+    |
+    [select max(cnt_seq_num) max_cnt_seq_num
+        from rf_invadj
+       where stoloc = @stoloc
+         and wh_id  = @wh_id
+         and cntbat = @cntbat] 
+    |
+    if (@max_cnt_seq_num = 0)
+    {
+        publish data where max_cnt_seq_num = 1
+    }
+    |
+    if (@max_cnt_seq_num and @cnt_loc_flg = 1)
+    {
+        list inventory where stoloc = @stoloc and wh_id = @wh_id catch (-1403)
+        |
+        if (@? = 0)
+        {
+            check serial number capture required
+                where prtnum = @prtnum 
+                  and prt_client_id = @prt_client_id
+                  and wh_id = @wh_id
+                  and cur_frm_typ = 'INBOUND' catch(10737)
+            |
+            if (@? != 0)
+            {
+                [select 1
+                    from rf_invadj
+                   where stoloc = @stoloc
+                     and wh_id  = @wh_id
+                     and cntbat = @cntbat
+                     and (lodnum = @lodnum or lodnum is NULL)
+                     and (subnum = @subnum or subnum is NULL)
+                     and (dtlnum = @dtlnum or dtlnum is NULL)
+                     and prtnum = @prtnum
+                     and prt_client_id = @prt_client_id
+                     and cnt_seq_num = @max_cnt_seq_num] catch (-1403)
+                |
+                if (@? != 0)
+                {
+                    write rf inventory adjust
+                        where devcod          = @devcod
+                          and stoloc  	      = @stoloc
+                          and oprcod  	      = @oprcod
+                          and wh_id  	      = @wh_id
+                          and cntbat  	      = @cntbat
+                          and lodnum  	      = @lodnum
+                          and subnum  	      = @subnum
+                          and dtlnum  	      = @dtlnum
+                          and prtnum  	      = @prtnum
+                          and prt_client_id   = @prt_client_id
+                          and invsts  	      = @invsts
+                          and lotnum  	      = @lotnum
+                          and sup_lotnum  	  = @sup_lotnum
+                          and orgcod  	      = @orgcod
+                          and revlvl  	      = @revlvl
+                          and untcas  	      = @untcas
+                          and untpak  	      = @untpak
+                          and untqty  	      = @untqty
+                          and catch_qty           = @catch_qty
+                          and scanned_qty         = 0
+                          and scanned_ctch_qty    = 0.0
+                          and phyflg              = @phyflg 
+                          and phdflg  	      = @phdflg 
+                          and plat_id             = @plat_id
+                          and cnt_seq_num         = 1
+                }
+            }
+            else
+            {
+                [update rf_invadj
+                    set cnt_seq_num = 1
+                  where stoloc = @stoloc
+                    and wh_id  = @wh_id
+                    and cntbat = @cntbat
+                    and lodnum = @lodnum
+                    and (subnum = @subnum or subnum is NULL)
+                    and (dtlnum = @dtlnum or dtlnum is NULL)] catch(-1403)
+            }
+        }
+    }
+    |
+    publish data where cnt_seq_num = @max_cnt_seq_num
+]]>
+       
+</local-syntax>
+
+<argument name="wh_id" datatype="string"></argument>
+<argument name="stoloc" datatype="string"></argument>
+<argument name="cntbat" datatype="string"></argument>
+<argument name="oprcod" datatype="string"></argument>
+<argument name="devcod" datatype="string"></argument>
+
+<documentation>
+
+<remarks>
+<![CDATA[
+  <p>
+  This command is used to add rows for un-counted inventory.
+  For example if the location had two loads, but none were counted
+  then we need to mark the two rows as not counted </p>
+]]>
+</remarks>
+
+<exception value="eOK">Normal successful completion</exception>
+<exception value="eDB_NO_ROWS_AFFECTED">Specified count zone not found</exception>
+
+<seealso cref="write rf inventory adjust"></seealso>
+
+</documentation>
+
+</command>

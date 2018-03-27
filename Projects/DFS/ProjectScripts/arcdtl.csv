@@ -1,0 +1,3 @@
+arc_nam,seqnum,srtseq,arc_table,list_cmd,post_arc_cmd,action_on_dup
+ALLOC-RULE,1,1,ALLOC_RULE_DTL,[select * from alloc_rule_dtl where rule_nam = @rule_nam and wh_id = @wh_id],,I
+COMPLETED-COUNTS,1,1,CNTWRK,"if (dbtype = 'ORACLE') { [select cntwrk.*, cntwrk.rowid from cntwrk where cntbat = @cntbat and wh_id =@wh_id] } else { [select cntwrk.* from cntwrk where cntbat = @cntbat and wh_id =@wh_id] }",,I

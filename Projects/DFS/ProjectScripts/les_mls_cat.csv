@@ -1,0 +1,3 @@
+mls_id,locale_id,prod_id,appl_id,frm_id,vartn,srt_seq,cust_lvl,mls_text,grp_nam
+err93001,US_ENGLISH,LES,LES,LES,LES,0,10,Destination area does not match order type,dfs_data
+vc_maxqty_for_loc,US_ENGLISH,LES,LES,LES,LES,0,10,Max Quantity for Location,dfs_data

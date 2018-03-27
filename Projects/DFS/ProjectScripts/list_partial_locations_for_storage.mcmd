@@ -1,0 +1,307 @@
+<command>
+
+<name>list partial locations for storage</name>
+
+<description>Returns a list of partial location candidates</description>
+
+<type>Local Syntax</type>
+
+<local-syntax>
+<![CDATA[
+
+    /* Based on storage type, we build a string to alter the maxqvl */
+    if (@stotyp = "REPLEN")
+    {
+        publish data 
+         where qvlstr = " * decode(locmst.erfpct,null,100,0,100,locmst.erfpct) * 1.0/100"
+    }
+    else if (@stotyp = "TOPOFF-REPLEN")
+    { 
+        publish data 
+         where qvlstr = " * decode(locmst.trfpct,null,100,0,100,locmst.trfpct) * 1.0/100"
+    }
+    else 
+    { 
+        publish data 
+         where qvlstr = " * 1 "
+    }   
+    |
+    /* May need to exclude work zones */
+    if (@exclude_wrkzon)
+    {
+        publish data 
+         where not_wrkzon=" and locmst.wrkzon not in (" || @exclude_wrkzon ||")"
+    }
+    else
+    {
+        publish data where not_wrkzon = " and 1=1"
+    }
+    |
+    if (@velzon)
+    {
+        publish data
+          where velzon_clause = " and locmst.velzon >= '" || @velzon || "'"
+    }
+    else
+    {
+        publish data where velzon_clause = " and 1=1"
+    }
+    |   
+    /* Get the order by clause */
+    list policies 
+        where polcod = 'ALLOCATE-LOC'
+          and polvar = 'ORDER-BY'
+          and polval = 'ORDER-BY'
+          and wh_id  = @wh_id catch(-1403)
+    |
+   /* 
+    * The ret_order_by_columns variable is used for sorting the
+    * result set which will fail if we fully qualify the column names.
+    * Instead, we will only list the column names.
+    */
+    publish data 
+        where order_by_columns = nvl(@rtstr2,'locmst.trvseq')
+          and order_by_clause = nvl(@rtstr1,'locmst.velzon, locmst.trvseq, locmst.lochgt')
+          and ret_order_by_columns = nvl(@rtstr2,'velzon, trvseq, lochgt')
+    |
+    /* We have to list all assigned locaitons out in case they are for 
+     * replenishment, and STORE-ASG-LOC policies tells the item that is assigned
+     */
+    [select locmst.stoloc,
+            locmst.wh_id,
+            (locmst.maxqvl @qvlstr:raw  -(locmst.curqvl+locmst.pndqvl)) remcap, 
+            locmst.maxqvl @qvlstr:raw maxqvl,
+            locmst.curqvl,            
+            locmst.pndqvl, 
+            locmst.locsts,
+            invsum.untpal,
+            invsum.untqty, 
+            locmst.velzon,
+            locmst.wrkzon,
+            locmst.lochgt, 
+            invsum.olddte oldfif,
+            invsum.newdte newfif,
+            locmst.aisle_id,
+            0.0 movement_cost,
+            invsum.old_expire_dte,
+            invsum.new_expire_dte,
+            invsum.old_inv_attr_dte1,
+            invsum.new_inv_attr_dte1,
+            invsum.old_inv_attr_dte2,
+            invsum.new_inv_attr_dte2,
+            @order_by_columns:raw
+       from zonmst, 
+            locmst,
+            invsum
+      where @+invsum.arecod
+        and @+locmst.wh_id
+        and @+invsum.prtnum
+        and @+invsum.prt_client_id
+        and locmst.arecod = invsum.arecod 
+        and locmst.stoloc = invsum.stoloc 
+        and locmst.wh_id  = invsum.wh_id 
+        and locmst.wh_id  = zonmst.wh_id 
+        and locmst.wrkzon = zonmst.wrkzon 
+        and locmst.useflg = 1 
+        and locmst.asgflg = decode(@repflg, NULL, locmst.asgflg, 1, locmst.asgflg, 0)
+        and locmst.cipflg = 0 
+        /* if we are searching for locations in storage trailer area, 
+         * we will not have lochgt and maxqvl set, since this is a 
+         * logical location that has been created to represent the 
+         * trailer. 
+         */
+        and (locmst.lochgt >= @lochgt or
+             (locmst.lochgt is NULL 
+              and exists (select 'x' from aremst 
+                           where aremst.arecod = locmst.arecod
+                             and aremst.sto_trlr_flg = 1
+                             and aremst.wh_id = locmst.wh_id)
+             )
+            )
+        and locmst.locsts in ('P', 'E')
+        and ((locmst.maxqvl @qvlstr:raw >= locmst.pndqvl + locmst.curqvl + nvl(@stock_qvl,0))
+             or (locmst.maxqvl = 0 
+                 and exists (select 'x' from aremst 
+                           where aremst.arecod = locmst.arecod
+                             and aremst.sto_trlr_flg = 1
+                             and aremst.wh_id = locmst.wh_id)
+                )
+            )
+        and zonmst.oosflg = 0
+        and @+locmst.stoflg
+        and @+locmst.pckflg
+        and @+locmst.repflg
+        and @+locmst.wrkzon 
+            @not_wrkzon:raw
+            @velzon_clause:raw
+      order by decode(locmst.locsts, 'P', 1, 'E', 2, 3), 
+               2,
+               @order_by_clause:raw] >> all_available_locations
+    |
+    /* If proximity putaway code is not passed in, publish the 
+     * current resultset.
+     * Else get the locations based on proximity code
+     */
+    if(@prox_put_cod != '')
+    {
+        /*If proximity putaway code is Pickface Proximity, get the primary
+         * pick location, else if it is Source Proximity, use the source 
+         * location passed in from allocate location.
+         */
+        if(@prox_put_cod = 'PF')
+        {
+           /* This will get the primary pick location so that we can 
+            * find the closest putaway location to it
+            */
+            get primary pick location 
+                where prtnum        = @prtnum
+                  and prt_client_id = @prt_client_id
+                  and wh_id         = @wh_id
+            |
+            publish data
+                where srcloc = @primary_pick_location
+        }
+        |
+        list policies 
+            where polcod = 'ALLOCATE-LOC'
+              and polvar = 'PROXIMITY'
+              and polval = 'RANDOM'
+              and wh_id  = @wh_id catch(-1403)
+        |
+        publish data 
+            where prox_preceeds_order_by = @rtnum1
+        |
+        if(@prox_preceeds_order_by > 0)
+        {
+            {
+                /* Get the number of locations retrieved to get random number */
+                publish data 
+                    where max_value = rowcount(@all_available_locations)
+                |
+                publish data combination 
+                    where res = @all_available_locations
+                |
+                get random number 
+                    where max_value = @max_value
+                |
+                /* Append the generated random numbers as a column
+                 * to the all_available_locations
+                 */
+                filter data 
+                    where moca_filter_level = 2 
+                      and orderbyme         = int(@random)
+            } >> random_column_added
+            |
+            {
+                /* Sort the locations based on the random number
+                 * generated above
+                 */
+                sort result set 
+                    where rs        = @random_column_added
+                      and sort_list = 'orderbyme' 
+            } >> sorted_set
+            |
+            /* This will tack on an extra column to this list which will contain the */
+            /* cost of movement.  We will then have to sort the list based on that value */
+            list locations with movement cost
+                where rs     = @sorted_set 
+                  and from_loc = @srcloc
+                  and wh_id  = @wh_id >> sorted_set
+            |
+            /* Sort the resultset by movement cost and the field names listed in
+             * ret_order_by_columns 
+             */
+            sort result set 
+                where rs        = @sorted_set 
+                  and sort_list = 'movement_cost, ' || @ret_order_by_columns
+        }
+        else
+        {
+            list locations with movement cost 
+                where rs     = @all_available_locations
+                  and from_loc = @srcloc
+                  and wh_id  = @wh_id >> sorted_set
+            |
+            /* Sort the resultset by the field names listed in 
+             * ret_order_by_columns and the movement cost
+             */
+            sort result set 
+                where rs        = @sorted_set 
+                  and sort_list = @ret_order_by_columns || ', movement_cost'
+        }
+    }
+    else
+    {
+        publish data combination
+          where res = @all_available_locations
+    }
+
+]]>
+</local-syntax>
+
+<documentation>
+
+<remarks>
+<![CDATA[
+  <p>
+  This command is used by <b>allocate location</b> in order to retrieve
+  a list of partial locations to store product.  This component exists
+  so that it may be overridden by customer specific extensions, most notably,
+  so that mixing rules where part numbers are mixed may be implemented.
+  </p>
+
+  <p>
+  If this component is overlayed, it is extremely important that any
+  overlayed component return the same columns in a result set.  See the 
+  published data section for a complete description.
+  </p>
+
+  <p>
+    Command is modified to check for the proximity putaway code and if it is 
+    source proximity, source location passed from allocate location is 
+    used to find the next location to allocate.
+    If it is pickface proximity, primary pick location for the part is used to
+    get the next location for allocation. This logic is implemented as in list
+    empty locations for storage.
+  </p>
+
+]]>
+</remarks>
+
+<exception value="eOK">Normal successful completion</exception>
+<exception value="eDB_NO_ROWS_AFFECTED">No locations found.</exception>
+
+<retcol name="stoloc" type="COMTYP_CHAR">Potential storage location</retcol>
+<retcol name="remcap" type="COMTYP_FLOAT">Capacity remaining in location</retcol>
+<retcol name="maxqvl" type="COMTYP_FLOAT">Maximum capacity of location</retcol>
+<retcol name="curqvl" type="COMTYP_FLOAT">Current used capacity in location</retcol>
+<retcol name="pndqvl" type="COMTYP_FLOAT">Capacity pending to location</retcol>
+<retcol name="locsts" type="COMTYP_CHAR">Current status of the location</retcol>
+<retcol name="untpal" type="COMTYP_INT">Units per pallet at location</retcol>
+<retcol name="untqty" type="COMTYP_INT">Current quantity at location</retcol>
+<retcol name="velzon" type="COMTYP_CHAR">Velocity zone of the location</retcol>
+<retcol name="wrkzon" type="COMTYP_CHAR">Work zone of the location</retcol>
+<retcol name="loghgt" type="COMTYP_CHAR">Location height</retcol>
+<retcol name="oldfif" type="COMTYP_CHAR">Oldest FIFO date of product in location</retcol>
+<retcol name="newfif" type="COMTYP_CHAR">Neweset FIFO date of product in location</retcol>
+<retcol name="aisle_id" type="COMTYP_CHAR">Aisle</retcol>
+<retcol name="old_expire_dte" type="COMTYP_CHAR">
+Oldest Expiration Date of product in location</retcol>
+<retcol name="new_expire_dte" type="COMTYP_CHAR">
+Neweset Expiration Date of product in location</retcol>
+<retcol name="old_inv_attr_dte1" type="COMTYP_CHAR">
+Oldest Inventory Attribute Date 1 of product in location</retcol>
+<retcol name="old_inv_attr_dte2" type="COMTYP_CHAR">
+Oldest Inventory Attribute Date 2 of product in location</retcol>
+<retcol name="new_inv_attr_dte1" type="COMTYP_CHAR">
+Newest Inventory Attribute Date 1 of product in location</retcol>
+<retcol name="new_inv_attr_dte2" type="COMTYP_CHAR">
+Newest Inventory Attribute Date 2 of product in location</retcol>
+
+<seealso cref="allocate location"></seealso>
+<seealso cref="list empty locations for storage"></seealso>
+<seealso cref="list mixed locations for storage"></seealso>
+
+</documentation>
+
+</command>

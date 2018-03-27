@@ -1,0 +1,267 @@
+<command>
+
+<name>list orders for dfs</name>
+
+<description>List Orders For Dfs</description>
+
+<type>Local Syntax</type>
+
+<local-syntax>
+<![CDATA[
+  remote("http://10.176.34.44:4700/service")
+  {
+  /* Below select is construced with 3 tables: ordflgs, ordqtys, and ord:
+   * ordflgs: this table is suppose to get 1 row for each ordnum with flags
+   *          like notplan_flg no planed, nosht_flg no short etc.
+   * ordqtys: this table is suppose to get 1 row for each ordnum 
+   *          with number of cases like ord_cascnt tot case of this ordnum,
+   *          sht_cascnt total short cases of this order etc.
+   *     ord: ord table used to support @*.
+   */
+  [select ord.stcust,
+          ord.ordtyp,
+          ordflgs.vc_ord_type,
+          sum(ordflgs.isord_flg) tot_ord_cnt,
+          sum(ordflgs.no_pln_flg) no_pln_cnt, 
+          sum(ordflgs.pln_flg) pln_cnt, 
+          sum(ordflgs.no_sht_flg) no_sht_cnt, 
+          sum(ordflgs.sht_flg) sht_cnt, 
+          sum(ordflgs.alc_flg) alc_cnt, 
+          sum(ordflgs.rel_flg) rel_cnt, 
+          sum(ordflgs.stg_flg) stg_cnt, 
+          sum(ordflgs.load_cmp_flg) load_cmp_cnt, 
+          nvl(cast(sum(ordqtys.ord_cascnt) as int), 0) tot_ord_cascnt,
+          nvl(cast(sum(case ordflgs.no_pln_flg 
+                       when 1 then nvl(ordqtys.ord_cascnt, 0) 
+                        end) as int), 0) rqt_cascnt,
+          nvl(cast(sum(case ordflgs.pln_flg 
+                       when 1 then ordqtys.ord_cascnt 
+                        end) as int), 0) pln_cascnt,
+          nvl(cast(sum(case ordflgs.sht_flg 
+                       when 1 then ordqtys.sht_cascnt 
+                        end) as int),0) sht_cascnt,
+          nvl(cast(sum(case ordflgs.sht_flg 
+                       when 1 then ordqtys.hld_sht_cascnt 
+                        end) as int),0) hld_sht_cascnt,
+          nvl(cast(sum(case ordflgs.rel_flg 
+                       when 1 then ordqtys.rmpck_cascnt 
+                        end) as int),0) rem_cascnt,
+          nvl(cast(sum(ordqtys.ack_cascnt) as int),0) ack_cascnt,
+          nvl(cast(sum(ordqtys.cmp_cascnt) as int),0) cmp_cascnt
+     from (select distinct
+                  o.ordnum flgordnum,
+                  ol.vc_ord_type,
+                  1 isord_flg,
+                  case when not exists (select 'x' 
+                                          from shipment_line ssl 
+                                         where ssl.ordnum = o.ordnum
+                                           and ssl.wh_id = o.wh_id) 
+                       then 1 else 0 end no_pln_flg,
+                  case when exists(select 'x' 
+                                     from shipment_line ssl 
+                                    where ssl.ordnum = o.ordnum 
+                                      and ssl.wh_id = o.wh_id
+                                      and ssl.linsts = 'P') 
+                               and not exists(select 'x' 
+                                                from shipment_line shl 
+                                               where shl.ordnum = o.ordnum 
+                                                 and shl.wh_id = o.wh_id
+                                                 and shl.linsts <> 'P') 
+                       then 1 else 0 end pln_flg,
+                  case when not exists(select 'x' 
+                                         from rplwrk rw 
+                                        where rw.ordnum = o.ordnum
+                                          and rw.wh_id = o.wh_id) 
+                            and exists (select 'x' 
+                                          from shipment_line ssl 
+                                         where ssl.ordnum = o.ordnum 
+                                           and ssl.wh_id = o.wh_id
+                                           and ssl.linsts <> 'P') 
+                       then 1 else 0 end no_sht_flg,
+                  case when exists(select 'x' 
+                                     from rplwrk rw 
+                                    where rw.ordnum = o.ordnum
+                                      and rw.wh_id = o.wh_id) 
+                       then 1 else 0 end sht_flg,
+                  case when exists(select 'x' 
+                                     from pckwrk pw 
+                                    where pw.ordnum = o.ordnum
+                                      and pw.wh_id = o.wh_id
+                                      and pw.pcksts = 'P' 
+                                   union 
+                                   select 'x' 
+                                     from rplwrk rw 
+                                    where rw.ordnum = o.ordnum
+                                      and rw.wh_id = o.wh_id) 
+                       then 1 else 0 end alc_flg,
+                  case when exists(select 'x' 
+                                     from pckwrk pw 
+                                    where pw.ordnum = o.ordnum 
+                                      and pw.pckqty > pw.appqty
+                                      and pw.wh_id = o.wh_id
+                                      and pw.pcksts ='R' ) 
+                       then 1 else 0 end rel_flg,
+                  case when s.shpsts = 'S' then 1 else 0 end stg_flg,
+                  case when s.shpsts = 'C' then 1 else 0 end load_cmp_flg
+             from ord o
+             join ord_line ol
+               on o.ordnum = ol.ordnum
+              and o.wh_id  = ol.wh_id
+             left join shipment_line sl
+               on ol.ordnum = sl.ordnum
+              and ol.ordlin = sl.ordlin
+              and ol.ordsln = sl.ordsln
+             left join shipment s
+               on s.ship_id = sl.ship_id
+              and s.wh_id   = sl.wh_id) ordflgs,
+
+          (select 
+                  o.ordnum qtyordnum,
+                  sum((select ol.ordqty/pfd.untqty 
+                         from ord_line old 
+                        where old.ordnum = ol.ordnum 
+                          and old.wh_id = ol.wh_id 
+                          and old.client_id = ol.client_id 
+                          and old.ordlin = ol.ordlin 
+                          and old.ordsln = ol.ordsln))  ord_cascnt,
+                  sum((select sum(rp.pckqty/pfd.untqty) 
+                         from rplwrk rp 
+                        where rp.ordnum = ol.ordnum 
+                          and rp.wh_id = ol.wh_id 
+                          and rp.client_id = ol.client_id 
+                          and rp.ordlin = ol.ordlin 
+                          and rp.ordsln = ol.ordsln)) sht_cascnt,
+                  sum(nvl((select sum(rp.pckqty/pfd.untqty) 
+                             from rplwrk rp 
+                            where rp.ordnum = ol.ordnum 
+                              and rp.wh_id = ol.wh_id 
+                              and rp.client_id = ol.client_id 
+                              and rp.ordlin = ol.ordlin 
+                              and rp.ordsln = ol.ordsln),0) +
+                       nvl((select sum(pw.pckqty/pfd.untqty) 
+                              from pckwrk pw 
+                             where pw.ordnum = ol.ordnum 
+                               and pw.wh_id = ol.wh_id 
+                               and pw.client_id = ol.client_id 
+                               and pw.ordlin = ol.ordlin 
+                               and pw.ordsln = ol.ordsln 
+                               and exists (select 'x' 
+                                             from rplwrk 
+                                            where rplwrk.ordnum = o.ordnum
+                                              and rplwrk.wh_id = o.wh_id)
+                             ),0))   hld_sht_cascnt,
+                  sum((select sum((pw.pckqty-pw.appqty)/pfd.untqty) 
+                         from pckwrk pw 
+                        where pw.pcksts = 'R' 
+                          and pw.ordnum = ol.ordnum 
+                          and pw.wh_id = ol.wh_id 
+                          and pw.client_id = ol.client_id 
+                          and pw.ordlin = ol.ordlin 
+                          and pw.ordsln = ol.ordsln)) rmpck_cascnt,
+                  sum(nvl((select sum(pw.pckqty/pfd.untqty)
+                             from pckwrk pw 
+                            where pw.ordnum = ol.ordnum 
+                              and pw.wh_id = ol.wh_id 
+                              and pw.client_id = ol.client_id 
+                              and pw.ordlin = ol.ordlin 
+                              and pw.ordsln = ol.ordsln
+                              and exists(select 'x' 
+                                           from wrkque wq
+                                          where wq.wrkref = pw.wrkref
+                                            and wq.wh_id = pw.wh_id
+                                            and wq.wrksts = 'ACK')),0) +
+                      nvl((select sum(pw.pckqty/pfd.untqty)
+                             from pckwrk pw 
+                            where pw.ordnum = ol.ordnum 
+                              and pw.wh_id = ol.wh_id 
+                              and pw.client_id = ol.client_id 
+                              and pw.ordlin = ol.ordlin 
+                              and pw.ordsln = ol.ordsln
+                              and exists(select 'x' 
+                                           from wrkque wq
+                                          where wq.list_id = pw.list_id
+                                            and wq.wh_id = pw.wh_id
+                                            and wq.wrksts = 'ACK')),0)) ack_cascnt,
+                  sum((select sum(pw.appqty/pfd.untqty) 
+                         from pckwrk pw 
+                        where pw.ordnum = ol.ordnum 
+                          and pw.wh_id = ol.wh_id 
+                          and pw.client_id = ol.client_id 
+                          and pw.ordlin = ol.ordlin 
+                          and pw.ordsln = ol.ordsln
+                          and exists (select 'x' 
+                                        from shipment sp
+                                       where sp.ship_id = pw.ship_id
+                                    	 and sp.wh_id = pw.wh_id
+                                         and sp.shpsts in ('D', 'C')))) cmp_cascnt
+             from ord o
+             join ord_line ol
+               on o.ordnum = ol.ordnum
+              and o.wh_id   = ol.wh_id
+             join prtmst_view pm
+               on pm.prtnum = ol.prtnum
+              and pm.prt_client_id = ol.prt_client_id
+              and pm.wh_id = ol.wh_id
+             join prtftp pfm
+               on pfm.ftpcod = nvl(ol.ftpcod, pfm.ftpcod)
+              and pfm.prtnum = pm.prtnum
+              and pfm.prt_client_id = pm.prt_client_id
+              and ((ol.ftpcod is null and pfm.defftp_flg = 1) 
+                    or ol.ftpcod is not null)
+              and pfm.wh_id = pm.wh_id
+             join prtftp_dtl pfd
+               on pfd.prtnum = pfm.prtnum
+              and pfd.prt_client_id = pfm.prt_client_id
+              and pfd.ftpcod = pfm.ftpcod
+              and pfd.wh_id = pfm.wh_id
+              and pfd.cas_flg = 1 
+              group by o.ordnum) ordqtys,
+       
+              ord
+        where ordflgs.flgordnum = ordqtys.qtyordnum
+          and ord.ordnum = ordflgs.flgordnum
+          and @*
+        group by ord.stcust, ord.ordtyp, ordflgs.vc_ord_type]
+  }
+]]>
+</local-syntax>
+
+<argument name="@*">Any order field value</argument>
+
+<documentation>
+
+<remarks>
+<![CDATA[
+  <p>
+  This command is used to list orders information for DFS with init requirement:
+  Changi Order Process DDA
+  Query Fields:
+  Any ORD or ORD_LINE Line field. Pipe (‘|’) separated or Wildcard allowed.
+   
+  Group by Ship-To customer, Order Type, Host order Type. Custer PO Date
+  Return the following columns:
+  # of orders total
+  # of orders not planned
+  # of orders not allocated (or not planned)
+  # of orders with Shorts
+  # of orders released to Work Queue
+  # of orders staged
+  # of cases not planned (estimate)
+  # of cases not allocated (or not planned) (estimate)
+  # of cases in orders with Shorts
+  # of cases remaining to be picked 
+  Assumptions:
+  *Each order is planned completely into a single shipment
+  *Release by grouping is set to ‘SHIPMENT’, so if any shorts exist for a shipment, the associated orders are considered ‘held for short’
+  *All stock will be case or pallet picks, using Directed Pallet Picks or Directed List Picks
+
+  </p>
+]]>
+</remarks>
+
+<exception value="eOK">Normal successful completion</exception>
+<exception value="eDB_NO_ROWS_AFFECTED">Specified order not found</exception>
+
+</documentation>
+
+</command>

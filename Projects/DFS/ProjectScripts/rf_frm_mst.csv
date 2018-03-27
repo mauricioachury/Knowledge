@@ -1,0 +1,2 @@
+rf_frm,cust_lvl,frm_cls,grp_nam,ins_dt,last_upd_dt,ins_user_id,last_upd_user_id
+PICKUP_B,10,com.redprairie.les.formlogic.PickupB,les_data,sysdate,sysdate,SAMNI,SAMNI

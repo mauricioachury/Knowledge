@@ -1,0 +1,4 @@
+wh_id,arecod,lodlvl,u_version,ins_dt,last_upd_dt,ins_user_id,last_upd_user_id
+SGDC,HOTPICKGM,S,1,sysdate,sysdate,SAMNI,SAMNI
+SGDC,HOTPICKGM,D,1,sysdate,sysdate,SAMNI,SAMNI
+SGDC,PKGSGM,S,1,sysdate,sysdate,SAMNI,SAMNI

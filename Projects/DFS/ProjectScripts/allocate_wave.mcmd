@@ -1,0 +1,74 @@
+<command>
+<name>Allocate Wave</name>
+<description>Allocate Wave wrapper to Prevent stray Order Lines</description>
+<type>Local Syntax</type>
+<local-syntax>
+<![CDATA[
+
+[select 'x'
+   from poldat_view
+  where polcod = 'VAR'
+    and polvar = 'SHIP-ALLOC'
+    and polval = 'ORDLIN-CHECK-ENABLED'
+    and rtnum1 = 1
+    and wh_id = nvl(@wh_id, @@wh_id)] catch(-1403)
+|
+if (@? = 0) 
+{
+    if((@ship_id is null or @ship_id='') and @pckgr1)
+    {
+         [select distinct ship_id
+            from shipment_line
+           where pckgr1 = @pckgr1
+             and wh_id = nvl(@wh_id, @@wh_id)]
+    }
+    |
+    [select ord_line.ordlin || ord_line.ordnum
+       from ord_line
+      where ord_line.ordnum in (select distinct ordnum
+                                  from shipment_line
+                                 where shipment_line.ship_id = @ship_id)
+     minus
+     select shipment_line.ordlin || shipment_line.ordnum
+       from shipment_line
+      where shipment_line.linsts <> 'B'
+        and ship_id = @ship_id] catch(-1403)
+    |
+    if (@? = 0)
+    {
+        set return status
+         where status = 90007
+    }
+}
+|
+if (@pckgr1)
+{
+    [select 'x'
+       from ord o
+      where not exists (select 'y'
+                          from poldat_view p
+                         where polcod = 'VAR'
+                           and polvar = 'ALLOCATION'
+                           and polval = 'ORDTYP-DSTARE'
+                           and p.rtstr1 = o.ordtyp
+                           and p.wh_id = o.wh_id
+                           and p.rtstr2 = @dstare)
+        and o.ordnum in (select ordnum
+                           from shipment_line sl
+                          where sl.pckgr1 = @pckgr1
+                            and wh_id = nvl(@wh_id, @@wh_id))
+        and rownum < 2] catch(-1403)
+    |
+    if (@? = 0)
+    {
+        set return status
+         where status = 93001
+    }
+}
+|
+^allocate wave
+ where @*
+
+]]>
+</local-syntax>
+</command>
