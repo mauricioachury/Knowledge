@@ -1,0 +1,30 @@
+#include <../../dcs/include/dcsddl.h>
+#include <dcscolwid.h>
+#include <dcstbldef.h>
+#include <sqlDataTypes.h>
+
+mset command on
+[drop table non_ser_asset]
+RUN_DDL
+mset command off
+
+CREATE_TABLE(non_ser_asset)
+(
+    bldg_id          STRING_TY(BLDG_ID_LEN) not null,    /* PK */
+    asset_typ        STRING_TY (ASSET_TYP_LEN) not null,                  /* PK */
+    asset_stat       STRING_TY (ASSET_STAT_LEN) default 'ACT' not null,   /* PK */
+    src_adr_id       STRING_TY (ADR_ID_LEN) not null,                     /* PK */
+    adr_id           STRING_TY (ADR_ID_LEN) not null,                     /* PK */
+    client_id        STRING_TY (CLIENT_ID_LEN) not null,                  /* PK */
+    on_hand_qty      INTEGER_TY,
+    ins_dt           DATE_TY,
+    last_upd_dt      DATE_TY,
+    ins_user_id      STRING_TY(USR_ID_LEN),
+    last_upd_user_id STRING_TY(USR_ID_LEN) 
+)
+CREATE_TABLE_TABLESPACE(NON_SER_ASSET_TBL_TBLSPC, NON_SER_ASSET_TBL_STORAGE)
+
+RUN_DDL
+
+#include <non_ser_asset_pk.idx>
+#include <non_ser_asset.tdoc>

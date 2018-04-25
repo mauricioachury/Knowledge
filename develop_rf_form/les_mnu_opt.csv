@@ -1,0 +1,3 @@
+opt_nam,opt_typ,pmsn_mask,ena_flg,exec_nam,exec_parm,btn_img_id,ath_grp_nam,addon_id,grp_nam
+mtfoptEmptyAssetAdjustInb,O,-1,1,EMPTY_ASSET_ADJUST,"INB",,,,jms_data
+mtfoptEmptyAssetAdjustOub,O,-1,1,EMPTY_ASSET_ADJUST,"OUB",,,,jms_data

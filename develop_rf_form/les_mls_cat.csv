@@ -1,0 +1,8 @@
+mls_id,locale_id,prod_id,appl_id,frm_id,vartn,srt_seq,cust_lvl,mls_text,grp_nam
+ttlEmptyAssetAdjustInb,US_ENGLISH,LES,LES,LES,LES,0,0,"Rcv HUs W/o Order",jms_titlebars
+ttlEmptyAssetAdjustOub,US_ENGLISH,LES,LES,LES,LES,0,0,"Ship HUs W/o Order",jms_titlebars
+lblBldg,US_ENGLISH,LES,LES,LES,LES,0,10,Building:,jms_rdt_lbl
+lblAstSts,US_ENGLISH,LES,LES,LES,LES,0,0,HU Stat:,jms_rdt_lbl
+lblClientId,US_ENGLISH,LES,LES,LES,LES,0,10,Client:,jms_rdt_lbl
+lblFrmAdrId,US_ENGLISH,LES,LES,LES,LES,0,10,Shp Frm:,jms_rdt_lbl
+lblToAdrId,US_ENGLISH,LES,LES,LES,LES,0,10,Rcv To:,jms_rdt_lbl

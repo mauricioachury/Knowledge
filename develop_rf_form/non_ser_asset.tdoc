@@ -1,0 +1,20 @@
+
+mset command on
+
+create db documentation
+ where table = "non_ser_asset"
+   and table_comment = "The non serialized asset is the table that is used to track the non-serialized assets."
+   and bldg_id = "Building ID where the current asset located."
+   and asset_typ = "Asset Type - This field groups assets based on common traits such as the dimensions, weight, manufacture, etc."
+   and asset_stat = "Asset Status - Used for reporting purpose. Typical possible values are ACT (active) and INACT (inactive)."
+   and src_adr_id = "Source Address ID - This is the address ID which maps to the warehouse that is concerned about tracking the serialized asset."
+   and adr_id = "Address ID of the current asset's location."
+   and client_id  = "Unique asset client identifier ."
+   and on_hand_qty = "On-Hand Quantity - Number of non-serialized assets in the warehouse."
+   and ins_dt = "The date the row was inserted"
+   and last_upd_dt = "The date the row was last updated"
+   and ins_user_id = "The user id of the person who created the row"
+   and last_upd_user_id = "The user id of the person who updated the row most recently"
+
+/
+mset command off

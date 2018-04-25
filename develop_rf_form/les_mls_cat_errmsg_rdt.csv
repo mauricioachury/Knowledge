@@ -1,0 +1,9 @@
+mls_id,locale_id,prod_id,appl_id,frm_id,vartn,srt_seq,cust_lvl,mls_text,grp_nam
+msgRcvHUQtySuccess,US_ENGLISH,LES,LES,LES,RF,0,0,"Received HU w/o order Success.",jms_msg_rdt
+msgShpHUQtySuccess,US_ENGLISH,LES,LES,LES,RF,0,0,"Shipped HU w/o order Success.",jms_msg_rdt
+msgShpHUNotExists,US_ENGLISH,LES,LES,LES,RF,0,0,"HU not exists for shipping.",jms_msg_rdt
+msgShpHUOverQty,US_ENGLISH,LES,LES,LES,RF,0,0,"Over Shipping HU not allowed.",jms_msg_rdt
+err90001,US_ENGLISH,LES,LES,LES,LES,0,0,"Invalid Handling Unit type.",jms_msg_rdt
+err90002,US_ENGLISH,LES,LES,LES,LES,0,0,"Invalid Building ID.",jms_msg_rdt
+err90003,US_ENGLISH,LES,LES,LES,LES,0,0,"Invalid Receiving Address ID.",jms_msg_rdt
+err90004,US_ENGLISH,LES,LES,LES,LES,0,0,"Invalid Ship to Address ID.",jms_msg_rdt

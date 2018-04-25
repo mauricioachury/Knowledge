@@ -1,0 +1,5 @@
+lkp_id,cust_lvl,lkp_cmd,lkp_comp,ret_fld,grp_nam,static_cmd_flg
+r_asset_stat_non_ser,0,"list rf asset statuses",,,jms_data,0
+r_asset_typ_non_ser,0,"if ('&wh_id'=''){list asset type descriptions where ser_flg = ""0"" and wh_id = @@wh_id}else{list asset type descriptions where ser_flg = ""0"" and wh_id = '&wh_id'} ",,,jms_data,0
+r_bldg_id,0,"if ('&global.wh_id' != '') {list buildings where wh_id = '@global.wh_id'} else {list buildings}",,,jms_data,0
+r_adr_id_for_hu,0,"list rf address for hu adjust where isInbMode = '@EMPTY_ASSET_ADJUST.is_inb_mode'",,,jms_data,0

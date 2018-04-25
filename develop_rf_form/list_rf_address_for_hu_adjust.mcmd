@@ -1,0 +1,46 @@
+<command>
+
+<name>list rf address for hu adjust</name>
+
+<description>list rf address for hu adjust</description>
+
+<type>Local Syntax</type>
+
+<local-syntax>
+<![CDATA[
+ [select adrmst.adr_id,
+         adrmst.adrnam
+    from adrmst, wh
+   where adrmst.adr_id = wh.adr_id
+   order by adr_id]
+  |
+  if (@isInbMode =  1)
+  {
+      publish data 
+        where frm_adr_id = @adr_id
+          and adrnam = @adrnam
+  }
+  else
+  {
+      publish data 
+        where to_adr_id = @adr_id
+          and adrnam = @adrnam
+  }
+]]>
+</local-syntax>
+
+<documentation>
+
+<remarks>
+<![CDATA[
+    <p>
+    This command is used in RF to list address ID for 
+    lookups. it takes argement isInbMode to tell if should return receiving
+    from a facility or shipping to a facility.
+    </p>
+]]>
+</remarks>
+
+</documentation>
+
+</command>

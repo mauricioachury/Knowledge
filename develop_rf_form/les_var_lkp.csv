@@ -1,0 +1,6 @@
+var_nam,appl_id,frm_id,addon_id,srt_seq,cust_lvl,lkp_id,ret_fld,inp_fld,ena_flg,mult_flg,grp_nam
+asset_typ,dcsrdt,EMPTY_ASSET_ADJUST,LES,0,0,r_asset_typ_non_ser,,,1,1,jms_data
+asset_stat,dcsrdt,EMPTY_ASSET_ADJUST,LES,0,0,r_asset_stat_non_ser,,,1,1,jms_data
+bldg_id,dcsrdt,EMPTY_ASSET_ADJUST,LES,0,0,r_bldg_id,,,1,1,jms_data
+frm_adr_id,dcsrdt,EMPTY_ASSET_ADJUST,LES,0,0,r_adr_id_for_hu,,,1,1,jms_data
+to_adr_id,dcsrdt,EMPTY_ASSET_ADJUST,LES,0,0,r_adr_id_for_hu,,,1,1,jms_data

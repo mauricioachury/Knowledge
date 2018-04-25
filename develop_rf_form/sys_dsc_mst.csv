@@ -1,0 +1,5 @@
+colnam,colval,locale_id,cust_lvl,mls_text,short_dsc,grp_nam
+mnu_itm,mtfoptEmptyAssetAdjustInb,US_ENGLISH,0,Rcv HUs W/o Order,,jms_data
+opt_nam,mtfoptEmptyAssetAdjustInb,US_ENGLISH,0,Rcv HUs W/o Order,,jms_data
+mnu_itm,mtfoptEmptyAssetAdjustOub,US_ENGLISH,0,Shp HUs W/o Order,,jms_data
+opt_nam,mtfoptEmptyAssetAdjustOub,US_ENGLISH,0,Shp HUs W/o Order,,jms_data

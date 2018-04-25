@@ -1,0 +1,10 @@
+#include <../../../include/dcsddl.h>
+#include <dcstbldef.h>
+#include <sqlDataTypes.h>
+
+CREATE_PK_CONSTRAINT_BEGIN(non_ser_asset, non_ser_asset_pk)
+(bldg_id, asset_typ, asset_stat, src_adr_id, adr_id, client_id) 
+CREATE_PK_CONSTRAINT_USING_INDEX
+CREATE_PK_CONSTRAINT_TABLESPACE(NON_SER_ASSET_PK_TBLSPC, NON_SER_ASSET_PK_STORAGE)
+CREATE_PK_CONSTRAINT_END
+RUN_DDL

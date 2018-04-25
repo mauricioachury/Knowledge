@@ -1,0 +1,3 @@
+opt_nam,ath_typ,ath_id,pmsn_mask,grp_nam
+mtfoptEmptyAssetAdjustInb,R,MTF_SUPER,-1,mtf_dcs_data
+mtfoptEmptyAssetAdjustOub,R,MTF_SUPER,-1,mtf_dcs_data

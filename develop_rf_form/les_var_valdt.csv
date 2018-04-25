@@ -1,0 +1,7 @@
+var_nam,appl_id,frm_id,addon_id,cust_lvl,valdt_cmd,ena_flg,ret_fld_flg,ret_fld,grp_nam,valdt_mod
+asset_typ,LES,EMPTY_ASSET_ADJUST,LES,0,"if('@EMPTY_ASSET_ADJUST.asset_typ' != ''){list asset type descriptions where asset_typ = '@EMPTY_ASSET_ADJUST.asset_typ' and wh_id = '@global.wh_id' catch(-1403) | if (@? = -1403){set return status where status = 90001}}",1,0,,jms_data,I
+asset_stat,LES,EMPTY_ASSET_ADJUST,LES,0,"if('@EMPTY_ASSET_ADJUST.asset_stat' != ''){validate rf asset status where asset_stat = '@EMPTY_ASSET_ADJUST.asset_stat'}",1,0,,jms_data,I
+bldg_id,LES,EMPTY_ASSET_ADJUST,LES,0,"if('@EMPTY_ASSET_ADJUST.bldg_id' != ''){[select 'x' from bldg_mst where bldg_id = '@EMPTY_ASSET_ADJUST.bldg_id'] catch(-1403) | if (@? = -1403) {set return status where status = 90002}}",1,0,,jms_data,I
+to_adr_id,LES,EMPTY_ASSET_ADJUST,LES,0,"if('@EMPTY_ASSET_ADJUST.to_adr_id' != ''){[select 'x' from adrmst, wh where adrmst.adr_id = wh.adr_id and adrmst.adr_id = '@EMPTY_ASSET_ADJUST.to_adr_id'] catch(-1403) | if (@? = -1403) {set return status where status = 90004}}",1,0,,jms_data,I
+frm_adr_id,LES,EMPTY_ASSET_ADJUST,LES,0,"if('@EMPTY_ASSET_ADJUST.frm_adr_id' != ''){[select 'x' from adrmst, wh where adrmst.adr_id = wh.adr_id and adrmst.adr_id = '@EMPTY_ASSET_ADJUST.frm_adr_id'] catch(-1403) | if (@? = -1403) {set return status where status = 90003}}",1,0,,jms_data,I
+
