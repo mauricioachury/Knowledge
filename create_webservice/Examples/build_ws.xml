@@ -1,0 +1,248 @@
+<project name="WS" default="default" basedir="." xmlns:jacoco="antlib:org.jacoco.ant">
+    <description>
+        WS Java-based webservice application
+    </description>
+
+    <target name="help" description="This target provides help on this buildfile.">
+            <echo message="This target provides help on this buildfile."/>
+        <echo>
+        Normally, you just have to run "ant", which will build target 'ws-all'
+        for building the webservice.
+        This main ant buildfile will call sub-ordinate ant build
+        files in the sub-directories to build the required separate java
+        jarfiles.
+         </echo>
+        <echo message="                     Useful Info"/>
+        <echo message="---------------------------------------------------------"/>
+        <echo message="   The operating system is : ${os.name}"/>
+        <!-- absolute path of the project. -->
+        <echo message="          The home path is : ${basedir}"/>
+        <!-- absolute path of the build file. -->
+        <echo message="          The file name is : ${ant.file}"/>
+        <!-- root directory of ant. -->
+        <echo message="       The Project name is : ${ant.project.name}"/>
+        <echo message=" The Ant home directory is : ${ant.home}"/>
+        <echo message="        The Ant version is : ${ant.version}"/>
+        <echo message="       The Java version is : ${ant.java.version}"/>
+          <!-- System properties. -->
+        <echo message="The Java home directory is : ${java.home}"/>
+        <echo message="The User home directory is : ${user.home}"/>
+        <echo message="          The User name is : ${user.name}"/>
+    </target>
+
+    <!-- set global properties for this build -->
+    <property environment="env"/>
+    <property name="moca-lib" location="${env.MOCADIR}/lib" />
+    <property name="3rdparty-lib" location="3rdparty" />
+    <property name="moca-extern-lib" location="${env.MOCADIR}/javalib" />
+    <property name="moca-3rdparty-lib" location="${env.MOCADIR}/3rdparty" />
+    <property name="moca-test-3rdparty-lib" location="${env.MOCADIR}/test/3rdparty" />
+    <property name="mtf-3rdparty-lib" location="${env.MTFDIR}/3rdparty" />
+    <property name="mcs-lib" location="${env.MCSDIR}/lib" />
+    <property name="mcs-extern-lib" location="${env.MCSDIR}/javalib" />
+    <property name="sal-lib" location="${env.SALDIR}/lib" />
+    <property name="sal-extern-lib" location="${env.SALDIR}/javalib" />
+    <property name="les-lib" location="${env.LESDIR}/lib" />
+    <property name="mtf-lib" location="${env.MTFDIR}/lib" />
+    <property name="les-temp" location="${env.LESDIR}/temp" />
+
+    <property name="tools" location="tools" />
+    <property name="webclient-src" location="webclient/rpweb"/>
+    <property name="src" location="src"/>
+    <property name="build" location="build"/>
+    <property name="wm-legacy-build" location="${build}/legacy"/>
+    <property name="wm-legacy-build-prod" location="${wm-legacy-build}/prod/classes"/>
+    <property name="wm-legacy-build-test" location="${wm-legacy-build}/test/classes"/>
+    <property name="wm-legacy-src" location="${src}/java/legacy"/>
+    <property name="wm-legacy-src-prod" location="${wm-legacy-src}/prod"/>
+    <property name="wm-legacy-src-test" location="${wm-legacy-src}/test"/>
+    <property name="wm-core-build" location="${build}/core"/>
+    <property name="wm-core-build-prod" location="${wm-core-build}/prod/classes"/>
+    <property name="wm-core-build-test" location="${wm-core-build}/test/classes"/>
+    <property name="wm-core-src" location="${src}/java/core"/>
+    <property name="wm-core-src-prod" location="${wm-core-src}/prod"/>
+    <property name="wm-core-src-test" location="${wm-core-src}/test"/>
+    <property name="wm-web-build" location="${build}/web"/>
+    <property name="wm-web-build-prod" location="${wm-web-build}/prod/classes"/>
+    <property name="wm-web-build-test" location="${wm-web-build}/test/classes"/>
+    <property name="wm-web-src" location="${src}/java/web"/>
+    <property name="wm-web-src-prod" location="${wm-web-src}/prod"/>
+    <property name="wm-web-src-test" location="${wm-web-src}/test"/>
+    <property name="ws-src" location="ws/wm/src/"/>
+    <property name="ws-build" location="${build}/ws"/>
+    <property name="mtf-src" location="mtfclient/src"/>
+    <property name="mtf-build" location="mtfclient/build/classes"/>
+    <property name="build-lib" location="lib"/>
+    <property name="mtf-build-lib" location="mtfclient/lib"/>
+    <property name="docs" location="docs"/>
+    <property name="mtf-docs" location="mtfclient/docs"/>
+    <property name="javadocs" location="${docs}/api"/>
+    <property name="mtf-javadocs" location="${mtf-docs}/api"/>
+    <property name="webdeploy" location="webdeploy"/>
+    <property name="extern-lib" location="javalib" />
+
+    <fileset id="wmd.dependency.lib.files" dir="${3rdparty-lib}" >
+        <include name="**/*.jar"/>
+        <exclude name="ant-contrib/"/>
+    </fileset>
+
+    <fileset id="moca.dependency.lib.files" dir="${moca-extern-lib}" >
+        <include name="*.jar"/>
+    </fileset>
+
+    <fileset id="mcs.lib.files" dir="${mcs-lib}" >
+        <include name="*.jar"/>
+    </fileset>
+
+    <fileset id="mcs.dependency.lib.files" dir="${mcs-extern-lib}" >
+        <include name="*.jar"/>
+    </fileset>
+
+    <fileset id="sal.lib.files" dir="${sal-lib}" >
+        <include name="*.jar"/>
+    </fileset>
+
+    <fileset id="sal.dependency.lib.files" dir="${sal-extern-lib}" >
+        <include name="*.jar"/>
+    </fileset>
+
+    <fileset id="mtf.dependency.lib.files" dir="${mtf-3rdparty-lib}" >
+        <include name="**/*.jar"/>
+    </fileset>
+
+    <!-- Set up the common project class path -->
+    <path id="project.class.path">
+        <pathelement location="${les-lib}/les.jar" />
+        <fileset refid="mcs.lib.files" />
+        <fileset refid="mcs.dependency.lib.files" />
+        <fileset refid="sal.lib.files" />
+        <fileset refid="sal.dependency.lib.files" />
+        <pathelement location="${moca-lib}/moca-core.jar" />
+        <pathelement location="${moca-lib}/moca-server.jar" />
+        <pathelement location="${moca-lib}/moca-web.jar" />
+        <pathelement location="${mtf-lib}/mtf.jar" />
+        <fileset refid="wmd.dependency.lib.files"/>
+        <fileset refid="moca.dependency.lib.files"/>
+    </path>
+
+
+    <!-- Set up the WS project's class path -->
+    <path id="ws-project.class.path">
+        <path refid="project.class.path" />
+        <pathelement location="${build-lib}/wm-legacy.jar" />
+        <pathelement location="${build-lib}/wm-core.jar" />
+        <pathelement location="${build-lib}/wm-web.jar" />
+    </path>
+
+    <patternset id="all.jars">
+        <include name="**/*.jar"/>
+    </patternset>
+
+
+    <patternset id="resource.files" >
+        <include name="**/*.properties" />
+        <include name="**/*.txt" />
+        <include name="**/*.html" />
+        <include name="**/*.xml" />
+        <include name="**/*.dtd" />
+        <include name="**/*.gif" />
+        <include name="**/*.jpg" />
+        <include name="**/mime.types" />
+    </patternset>
+
+    <fileset id="dependency.lib.files" dir="${env.MOCADIR}">
+        <include name="lib/**/*.jar"/>
+        <include name="javalib/*.jar"/>
+        <include name="test/3rdparty/mockito/*.jar"/>
+    </fileset>
+
+    <fileset id="3rdparty.dependency.lib.files" dir="${env.SALDIR}/test/3rdparty">
+        <include name="*.jar"/>
+    </fileset>
+
+    <!-- ==================================================================== -->
+    <!--   WS                                                                 -->
+    <!-- ==================================================================== -->
+
+    <!-- Web Service Clean Target -->
+    <target name="ws-clean" description="clean up" >
+        <!-- Delete the ${ws-build} directory tree -->
+        <delete dir="${ws-build}/${target}"/>
+        <delete file="${webdeploy}/${target}.war"/>
+
+    </target>
+
+    <!-- Web Service Initialization Target -->
+    <target name="ws-init">
+        <antcall target="ws-clean">
+            <param name="target" value="${target}"/>
+        </antcall>
+        <!-- Create the build/ws/${target}/classes directory -->
+        <mkdir dir="${ws-build}/${target}/classes"/>
+        <mkdir dir="${webdeploy}"/>
+    </target>
+
+    <!-- Web Service Compile Target -->
+    <!-- Compiles a webservice found in the src/java/ws/${target} directory -->
+    <target name="ws-compile" description="compile the given ws classes" >
+        <antcall target="ws-init">
+            <param name="target" value="${target}"/>
+        </antcall>
+        <!-- Compile the java code from ws/${target}/src/java into ${ws-build}/${target}/classes -->
+        <javac srcdir="ws/${target}/src/java" destdir="${ws-build}/${target}/classes"
+                debug="true" source="1.7" includeAntRuntime="false">
+            <classpath refid="ws-project.class.path" />
+        </javac>
+
+        <!-- copy all supporting files to the build area -->
+        <copy todir="${ws-build}/${target}" >
+            <fileset dir="ws/${target}" >
+                <exclude name="**/src/**"/>
+            </fileset>
+        </copy>
+
+        <copy todir="${ws-build}/${target}/classes" >
+            <fileset dir="ws/${target}/src/java" >
+                <patternset refid="resource.files" />
+            </fileset>
+        </copy>
+
+    </target>
+
+    <!-- Generates a war from the build/ws/${target} directory -->
+    <target name="ws-war">
+        <antcall target="ws-compile">
+            <param name="target" value="${target}"/>
+        </antcall>
+        <!-- Use WM's own webservices.xml instead of the version provided by Moca -->
+        <war destfile="webdeploy/${target}.war" webxml="build/ws/${target}/web.xml" duplicate="preserve">
+            <webinf dir="${ws-build}/${target}"/>
+            <webinf file="${env.MOCADIR}/ws/webapp/jetty-web.xml"/>
+        </war>
+    </target>
+
+    <!-- Build all web service wars and deploy to LESDIR.  Target is for developer use only -->
+    <target name="ws-all" description="Build all web service wars and deploy to LESDIR.  Target is for developer use only">
+        <antcall target="ws-wars"/>
+        <antcall target="ws-deploy"/>
+    </target>
+
+    <target name="ws-deploy">
+        <copy todir="${env.LESDIR}/webdeploy">
+            <fileset dir="${webdeploy}">
+                <include name="*.war"/>
+            </fileset>
+        </copy>
+    </target>
+
+    <target name="ws-wars">
+        <antcall target="ws-war">
+            <param name="target" value="sam"/>
+        </antcall>
+    </target>
+
+    <target name="clean" description="clean up" depends="ws-deploy"/>
+
+    <target name="default" description="build" depends="ws-all"/>
+
+</project>
