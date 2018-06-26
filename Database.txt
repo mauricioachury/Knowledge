@@ -12,6 +12,34 @@ b.)kill 问题session，注意可以一直执行上面的查询，当某条记录一直不变时可以考虑kil
 --alter system kill session 'sid, serial#'; 
 ALTER system kill session '506, 39369'
 
+
+c.)
+/* 如果有输出的结果，则说明有死锁，且能看到死锁的机器是哪一台。字段说明：
+ * Username：死锁语句所用的数据库用户;
+ * Lockwait：死锁的状态，如果有内容表示被死锁。
+ * Status： 状态，active表示被死锁
+ * Machine： 死锁语句所在的机器。
+ * Program： 产生死锁的语句主要来自哪个应用程序。
+ */
+[select username,
+        lockwait,
+        status,
+        machine,
+        program
+   from v$session
+  where sid in (select session_id
+                  from v$locked_object)]
+                  
+d.)
+/* 用dba用户执行以下语句，可以查看到被死锁的语句。*/
+
+[select sql_text
+   from v$sql
+  where hash_value in (select sql_hash_value
+                         from v$session
+                        where sid in (select session_id
+                                        from v$locked_object))]
+
 2. 9.1建order的时候报错：ORA-01792: 表或视图中的最大列数为 1000
 安装好Oracle12C，使用SQL语句进行查询时，当查询的列没有达到1000，但是关联的表过多，关联表的总列数超过了1000的话，会报上面的错误。
 
