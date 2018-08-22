@@ -12,6 +12,20 @@ b.)kill 问题session，注意可以一直执行上面的查询，当某条记录一直不变时可以考虑kil
 --alter system kill session 'sid, serial#'; 
 ALTER system kill session '506, 39369'
 
+Batch kill:
+[SELECT object_name,
+        machine,
+        s.sid,
+        s.serial#,
+        s.sid || ', ' || s.serial# killme
+   FROM gv$locked_object l,
+        dba_objects o,
+        gv$session s
+  WHERE l.object_id = o.object_id
+    AND l.session_id = s.sid
+    and o.object_name = 'LOCMST']
+|
+[ALTER system kill session @killme]
 
 c.)
 /* 如果有输出的结果，则说明有死锁，且能看到死锁的机器是哪一台。字段说明：
