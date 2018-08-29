@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="JRULGraphic" pageWidth="250" pageHeight="32" whenNoDataType="AllSectionsNoDetail" columnWidth="250" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" isFloatColumnFooter="true">
+	<property name="ireport.zoom" value="5.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<parameter name="SUBREPORT_DIR" class="java.lang.String" isForPrompting="false">
+		<property name="MOCA" value="&quot;true&quot;"/>
+		<defaultValueExpression><![CDATA["./"]]></defaultValueExpression>
+	</parameter>
+	<title>
+		<band height="32" splitType="Stretch">
+			<image>
+				<reportElement x="0" y="0" width="250" height="32"/>
+				<imageExpression class="java.io.InputStream"><![CDATA[new ByteArrayInputStream(BSE.RotateImage.rotateImage("/opt/jda/wms/reporting/reports/JDA_Logo.jpg", 90))]]></imageExpression>
+			</image>
+		</band>
+	</title>
+</jasperReport>
