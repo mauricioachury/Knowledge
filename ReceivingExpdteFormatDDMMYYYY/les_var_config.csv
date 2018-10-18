@@ -1,0 +1,2 @@
+var_nam,appl_id,frm_id,addon_id,cust_lvl,vis_flg,ena_flg,fld_typ,ctrl_typ,ctxt_flg,dsp_wid,dsp_hgt,ctrl_prop,grp_nam
+expire_dte,dcsrdt,LES,LES,10,1,1,CUST_DATE,,1,,,FRMT=DDMMYYYY,ww_data

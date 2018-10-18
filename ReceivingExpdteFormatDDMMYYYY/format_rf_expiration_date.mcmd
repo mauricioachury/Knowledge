@@ -1,0 +1,87 @@
+<command>
+
+<name>format rf expiration date</name>
+
+<description>Format RF Expiration Date</description>
+
+<type>Local Syntax</type>
+
+<argument name="expire_dte" datatype="string"> Expiration date to format.  Must be in the format YYYYMMDDHH24MISS </argument>
+<argument name="frm_id" datatype="string">Form ID</argument>
+
+<local-syntax>
+<![CDATA[
+
+    if(@expire_dte = '')
+    {
+        publish data 
+          where expire_dte = '' 
+            and fmt_expire_dte = ''
+    }
+    else
+    {
+        list rf date formats
+            where var_nam = 'expire_dte'
+              and frm_id  = @frm_id
+        |
+        format date 
+            where date = to_date(@expire_dte) 
+              and fmt_str = @fmt_str catch(@?)
+        |
+        if (@? != 0)
+        {
+            /* The expire_dte may formated alrady with the fmt_str, so try again by using the new format */
+            format date 
+                where date = to_date(@expire_dte, @fmt_str) 
+                  and fmt_str = @fmt_str catch(@?)
+            |
+            if (@? != 0)
+            {
+                set return status where status = 10571
+            }
+            else
+            {
+                publish data
+                where expire_dte     = @expire_dte
+                  and fmt_expire_dte = @fmt_dte
+            }
+        }
+        else
+        {
+            publish data
+            where expire_dte     = @expire_dte
+              and fmt_expire_dte = @fmt_dte
+        }
+    }
+
+
+]]>
+</local-syntax>
+
+<documentation>
+
+<remarks>
+<![CDATA[
+    <p>
+    This command, specifically for use in RF forms, will format the given 
+    expiration date according to the format string returned by <b> list rf 
+    date formats </b>.  The given expiration date to format 
+    must be in the MOCA standard date/time format.
+    </p>
+    <p>
+    This command is also provided as a possible hook, so that projects may 
+    customized this command depending on customer requirements for 
+    expiration date formats.
+    </p>
+]]>
+</remarks>
+
+<retcol name="expire_dte" type="COMTYP_CHAR"> The original expiration date </retcol>
+<retcol name="fmt_expire_dte" type="COMTYP_CHAR"> The formatted expiration date </retcol>
+
+<exception value="eOK">Normal successful completion</exception>
+<exception value="eINT_INVALID_DATE">The date entered is invalid.</exception>
+
+</documentation>
+
+</command>
