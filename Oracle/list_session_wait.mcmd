@@ -1,0 +1,66 @@
+/* Get session history waiting events*/
+[select event,
+        count(*) waitCnt
+   from gv$session_wait_history
+  group by(event)
+ order by waitCnt desc];
+
+/* Get current session waiting events*/
+[select event,
+        count(*) waitCnt
+   from gv$session_wait
+  group by(event)
+  order by waitCnt desc];
+
+/* Quick session wait */
+[select sid,
+ event,
+ total_waits,
+ time_waited,
+ average_wait,
+ max_wait,
+ wait_class
+from gv$session_event
+order by average_wait desc]
+
+/* System wize wait statistics */
+[select swc.wait_class,
+ sea.event,
+ sea.total_waits,
+ sea.time_waited,
+ sea.average_wait
+from gv$system_event sea,
+ gv$event_name enb,
+ gv$system_wait_class swc
+where sea.event_id = enb.event_id
+and enb.wait_class# = swc.wait_class#
+order by average_wait desc];
+
+/* Find longest waited session from passed 15 minutes,
+ * Attention: active_session_history is big table, make sure not query more
+ * then 1 hour data
+ */
+[select a.user_id,
+ a.session_id,
+ u.username,
+ s.sql_text,
+ s.sql_id,
+ a.sql_plan_hash_value,
+ a.blocking_session,
+ a.blocking_session_serial#,
+ sum(a.wait_time + a.time_waited) total_wait_time
+from gv$active_session_history a,
+ gv$sqlarea s,
+ dba_users u
+where a.sample_time > sysdate - 15 / 60 / 24
+and a.sql_id = s.sql_id
+and a.user_id = u.user_id
+group by a.user_id,
+ a.session_id,
+ s.sql_id,
+ s.sql_text,
+ u.username,
+ a.sql_plan_hash_value,
+ a.blocking_session,
+ a.blocking_session_serial#
+order by total_wait_time desc];

@@ -1,0 +1,12 @@
+publish data
+  where start = '20181013 2100'
+    and   end = '20181013 2220'
+|
+[select dbid,
+        instance_number isn
+   from dba_hist_snapshot
+  where rownum <2
+group by dbid,instance_number]
+|
+[select output
+   from table(dbms_workload_repository.ash_report_html(@dbid, @isn, @start, @end))]

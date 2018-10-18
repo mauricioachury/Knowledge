@@ -1,0 +1,11 @@
+/* Look at event:
+ * t.metric_name in ('Database Wait Time Ratio','Database CPU Time Ratio')
+ * Database Wait Time Ratio: the smaller the better, big value means there is waiting event.
+ * Database CPU Time Ratio: the bigger the better.
+ */
+[select t.*
+   from v$sysmetric t
+  where intsize_csec = (select max(INTSIZE_CSEC)
+                          from v$sysmetric)
+    and t.metric_name in ('Database Wait Time Ratio','Database CPU Time Ratio')
+                          ]

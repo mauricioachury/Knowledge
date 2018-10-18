@@ -1,0 +1,15 @@
+publish data
+  where start = '20181013 2100'
+    and   end = '20181013 2220'
+|
+[select dbid,
+        instance_number isn,
+        min(snap_id) frm_snap,
+        max(snap_id) to_snap
+   from dba_hist_snapshot
+  where end_interval_time > to_date(@start, 'yyyymmdd hh24mi')
+    and end_interval_time < to_date(@end, 'yyyymmdd hh24mi')
+group by dbid,instance_number]
+|
+[select output
+   from table(dbms_workload_repository.awr_report_html(@dbid, @isn, @frm_snap, @to_snap))]

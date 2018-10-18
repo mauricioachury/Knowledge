@@ -1,0 +1,83 @@
+/* Use o.object_name = 'LOCMST' to query blocked on table locmst,
+ * 'Lock Owner' indidate this is the owner currently own the lock to object_name
+ * 'Lock Waitor' indicate this is the waitor currently for object_name, if all
+ * are 'Lock Waitor', which means one of them must in process of getting lock,
+ * then look at 'seconds_in_wait' to tell which is in waiting.
+ * 'event' tells for what event this session is waiting.
+ * order by killme which is session, if there multiple rows for same session,
+ * it means this sql is locking multiple objects.
+ */
+[select object_name,
+        machine,
+        s.sid,
+        s.serial#,
+        s.sid || ', ' || s.serial# killme,
+        s.blocking_session,
+        decode(k.lmode, 0, 'none', 1, 'null', 2, 'RS', 3, 'RX', 4, 'S', 5, 'SRX', 6, 'X') Lock_mode,
+        k.id1,
+        k.id2,
+        s.status,
+        s.event,
+        s.state,
+        s.seconds_in_wait,
+        s.sql_exec_start,
+        q.sql_text,
+        q.sql_id,
+        q.child_number,
+        decode(s.sql_id, null, 'Lock Owner', 'Lock Waitor') role,
+        s.type,
+        s.wait_class
+   from gv$locked_object l,
+        dba_objects o,
+        gv$session s,
+        gv$lock k,
+        gv$sql q
+  where l.object_id = o.object_id
+    and l.session_id = s.sid
+    and s.sid = k.sid
+    and not exists(select 'x'
+                     from gv$lock t
+                    where t.sid = k.sid
+                      and t.lmode > k.lmode)
+    and nvl(s.sql_id, s.prev_sql_id) = q.sql_id
+  order by killme,
+        object_name]
+
+/* Kill the 'Lock Owner' should release other waitors */
+[ALTER system kill session @killme]
+
+/* Use below query to get binded parameter for sql_id,
+ * sql_id and child_number uniquely locate the session of the sql in running
+ */
+[select sql_id,
+        child_number,
+        datatype_string,
+        max_length,
+        last_captured,
+        value_string
+   from gv$sql_bind_capture
+  where rownum < 10
+    and sql_id = '7bgc8jdg3jvaa'
+    and child_number = 0]
+
+/* Vivid query for what is blocking what */
+[select s1.username || '@' || s1.machine || '(SID=' || s1.sid || ') is blocking ' || s2.username || '@' || s2.machine || ' (SID=' || s2.sid || ')' blocking_status,
+     q1.sql_id sql_id_src,
+     q1.sql_text sql_text_src,
+     'Is blocking' action,
+     q2.sql_id sql_id_dst,
+     q2.sql_text sql_text_dst
+from gv$lock l1,
+     gv$session s1,
+     gv$sql q1,
+     gv$lock l2,
+     gv$session s2,
+     gv$sql q2
+where s1.sid = l1.sid
+ and nvl(s1.sql_id, s1.prev_sql_id) = q1.sql_id
+ and s2.sid = l2.sid
+ and s2.sql_id = q2.sql_id
+ and l1.block = 1
+ and l2.request > 0
+ and l1.id1 = l2.id1
+ and l1.id2 = l2.id2]
