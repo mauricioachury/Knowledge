@@ -1,0 +1,3 @@
+mls_id,locale_id,prod_id,appl_id,frm_id,vartn,srt_seq,cust_lvl,mls_text,grp_nam
+err99998,US_ENGLISH,LES,LES,LES,LES,0,10,"Expiration date is less than ^minDays^ days from now!",rdt_data
+err99997,US_ENGLISH,LES,LES,LES,LES,0,10,"Expiration date is more than ^maxDays^ days from now!",rdt_data

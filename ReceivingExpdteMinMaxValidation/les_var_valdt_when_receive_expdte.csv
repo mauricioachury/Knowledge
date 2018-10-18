@@ -1,0 +1,2 @@
+var_nam,appl_id,frm_id,addon_id,cust_lvl,valdt_cmd,ena_flg,ret_fld_flg,ret_fld,grp_nam,valdt_mod
+expire_dte,LES,IDENTIFY_LOAD,LES,10,if('@expire_dte' != '' and '@age_pflnam' != ''){validate rf expdte in min max days where expire_dte= '@expire_dte' and age_pflnam = '@age_pflnam' and wh_id = '@global.wh_id'},1,0,,mtf_dcs_data,I

@@ -1,0 +1,110 @@
+<command>
+
+<name>validate rf expdte in min max days</name>
+
+<description>validate rf expdte in min max days</description>
+
+<type>Local Syntax</type>
+
+<local-syntax>
+
+<![CDATA[
+    /* Check if policy is enabled */
+    [select 'x'
+       from poldat_view
+      where wh_id = @wh_id
+        and polcod = 'USR'
+        and polvar = 'VALIDATE_MIN_MAX_EXPDTE'
+        and polval = 'ENABLED'
+        and rtnum1 = 1] catch(-1403)
+    |  
+    if (@? = 0 and @age_pflnam != '' and @expire_dte != '')
+    {
+        /* Parse aging profile, it is expected like '30/365' */
+        [select instr(@age_pflnam, '/') idx_slash,
+                length(@age_pflnam) len
+           from dual]
+        |
+        if (@idx_slash > 1 and @idx_slash < @len)
+        {
+            list rf date formats
+            where var_nam = 'expire_dte'
+              and frm_id  = 'IDENTIFY_LOAD'
+            |
+            /* If there is non-numeric char present, it will exception, so
+             * capture it to avoid the validation.
+             */
+            [select to_number(substr(@age_pflnam, 1, @idx_slash -1)) minDays,
+                    to_number(substr(@age_pflnam, @idx_slash + 1, @len)) maxDays
+               from dual] catch(@?)
+            |
+            if (@? = 0)
+            {
+                publish data
+                 where minDays = @minDays
+                   and maxDays = @maxDays
+                |
+                [select 'x'
+                   from dual
+                  where to_date(@expire_dte, @fmt_str) > sysdate + @maxDays] catch(@?) 
+                |
+                if (@? = 0)
+                {
+                    set return status
+                      where status = 99997
+                        and maxDays = @maxDays
+                }
+                |
+                [select 'x'
+                   from dual
+                  where to_date(@expire_dte, @fmt_str) < sysdate + @minDays] catch(@?) 
+                |
+                if (@? = 0)
+                {
+                    set return status
+                      where status = 99998
+                        and minDays = @minDays
+                }
+            }
+        }
+    }
+]]>
+
+</local-syntax>
+
+<argument name="age_pflnam" datatype="string"> Aging Profile</argument>
+<argument name="expire_dte" datatype="string"> Expiration Date</argument>
+
+<documentation> 
+
+<remarks>
+
+<![CDATA[
+    <p>
+    This command is used to validate the expire date that user scanned when do
+    RF receiving, the logic as below:
+    1. Check if policy 'VALIDATE_MIN_MAX_EXPDTE' is on,if so do below.
+    2. Get the minimum days from the name of aging profile, for example,
+       if age_pflnam is '30/365', then minimum is 30.
+    3. Get the maximum days from the name of aging profile, for example,
+       if age_pflnam is '30/365', then maximum is 365.
+    4. Check if the expire date scanned is below than minimum days to
+       from now, if so return error:
+       'Expiration date is less than ^minDays^ days from now!'
+    5. Check if the expire date scanned is more than maximum days to
+       from now, if so return error:
+       'Expiration date is more than ^maxDays^ days from now!'
+    </p>
+]]>
+
+</remarks>
+
+<exception value="eOK">Normal successful completion</exception>
+<exception value="err99998">'Expiration date is less than ^minDays^ days from now!'
+</exception>
+<exception value="err99997">'Expiration date is more than ^maxDays^ days from now!'
+</exception>
+
+</documentation>
+
+</command>

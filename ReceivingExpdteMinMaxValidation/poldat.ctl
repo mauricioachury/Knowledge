@@ -1,0 +1,22 @@
+[ select count(*) row_count from poldat where
+    polcod = '@polcod@' and polvar = '@polvar@' and polval = '@polval@' and wh_id_tmpl = '@wh_id_tmpl@' and srtseq = @srtseq@ and rtstr1 = '@rtstr1@' and rtstr2 = '@rtstr2@' and rtnum1 = to_number('@rtnum1@') and rtnum2 = to_number('@rtnum2@') and rtflt1 = to_number('@rtflt1@') and rtflt2 = to_number('@rtflt2@') and moddte = to_date('@moddte@','YYYYMMDDHH24MISS') and mod_usr_id = '@mod_usr_id@' and grp_nam = '@grp_nam@' ] | if (@row_count > 0) {
+       [ update poldat set
+          polcod = '@polcod@'
+,          polvar = '@polvar@'
+,          polval = '@polval@'
+,          wh_id_tmpl = '@wh_id_tmpl@'
+,          srtseq = @srtseq@
+,          rtstr1 = '@rtstr1@'
+,          rtstr2 = '@rtstr2@'
+,          rtnum1 = to_number('@rtnum1@')
+,          rtnum2 = to_number('@rtnum2@')
+,          rtflt1 = to_number('@rtflt1@')
+,          rtflt2 = to_number('@rtflt2@')
+,          moddte = sysdate
+,          mod_usr_id = '@mod_usr_id@'
+,          grp_nam = '@grp_nam@'
+             where  polcod = '@polcod@' and polvar = '@polvar@' and polval = '@polval@' and wh_id_tmpl = '@wh_id_tmpl@' and srtseq = @srtseq@ and rtstr1 = '@rtstr1@' and rtstr2 = '@rtstr2@' and rtnum1 = to_number('@rtnum1@') and rtnum2 = to_number('@rtnum2@') and rtflt1 = to_number('@rtflt1@') and rtflt2 = to_number('@rtflt2@') and moddte = to_date('@moddte@','YYYYMMDDHH24MISS') and mod_usr_id = '@mod_usr_id@' and grp_nam = '@grp_nam@' ] }
+             else { [ insert into poldat
+                      (polcod, polvar, polval, wh_id_tmpl, srtseq, rtstr1, rtstr2, rtnum1, rtnum2, rtflt1, rtflt2, moddte, mod_usr_id, grp_nam)
+                      VALUES
+                      ('@polcod@', '@polvar@', '@polval@', '@wh_id_tmpl@', @srtseq@, '@rtstr1@', '@rtstr2@', to_number('@rtnum1@'), to_number('@rtnum2@'), to_number('@rtflt1@'), to_number('@rtflt2@'), sysdate, '@mod_usr_id@', '@grp_nam@') ] }
