@@ -1,0 +1,45 @@
+/* profile for locations for version higher than 9.1:*/
+[select lm.wh_id,
+        lm.arecod,
+        lt.loc_typ,
+        max(lm.stoloc) maxloc,
+        min(lm.stoloc) minloc,
+        sz.sto_zone_cod,
+        mz.mov_zone_cod,
+        pz.pck_zone_cod,
+        wz.wrkzon,
+        wz.wrkare,
+        sum(decode(im.stoloc, null, 0, 1)) nonEmptyLocCnt,
+        sum(decode(im.stoloc, null, 1, 0)) emptyLocCnt
+   from locmst lm
+   left
+   join loc_typ lt
+     on lm.loc_typ_id = lt.loc_typ_id
+   left
+   join sto_zone sz
+     on lm.sto_zone_id = sz.sto_zone_id
+   left
+   join mov_zone mz
+     on lm.mov_zone_id = mz.mov_zone_id
+   left
+   join pck_zone pz
+     on lm.pck_zone_id = pz.pck_zone_id
+   left
+   join zonmst wz
+     on lm.wrk_zone_id = wz.wrk_zone_id
+   left
+   join invsum im
+     on lm.stoloc = im.stoloc
+    and lm.wh_id = im.wh_id
+  group by lm.wh_id,
+        lm.arecod,
+        lt.loc_typ,
+        sz.sto_zone_cod,
+        mz.mov_zone_cod,
+        pz.pck_zone_cod,
+        wz.wrkzon,
+        wz.wrkare
+  order by wh_id,
+        arecod,
+        loc_typ,
+        sto_zone_cod]

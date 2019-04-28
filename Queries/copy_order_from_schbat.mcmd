@@ -1,0 +1,14 @@
+[select distinct ordnum from shipment_line sl where sl.schbat = '05TUE0531062219568K' ]
+|
+[select * from ord where ordnum = @ordnum]
+|
+generate next number where numcod ='ordnum'
+|
+publish data where new_ordnum = @nxtnum
+|
+{
+    create order where requir_tms_flg = 0 and ordnum = @new_ordnum and @*;
+    [select * from ord_line where ordnum = @ordnum]
+    |
+    create order line where ordnum = @new_ordnum and @*
+}

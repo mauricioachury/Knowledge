@@ -1,0 +1,26 @@
+/* The exists clause is used to get only shared filters*/
+[select a.*,uv.usr_id, uv.first_name || ',' || uv.last_name user_name
+   from WEB_FILTER a,
+        WEB_FILTER_AUTHORIZATION b,
+        users_view uv
+ where a.id = b.filter_id
+   and b.user_id = uv.usr_id
+   and exists (select 'x' from WEB_FILTER_AUTHORIZATION x where x.filter_id = b.filter_id and x.user_id is null)
+   and b.user_id is not null
+ order by a.filter_type, a.filter_name]
+|
+[select c.column_name || ' '|| decode(c.operator, 'EQ', '=', 'NE', '<>', c.operator) ||' '||  c.value exp, d.group_type
+   from  WEB_FILTER_VAL c,
+         WEB_FILTER_GROUP d
+  where c.group_id = @group_id
+    and c.group_id = d.id] catch(-1403)
+>> res
+|
+convert column results to string where res = @res and column = 'exp'
+|
+publish data
+where filter_type = @filter_type
+   and filter_name = @filter_name
+   and user_name = @user_name
+   and user_id = @usr_id
+   and filter_expression = @result_string 

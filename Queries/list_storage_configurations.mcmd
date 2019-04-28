@@ -1,0 +1,48 @@
+/* Storage configuration: */
+[select sc.wh_id,
+        sz.bldg_id,
+        sc.sto_config_id,
+        scr.sto_config_rule_id,
+        scr.srtseq,
+        scr.sto_zone_id,
+        sz.sto_zone_cod,
+        scr.strategy,
+        scr.min_lvl,
+        scr.max_lvl,
+        scr.max_lod_per_aisle,
+        scc.sto_config_criteria_id,
+        scc.colnam,
+        scc.colval,
+        sum(decode(lm.locsts, 'P', 1, 0)) PartialLocCnt,
+        sum(decode(lm.locsts, 'F', 1, 0)) FullLocCnt,
+        sum(decode(lm.locsts, 'E', 1, 0)) EmptyLocCnt,
+        sum(decode(lm.locsts, 'P', 0, 'E', 0, 'F', 0, 1)) ErrorLocCnt
+   from sto_config sc,
+        sto_config_rule scr,
+        sto_config_criteria scc,
+        sto_zone sz,
+        locmst lm
+  where sc.sto_config_id = scr.sto_config_id
+    and scr.sto_config_id = scc.sto_config_id
+    and scr.sto_zone_id = sz.sto_zone_id
+    and sz.sto_zone_id = lm.sto_zone_id
+    and sz.wh_id = lm.wh_id
+  group by sc.wh_id,
+        sz.bldg_id,
+        sc.sto_config_id,
+        scr.sto_config_rule_id,
+        scr.srtseq,
+        scr.sto_zone_id,
+        sz.sto_zone_cod,
+        scr.strategy,
+        scr.min_lvl,
+        scr.max_lvl,
+        scr.max_lod_per_aisle,
+        scc.sto_config_criteria_id,
+        scc.colnam,
+        scc.colval
+  order by wh_id,
+        bldg_id,
+        srtseq,
+        sto_config_id,
+        sto_config_rule_id]

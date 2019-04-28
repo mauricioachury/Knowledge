@@ -1,0 +1,11 @@
+/* Below is a sample query for calculate performance, please check command 'get user performance' */
+[select  sum( K.goal_seconds ) as TotalGoalSeconds
+                ,sum( K.Actual_seconds ) as TotalMeasuredSeconds
+           from  Kvi_Summary K,
+                 JobCode J
+          where  K.jobcodeintid = J.jobcodeintid
+            and  K.Usr_Id       = '3136'
+            and  K.Report_Date  = to_date( '20181210000000' )
+            and  K.ismeasured   = 1
+            and  K.Status       = 'C'  
+            and  J.mask_level   = 3]

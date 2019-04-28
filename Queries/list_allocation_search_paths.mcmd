@@ -1,0 +1,43 @@
+/* Allocation Search Path information:*/
+[select asp.wh_id,
+        asp.search_path_typ,
+        aspc.alloc_search_path_id,
+        aspr.alloc_search_path_rule_id,
+        aspr.srtseq,
+        aspr.bldg_id,
+        aspr.lodlvl,
+        aspr.uomcod,
+        aspr.reg_uom,
+        aspc.alloc_search_path_criteria_id,
+        aspc.colnam,
+        aspc.colval,
+        pz.pck_zone_id,
+        pz.pck_zone_cod,
+        pz.lodflg,
+        pz.subflg,
+        pz.dtlflg,
+        pz.pipflg,
+        pm.pck_mthd_id,
+        pm.pck_mthd_nam,
+        pm.list_flg,
+        pm.ctn_flg,
+        pm.skip_pick_valdt,
+        pm.rsv_pck_rel,
+        pm.mix_cs_flg,
+        pm.inline_rpl_flg
+   from alloc_search_path asp,
+        alloc_search_path_rule aspr,
+        alloc_search_path_criteria aspc,
+        pck_zone pz,
+        pck_mthd pm
+  where asp.alloc_search_path_id = aspr.alloc_search_path_id
+    and asp.alloc_search_path_id = aspc.alloc_search_path_id
+    and aspr.pck_zone_id = pz.pck_zone_id
+    and aspr.pck_mthd_id = pm.pck_mthd_id
+  order by wh_id,
+        search_path_typ,
+        alloc_search_path_id,
+        srtseq,
+        alloc_search_path_rule_id,
+        colnam]
+

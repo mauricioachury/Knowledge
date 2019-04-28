@@ -1,0 +1,22 @@
+/* Get all background service work flow:*/
+       [select sm.serv_id,
+               sia.cmd,
+               sia.rpt_id
+          from serv_mst sm,
+               serv_ins si,
+               serv_ins_action sia,
+               wh_serv ws,
+               wh_serv_exitpnt wse
+         where sm.serv_id = si.serv_id
+           and si.serv_ins_id = sia.serv_ins_id
+           and ws.serv_id = sm.serv_id 
+           and @+ws.wh_id^wh_id
+           and ws.serv_id = wse.serv_id
+           and ws.wh_id = wse.wh_id
+           and sm.serv_typ = 'BCKSERV'
+           and ws.serv_enaflg = 1
+           and wse.exitpnt_typ = 'SERVICE-BACKGROUND'
+           and @+wse.exitpnt^exitpnt
+           and sia.serv_action_cod = 'RUNCMD'
+      order by ws.seqnum, si.seqnum, sia.seqnum]
+      

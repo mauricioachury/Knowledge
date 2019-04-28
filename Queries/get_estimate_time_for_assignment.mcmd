@@ -1,0 +1,317 @@
+publish data where list_id = 'LST000000340521'
+and plan_date = '12212018'
+|
+                    [select pckwrk_view.wrkref last_wrkref
+                   from pckwrk_view,
+                        pckmov,
+                        locmst
+                  where pckwrk_view.cmbcod = pckmov.cmbcod
+                    and pckmov.stoloc = locmst.stoloc
+                    and pckmov.seqnum = 0
+                    and pckwrk_view.list_id = @list_id
+                    and pckwrk_view.appqty = 0
+                  order by locmst.trvseq desc,
+                        pckwrk_view.list_seqnum desc]catch(-1403) >> resToGetLastPick
+                    |
+                    if(rowcount(@resToGetLastPick) > 0)
+                    {
+                        publish top rows
+                          where rows=1 
+                            and resultset = @resToGetLastPick
+                        |
+                        [select pckwrk_view.*,
+                                decode (pckwrk_view.wrkref,@last_wrkref,1,0) last_discrete_record,
+                                locmst.stoloc deposit_location,
+                                locmst.trvseq,
+                                invlod.lodnum pallet_load,
+                                pcklst.totvol,
+                                pcklst.totwgt
+                           from pckwrk_view,
+                                pckmov,
+                                locmst,
+                                pcklst,
+                                invlod 
+                           join invsub 
+                             on invsub.lodnum = invlod.lodnum
+                           join invdtl
+                             on invdtl.subnum = invsub.subnum
+                          where pckmov.cmbcod = pckwrk_view.cmbcod
+                            and pckwrk_view.srcloc = invlod.stoloc
+                            and locmst.stoloc = pckmov.stoloc
+                            and pckmov.seqnum = 0
+                            and invdtl.prtnum = pckwrk_view.prtnum
+                            and pckwrk_view.list_id = pcklst.list_id
+                            and pckwrk_view.list_id = @list_id
+                            and pckwrk_view.appqty = 0
+                         order by locmst.trvseq,
+                               pckwrk_view.list_seqnum]>> picks
+                        |
+                        {
+                            {
+                                publish data combination
+                                 where rs = @picks
+                                |
+                                get actcod by pick type
+                                 where wrkref = @wrkref
+                                |
+                                get cached worktype
+                                   and assignment type
+                                 where actcod = nvl (@actcod,' ')
+                                |
+                                get lms move event uom quantities
+                                 where srcloc = @srcloc
+                                   and srclod = @pallet_load
+                                   and dstloc = @dstloc
+                                   and srcqty = @pckqty
+                                   and lmstyp = 'O'
+                                   and actcod = @actcod
+                                   and wrkref = @wrkref
+                                   and wh_id = @wh_id catch(-1403)
+                                |
+                                publish data
+                                 where palvol = @untvol
+                                   and estwgt = @untwgt
+                                   and palqty = @palqty
+                                   and casqty = @casqty
+                                   and untqty = @untqty
+                                |
+                                get lms Object wt and cb quantities
+                                 where untvol = @palvol
+                                   and untwgt = @estwgt catch(-1403) 
+                                |
+                                publish data
+                                 where func_id = nvl (@func_id, 'N') 
+                                   and plan_date = @plan_date
+                                   and assign_num = @list_id
+                                   and trans_num = @cmbcod
+                                   and container_license = nvl (@pallet_load, @subnum) 
+                                   and seq_num = (@list_seqnum) + 1
+                                   and ref_id = @cmbcod
+                                   and client_id = nvl (@client_id, '----') 
+                                   and cstnum = @stcust
+                                   and activity_type = 'O'
+                                   and worktype_id = @worktype_id
+                                   and warehouse_id = @wh_id
+                                   and client_slot_id = @srcloc
+                                   and num_pallet = @palqty
+                                   and num_case = @casqty
+                                   and num_each = @untqty
+                                   and num_ship = decode (@palqty, 0,decode (@casqty, 0, @untqty, @casqty),@palqty)
+                                   and item_num = @prtnum
+                                   and cube = @ObjectCb
+                                   and weight = @ObjectWt
+                                   and last_discrete_record = 0
+                                   and assignment_flg = decode (@asgn_typ,'O',decode (@list_seqnum,0,1,0),0) 
+                            }>> obtainResultSet
+                            |
+                            {
+                                sort result
+                                set where rs = @picks
+                                   and sort_list = 'trvseq,list_seqnum'
+                                |
+                                if (@wrktyp = 'P' and @last_discrete_record = 1) 
+                                {
+                                    get actcod by pick type
+                                     where wrkref = @wrkref
+                                    |
+                                    get cached worktype and assignment type
+                                     where actcod = nvl (@actcod, ' ') 
+                                    |
+                                    get lms move event uom quantities
+                                     where srcloc = @srcloc
+                                       and dstloc = @dstloc
+                                       and dstlod = @pallet_load
+                                       and lmstyp = 'P'
+                                       and actcod = @actcod
+                                       and wh_id = @wh_id catch(-1403) 
+                                    |
+                                    publish data
+                                     where palqty = @palqty
+                                       and casqty = @casqty
+                                       and untqty = @untqty
+                                    |
+                                    get lms Object wt and cb quantities
+                                     where untvol = @totvol
+                                       and untwgt = @totwgt catch(-1403) 
+                                    |
+                                    publish data
+                                     where func_id = nvl (@func_id,
+                                                          'N') 
+                                       and plan_date = @plan_date
+                                       and assign_num = @list_id
+                                       and trans_num = @cmbcod
+                                       and container_license = nvl (@lodnum,
+                                                                    @subnum) 
+                                       and seq_num = ((@list_seqnum) + 2) 
+                                       and ref_id = @cmbcod
+                                       and client_id = nvl (@client_id,
+                                                            '----') 
+                                       and cstnum = @stcust
+                                       and activity_type = 'P'
+                                       and worktype_id = @worktype_id
+                                       and warehouse_id = @wh_id
+                                       and client_slot_id = @deposit_location
+                                       and num_pallet = @palqty
+                                       and num_case = @casqty
+                                       and num_each = @untqty
+                                       and num_ship = 0
+                                       and item_num = 'MIXEDPART'
+                                       and cube = @ObjectCb
+                                       and weight = @ObjectWt
+                                       and last_discrete_record = @last_discrete_record
+                                       and assignment_flg = decode (@asgn_typ,'P',decode (@list_seqnum,0,1,0),0) 
+                                }
+                            }>> placeResultSet
+                            |
+                            {
+                                publish data combination
+                                 where r = @obtainResultSet & publish data combination
+                                 where r = @placeResultSet
+                            }>> discrete_records
+                        }
+                        |
+                              [select assign_num, kvisummaryintid, plan_date 
+                                 from kvi_summary 
+                                where assign_num = @list_id
+                                  and plan_date = to_date(@plan_date, 'MMDDYYYY')]catch(-1403)
+                              |
+                              if (@? != -1403)
+                              {
+                                 remove assignment 
+                                    where plan_date = @plan_date 
+                                      and assign_num = @assign_num 
+                                      and kvisummaryintid = @kvisummaryintid
+                                 catch(-1403)
+                              }   
+                        |
+                        publish data
+                          where assign_key = @list_id
+                        |   
+                            /* Get the LMS Warehouse Transfer Policy Value*/
+                            list policies
+                                 where wh_id = nvl(@wh_id_log,'----')
+                                   and polcod = 'lm' 
+                                   and polvar = 'system' 
+                                   and polval = 'ENABLE_WAREHOUSE_TRANSFER'
+                                   and srtseq = '0' 
+                                   catch(-1403)
+                            |
+                            if(@?=0)
+                            {
+                                publish data
+                                  where enable_wh_transfer = @rtnum1 catch(-1403)
+                            }
+                            |
+                            list policies  
+                              where wh_id = nvl(@wh_id_log,'----')
+                                and polcod = 'lm' 
+                                and polvar = 'system' 
+                                and polval = 'ENABLE_IMPORT_PROCESSING'
+                                and srtseq = '0' catch(-1403)   
+                            |
+                            if(@?=0)
+                            {
+                                publish data 
+                                  where enable_import_processing= @rtnum1
+                                   and  enable_wh_transfer = @enable_wh_transfer  catch(-1403)
+                            }
+                            |
+                            /* check to see if we a warehouse transfer is in progress */
+                            /* If yes don't create future assignment else continue with future creation */
+                            if(@enable_wh_transfer = 0 and @enable_import_processing = 0)
+                            {
+                                get mls text
+                                  where mls_id = 'inf34957'
+                                    and locale_id = nvl(@locale_id, @@locale_id) catch(-1403)
+                                |
+                                publish data combination 
+                                  where resultset = @assignkey
+                                |
+                                create process log
+                                 where Msg_Type='I' 
+                                   and Msg_Number = '34957'
+                                   and Process_Name = 'Warehouse Map Transfer'
+                                   and Program_Name = 'Model to Prod'
+                                   and NotificationMessage = @mls_text
+                                   and wh_id = nvl(@wh_id_log,'----')
+                                   and ASSIGNMENT_NBR = @assign_key catch(-1403)
+                            }
+                            else
+                            {
+                                {
+                                     /* Get the threadId to be passed as task_id*/
+                                     [[ 
+                                       import com.redprairie.moca.MocaException;
+                                       import com.redprairie.moca.util.MocaUtils;
+                                     
+                                       //Get the AsyncThread Id
+                                       long threadId = Thread.currentThread().getId();
+                                     ]]catch(-1403)
+                                     |
+                                     if(@?=0)
+                                     {
+                                        Publish data
+                                          where threadId = @result catch(-1403)
+                                     }
+                                     else
+                                     {
+                                        write trace message
+                                          where msg = "Unable to get the AsyncThreadId"
+                                     }
+                                }
+                                |
+                                publish data combination 
+                                  where resultset = @discrete_records
+                                |
+                                process wms 
+                                   where func_id = nvl(@func_id,'N') 
+                                   and plan_date = @plan_date 
+                                   and assign_num = @assign_num 
+                                   and trans_num = @trans_num 
+                                   and container_license = @container_license 
+                                   and seq_num = @seq_num 
+                                   and ref_id = @ref_id 
+                                   and client_id = nvl(@client_id,'----') 
+                                   and cstnum = @cstnum 
+                                   and activity_type = @activity_type  
+                                   and worktype_id = @worktype_id 
+                                   and wh_id = @warehouse_id 
+                                   and client_slot_id = @client_slot_id 
+                                   and num_each = @num_each 
+                                   and num_case = @num_case
+                                   and num_pallet = @num_pallet
+                                   and num_ship = @num_ship 
+                                   and item_num = @item_num 
+                                   and cube = @cube 
+                                   and weight = @weight 
+                                   and last_discrete_record = @last_discrete_record
+                                   and assignment_flg = @assignment_flg 
+                                   and task_id = nvl(@threadId,@assign_num)
+                                   catch(-1403)
+                                   
+                            }>> discrete_creation_status /* here to a set to avoid unwanted loop*/
+                        |
+                            [select assign_num,
+                                    kvisummaryintid,
+                                    plan_date,
+                                    goal_seconds
+                                     from kvi_summary 
+                                    where assign_num = @list_id
+                                    and plan_date = to_date(@plan_date, 'YYYYMMDDHH24MISS')]catch(-1403)
+                            |
+                            if (@?=-1430) {
+                                publish data 
+                                  where remaining_seconds = -1
+                            }
+                            else
+                            {
+                                /* remove assignment immediately as we don't want it have any side effect in LM side*/
+                                remove assignment 
+                                  where plan_date = @plan_date 
+                                    and assign_num = @assign_num 
+                                    and kvisummaryintid = @kvisummaryintid catch(-1403)
+                                |
+                                publish data 
+                                  where remaining_seconds =@goal_seconds
+                            } 
+                    }

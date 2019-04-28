@@ -1,0 +1,12 @@
+/* 'upgrade sequence' will update table cmbcod's maxval to max which is mandatory*/
+upgrade sequence
+     where seq = 'cmbcod'
+       and max = 78364164095
+       and seed = 1
+       and inc = 1
+    |
+    reseed sequence
+     where sequence_name = 'cmbcod'
+       and seed = 9999999
+       and inc = 1
+       and max = 78364164095

@@ -1,0 +1,17 @@
+/* Moca command performance:*/
+list command usage
+|
+if ((@execution_count > 100 and @avg_ms > 10000) or @avg_ms > 10000)
+{
+   publish data where component_level = @component_level
+and command = @command
+and type = @type
+and command_path = @command_path
+and execution_count = @execution_count
+and min_ms = @min_ms
+and max_ms = @max_ms
+and avg_ms = @avg_ms
+and total_ms = @total_ms
+and self_ms = @self_ms
+and avg_self_ms = @avg_self_ms
+}

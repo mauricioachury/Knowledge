@@ -1,0 +1,9 @@
+1. Below query return all configuration records for specific extension ID, this is only can be ran at refs db.
+
+[select *
+   from field_config fc
+   join field_config_prop fcp
+   on fc.id = fcp.field_config_id
+    left join  field_config_prop_perm fcpp
+    on fcp.id = fcpp.field_config_prop_id
+  where extend_id ='transportequip_default_trailercode']

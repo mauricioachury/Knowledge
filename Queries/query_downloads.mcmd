@@ -1,0 +1,36 @@
+/* Get download information:*/
+[select dl.dwnld_seq,
+        dl.dwnld_stat_cd,
+        dl.sys_id,
+        to_char(dl.ins_dt, 'yyyy-mm-dd hh24:mi:ss') dwntime,
+        hdr.dwnld_seq,
+        dtl.ifd_seg_data,
+        substr(dtl.ifd_seg_data, 1, 35) str,
+        to_char(hdr.ins_dt, 'yyyy-mm-dd hh24:mi:ss') hdrtime
+   from sl_ifd_data_hdr hdr,
+        sl_ifd_data_dtl dtl,
+        sl_dwnld dl
+  where hdr.dwnld_seq = dl.dwnld_seq
+    and hdr.ifd_data_seq = dtl.ifd_data_seq
+    and hdr.ifd_id like 'VC_RCPT_INB_IFD%'
+    and dtl.ifd_seg_data like '%3751817%'
+  order by hdrtime]
+
+[select dl.dwnld_seq,
+        dl.dwnld_stat_cd,
+        hdr.ifd_id,
+        dl.sys_id,
+        to_char(dl.ins_dt, 'yyyy-mm-dd hh24:mi:ss') dwntime,
+        hdr.dwnld_seq,
+        dtl.ifd_seg_data,
+        substr(dtl.ifd_seg_data, 1, 35) str,
+        to_char(hdr.ins_dt, 'yyyy-mm-dd hh24:mi:ss') hdrtime
+   from sl_ifd_data_hdr hdr,
+        sl_ifd_data_dtl dtl,
+        sl_dwnld dl
+  where hdr.dwnld_seq = dl.dwnld_seq
+    and hdr.ifd_data_seq = dtl.ifd_data_seq
+    and dtl.ifd_seg_data like '%8533%'
+    and to_char(hdr.ins_dt, 'yyyy-mm-dd hh24') >= '2018-06-07 18'
+    and to_char(hdr.ins_dt, 'yyyy-mm-dd hh24') <= '2018-06-07 20'
+  order by hdrtime]

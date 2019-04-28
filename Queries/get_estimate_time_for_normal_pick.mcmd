@@ -1,0 +1,453 @@
+publish data where schbat_list = "'.29'"
+ and wrkref ='W00000095QBN'
+ and assign_typ = 'PICK'
+ and lms_remote_host = 'http://localhost:49000/service'
+|
+publish data where plan_date = to_char(sysdate, 'MMDDYYYY') 
+       and schbat_in   = " and pckwrk_view.schbat in (" || @schbat_list || ")"
+       and schbat_sub = " and pw.schbat in (" || @schbat_list || ")"
+       and assign_typ = @assign_typ
+   |
+   {         
+  /* Select the picks run the remote command
+   * to create obtain assignments/details for them */
+  /* We will only send in new pick work entries from here */
+  /*Bulk picks are excluded since it is handled in another component*/
+      {
+         [select pckwrk_view.*,
+            locmst.stoloc deposit_location,
+            locmst.trvseq
+            from pckwrk_view
+            join pckmov
+              on pckmov.cmbcod = pckwrk_view.cmbcod
+             and pckmov.seqnum = 0
+            left join locmst
+              on locmst.stoloc = pckmov.stoloc
+             and locmst.wh_id = pckmov.wh_id
+           where pcksts = 'R'
+           and wrktyp not in ('B', 'E', 'D', 'T', 'G')
+           and pckwrk_view.appqty = 0
+           and pckwrk_view.list_id is null
+           @schbat_in:raw
+         order by pckwrk_view.wrkref ] >> picks
+         | 
+         { 
+            publish data combination where rs = @picks 
+            |
+            get actcod by pick type where wrkref = @wrkref 
+             catch(-1403)
+            |
+            /* If no actcod returned set blank for next command.
+             * Invalid Worktype error will be thrown in LM   */
+            get cached worktype and assignment type where actcod = nvl(@actcod,' ') 
+             catch(-1403)
+            |
+            /* select the lodnum for each work reference based on the prtnum for calculating the UOM quantities */
+            
+            [select distinct invlod.lodnum as pallet_load
+                from pckwrk_view pv
+                left join invdtl
+                  on pv.prtnum = invdtl.prtnum
+                left join invsub
+                  on invdtl.subnum = invsub.subnum
+                left join invlod
+                  on invsub.lodnum = invlod.lodnum
+               where invdtl.prtnum = @prtnum
+                 and pv.wrkref = @wrkref
+                 and rownum =1 ] catch(-1403)
+            |
+            {   /* Get UOM quantities for LM*/
+               get lms move event uom quantities  
+                  where srcloc = @srcloc    
+                  and srclod = @pallet_load    
+                  and dstloc = @dstloc    
+                  and srcqty = @pckqty    
+                  and lmstyp = 'O'    
+                  and actcod = @actcod    
+                  and wrkref = @wrkref    
+                  and wh_id  = @wh_id 
+                catch(-1403)
+               |
+               publish data where palvol = @untvol and estwgt = @untwgt
+                   and palqty = @palqty and casqty = @casqty and untqty = @untqty
+               |
+               /* Returns ObjectCb and ObjectWt as converted values 
+                * for cube and weight according to HOST MU policies
+                */
+               get lms Object wt and cb quantities 
+                 where untvol = @palvol and untwgt = @estwgt 
+                catch(-1403)
+               |
+               publish data
+                where func_id = nvl(@func_id,'N') 
+                  and plan_date = @plan_date 
+                  and assign_num = @wrkref 
+                  and trans_num = @cmbcod 
+                  and container_license = nvl(@lodnum, @subnum) 
+                  and seq_num = 1 
+                  and ref_id = @cmbcod 
+                  and client_id = nvl(@client_id,'----') 
+                  and cstnum = @stcust 
+                  and activity_type = 'O' 
+                  and worktype_id = @worktype_id 
+                  and warehouse_id = @wh_id 
+                  and client_slot_id = @srcloc 
+                  and num_pallet = @palqty
+                  and num_case = @casqty
+                  and num_each = @untqty
+                  and num_ship = decode(@palqty,0,decode(@casqty,0,@untqty,@casqty),@palqty) 
+                  and item_num = @prtnum 
+                  and cube = @ObjectCb 
+                  and weight = @ObjectWt 
+                  and last_discrete_record = 0 
+                  and assignment_flg = decode(@asgn_typ,'P',0,1)
+            }>>obtainRecords
+            |
+            {
+               /* Get UOM quantities for LM*/
+               get lms move event uom quantities  
+                  where srcloc = @srcloc    
+                  and dstloc = @dstloc    
+                  and dstlod = @pallet_load    
+                  and srcqty = @pckqty    
+                  and lmstyp = 'P'    
+                  and actcod = @actcod    
+                  and wrkref = @wrkref    
+                  and wh_id  = @wh_id 
+                catch(-1403)
+               |
+               publish data where palvol = @untvol and estwgt = @untwgt
+                   and palqty = @palqty and casqty = @casqty and untqty = @untqty
+               |
+               /* Returns ObjectCb and ObjectWt as converted values 
+                * for cube and weight according to HOST MU policies
+                */
+               get lms Object wt and cb quantities 
+                 where untvol = @palvol and untwgt = @estwgt 
+                catch(-1403)
+               |
+               
+               publish data 
+                where func_id = nvl(@func_id,'N') 
+                  and plan_date = @plan_date 
+                  and assign_num = @wrkref 
+                  and trans_num = @cmbcod 
+                  and container_license = nvl(@lodnum, @subnum) 
+                  and seq_num =  2
+                  and ref_id = @cmbcod 
+                  and client_id = nvl(@client_id,'----') 
+                  and cstnum = @stcust 
+                  and activity_type = 'P' 
+                  and worktype_id = @worktype_id 
+                  and warehouse_id = @wh_id 
+                  and client_slot_id = @deposit_location 
+                  and num_pallet = @palqty
+                  and num_case = @casqty
+                  and num_each = @untqty 
+                  and num_ship = 0 
+                  and item_num = @prtnum 
+                  and cube = @ObjectCb
+                  and weight = @ObjectWt
+                  and last_discrete_record = 1 
+                  and assignment_flg = decode(@asgn_typ,'P',1,0)
+            } >> placeRecords
+            |
+            {
+              publish data combination where r = @obtainRecords 
+              &
+              publish data combination where r = @placeRecords
+            } >> discrete_records 
+         } 
+      }
+      |
+      publish data combination where r = @discrete_records
+
+   } catch(-1403) >> all_discrete_records
+|
+/* Remove below part, above code will return data sent to WLM, good for troubleshooting */
+if(@? <> -1403)
+{
+   //create futures and update goal time
+    publish data
+      where discrete_records = @all_discrete_records
+      and assign_key = @schbat_list
+      and lm_remote_string = @lms_remote_host
+      and plan_date = @plan_date
+      and assign_typ = @assign_typ 
+      |
+      publish data where assign_key = @assign_key 
+          and lm_remote_string = @lm_remote_string
+          and plan_date = @plan_date
+          and assign_typ = @assign_typ
+          and wh_id = nvl(@wh_id,@@wh_id)
+      |
+      /* Remove any existing assignment */
+      if(@assign_typ = 'LST')
+      {
+          {
+             [select assign_num, kvisummaryintid, plan_date 
+                from kvi_summary 
+               where assign_num = @assign_key
+                 and plan_date = to_date(@plan_date, 'MMDDYYYY')]catch(-1403)
+             |
+             if (@? != -1403)
+             {
+                remove assignment 
+                   where plan_date = @plan_date 
+                     and assign_num = @assign_num 
+                     and kvisummaryintid = @kvisummaryintid
+                catch(-1403)
+             }
+          }
+      }
+      else if (@assign_typ= 'PICK' or @assign_typ = 'BULK' or @assign_typ = 'REPL')
+      {
+          publish data where assign_key = " where pckwrk_view.schbat in (" || @assign_key || ")"
+          |
+          [select wrkref
+              from pckwrk_view
+              join pck_mthd 
+                on pck_mthd.pck_mthd_id = pckwrk_view.pck_mthd_id
+               and pck_mthd.list_flg != 1
+               @assign_key:raw] catch(-1403)
+          |
+          {
+             [select assign_num, plan_date ,kvisummaryintid
+                from kvi_summary 
+               where assign_num = @wrkref 
+                     and plan_date = to_date(@plan_date, 'MMDDYYYY')]catch(-1403)
+             |
+             if (@? != -1403)
+             {
+                remove assignment 
+                  where plan_date = @plan_date 
+                    and assign_num = @assign_num
+                    and kvisummaryintid = @kvisummaryintid                 
+                catch(-1403)
+             }
+          }
+      }
+      |
+      /* Throw away the results here so everything after is only run once */
+     // process list discrete 
+      publish data
+         where discrete_records = @discrete_records
+           and lm_remote_string = @lm_remote_string
+           and assign_key = @assign_key
+           and assign_typ = @assign_typ
+           and wh_id_log = @wh_id
+      |
+{
+    /* Get the Assign_num required to be logged in process log*/
+    if (@assign_typ = 'PICK' or @assign_typ = 'REPL')
+    {
+        publish data where assign_key = " where pckwrk_view.schbat in (" || @assign_key || ")"
+        |
+        [select wrkref
+           from pckwrk_view
+           join pck_mthd 
+             on pck_mthd.pck_mthd_id = pckwrk_view.pck_mthd_id
+            and pck_mthd.list_flg != 1
+           @assign_key:raw] catch(-1403)
+        |
+        publish data where assign_key = @wrkref  catch(-1403)
+    }
+    else
+    {
+        publish data where assign_key = @assign_key  catch(-1403)
+    }
+}>>assignkey
+|
+{
+   {
+        /* Get the LMS Warehouse Transfer Policy Value*/
+
+        list policies
+             where wh_id = nvl(@wh_id_log,'----')
+               and polcod = 'lm' 
+               and polvar = 'system' 
+               and polval = 'ENABLE_WAREHOUSE_TRANSFER'
+               and srtseq = '0' 
+               catch(-1403)
+        |
+        if(@?=0)
+        {
+        publish data where enable_wh_transfer = @rtnum1 catch(-1403)
+        }
+        |
+        list policies  
+             where wh_id = nvl(@wh_id_log,'----')
+               and polcod = 'lm' 
+               and polvar = 'system' 
+               and polval = 'ENABLE_IMPORT_PROCESSING'
+               and srtseq = '0'
+               catch(-1403)   
+        |
+        if(@?=0)
+        {
+        publish data where enable_import_processing= @rtnum1
+                       and  enable_wh_transfer = @enable_wh_transfer  catch(-1403)
+        }
+   }
+   |
+   /* check to see if we a warehouse transfer is in progress */
+   /* If yes don't create future assignment else continue with future creation */
+    if(@enable_wh_transfer = 0 and @enable_import_processing = 0)
+    {
+       get mls text where mls_id = 'inf34957' and locale_id = nvl(@locale_id, @@locale_id) catch(-1403)
+       |
+       publish data combination where resultset = @assignkey
+       |
+       create process log
+        where Msg_Type='I' 
+          and Msg_Number = '34957'
+          and Process_Name = 'Warehouse Map Transfer'
+          and Program_Name = 'Model to Prod'
+          and NotificationMessage = @mls_text
+          and wh_id = nvl(@wh_id_log,'----')
+          and ASSIGNMENT_NBR = @assign_key catch(-1403)
+    }
+    else
+    {
+       {
+            /* Get the threadId to be passed as task_id*/
+            [[ 
+              import com.redprairie.moca.MocaException;
+              import com.redprairie.moca.util.MocaUtils;
+            
+              //Get the AsyncThread Id
+              long threadId = Thread.currentThread().getId();
+            ]]catch(-1403)
+            |
+            if(@?=0)
+            {
+               Publish data where threadId = @result catch(-1403)
+            }
+            else
+            {
+               write trace message where msg = "Unable to get the AsyncThreadId"
+            }
+        }
+        |
+        publish data combination where resultset = @discrete_records
+        |
+        process wms
+            where func_id = nvl(@func_id,'N')
+              and plan_date = @plan_date
+              and assign_num = @assign_num
+              and trans_num = @trans_num
+              and container_license = @container_license
+              and seq_num = @seq_num
+              and ref_id = @ref_id
+              and client_id = nvl(@client_id,'----')
+              and cstnum = @cstnum
+              and activity_type = @activity_type
+              and worktype_id = @worktype_id
+              and wh_id = @warehouse_id
+              and client_slot_id = @client_slot_id
+              and num_each = @num_each
+              and num_inner = @num_inner
+              and num_case = @num_case
+              and num_layer = @num_layer
+              and num_pallet = @num_pallet
+              and num_ship = @num_ship
+              and item_num = @item_num
+              and cube = @cube
+              and weight = @weight
+              and last_discrete_record = @last_discrete_record
+              and assignment_flg = @assignment_flg
+              and task_id = nvl(@threadId,@assign_num)
+            catch(-1403)
+    }
+}
+      catch(-1403) >> throwaway_res
+      | 
+      if(@? <> -1403)
+      {
+         /* Now we just need to go out and get the goal_seconds from LM 
+            and update the est_time column */
+
+         /* Update pcklst for List Picks */
+         if(@assign_typ = 'LST')
+         {
+             [select assign_num, goal_seconds 
+                from kvi_summary 
+               where assign_num = @assign_key
+                 and plan_date = to_date(@plan_date, 'MMDDYYYY')]catch(-1403)
+             |
+             if (@? != -1403)
+             {
+                  [update pcklst 
+                      set est_time = @goal_seconds 
+                    where list_id = @assign_key ] catch(-1403)
+                  |
+                  /* 
+                   if it's pick list and arrive here,that means no pick been started yet,
+                   so just use goal time as remaining time and use it to update cutoff time 
+                   and close time.
+                  */
+                  change pick list times based on remaining estimation
+                     where list_id = @assign_key
+                       and remaining_seconds = @goal_seconds
+                       and wh_id = @wh_id
+                       and upd_close_time_flg = 1
+             }
+         }
+         /* Update pckwrk_hdr for other Picks and replenishment picks and combination of both*/
+         else if (@assign_typ = 'PICK' or @assign_typ = 'BULK' or @assign_typ = 'REPL')
+         {
+             publish data where assign_key = " where pckwrk_hdr.schbat in (" || @assign_key || ")"
+             |
+             [select wrkref
+                 from pckwrk_hdr
+                 join pck_mthd 
+                   on pck_mthd.pck_mthd_id = pckwrk_hdr.pck_mthd_id
+                  and pck_mthd.list_flg != 1
+                  @assign_key:raw]catch(-1403) >> res
+             |
+             if(@? <> -1403)
+             {
+                 /* Gather all summary records from LM in a single request to reduce remote calls */
+                 generate in clause where resultSet = @res and keyColumn = "wrkref" and varnam = "assign_num_in" and columnAlias = "assign_num"
+                 |
+                   [select assign_num, goal_seconds 
+                      from kvi_summary 
+                     where @assign_num_in:raw 
+                       and plan_date = to_date(@plan_date, 'MMDDYYYY')]catch(-1403) >> lm_res
+                 |
+                 {
+                     /* Reset est_time for all wrkref records in case we did not get a goal time back from LM */
+                     generate in clause where resultSet = @res and keyColumn = "wrkref" and varnam = "wrkref_in"
+                     |
+                     [update pckwrk_hdr 
+                         set est_time = -1 
+                       where @wrkref_in:raw
+                         and list_id is null ] catch(-1403)
+                 }
+                 |
+                 publish data combination where res = @lm_res
+                 |
+                 [update pckwrk_hdr 
+                     set est_time = @goal_seconds,
+                         lm_assign_num = @assign_num                  
+                   where wrkref = @assign_num ] catch(-1403)
+             }
+         }
+         /* Update invlod for Putaway */
+         else if (@assign_typ = 'PUTAWAY')
+         {    
+             [select assign_num, goal_seconds 
+                from kvi_summary 
+               where assign_num = @assign_key
+                 and plan_date = to_date(@plan_date, 'MMDDYYYY')]catch(-1403)
+             |
+             if (@? != -1403)
+             {
+             [update invlod 
+                 set est_time = @goal_seconds 
+               where lodnum = @assign_key ]catch(-1403) 
+             }
+         }
+         ;
+      }
+}

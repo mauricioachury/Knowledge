@@ -1,0 +1,41 @@
+/* Script for monitor problems, blow script will create a csv file include interested data and send to mail:*/
+publish data
+ where filnam = 'problem_report_' || to_char(sysdate, 'yyyy-mm-dd') || '.csv'
+   and path = 'd:\'
+|
+{
+    execute os command
+     where cmd = 'del ' || @path || @filnam catch(@?);
+    do loop
+     where count = 2
+    |
+    go to sleep
+     where time = 3
+    |
+    [select @i ID,
+            to_char(sysdate, 'yyyy/mm/dd hh24:mi:ss') crt_dte,
+            pv.*
+       from pckwrk_view pv
+      where pv.unassign_flg = 0
+        and pv.pcksts = 'R'
+        and pv.appqty = 0] catch(-1403) >> res
+    |
+    if (@? = 0)
+    {
+        write csv file
+         where filnam = @filnam
+           and path = @path
+           and resData = @res;
+        send email
+         where hostname = 'smtp.gmail.com'
+           and user = 'samniboy2550@gmail.com'
+           and password = 'Google,16'
+           and port = '587'
+           and enableTLS = '1'
+           and send_to = 'sni@ascensionlogistics.com'
+           and mail_from = 'samniboy2550@gmail.com'
+           and subject = 'Problem Report'
+           and msg = 'See attachment for problem report.'
+           and attachment = @path || @filnam
+    }
+}

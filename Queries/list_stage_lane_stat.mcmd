@@ -1,0 +1,70 @@
+/* List stage lane status, used to check stage lane is properly assigned to load, and stage content is right*/
+[select 'CheckStageLaneStatus' cat,
+           'ShipStageContents' sep,
+           ssc.*,
+           'StagingLocStatus' sep,
+           lm.stoloc,
+           lm.maxqvl,
+           lm.curqvl,
+           lm.pndqvl,
+           lm.useflg,
+           lm.cipflg,
+           lm.rescod,
+           'LoadStatus' gap,
+           ssv.car_move_id,
+           ssv.ship_id,
+           ssv.shpsts,
+           ssv.alcdte,
+           ssv.stgdte,
+           ssv.loddte,
+           ssv.early_shpdte,
+           ssv.late_shpdte,
+           ssv.trlr_id,
+           ssv.trlr_stat,
+           t.yard_loc,
+           t.dispatch_dte,
+           ssv.*
+   from locmst lm
+    left join ship_struct_view ssv
+     on ssv.ship_id = lm.rescod
+    left join ship_staging_contents ssc
+     on ssc.ship_id  = ssv.ship_id
+    and ssc.stoloc = lm.stoloc
+    left join trlr t
+     on ssv.trlr_id = t.trlr_id
+  where lm.stoloc like 'STG0%'
+   order by lm.stoloc]
+
+/* Below query drived by loads*/
+   [select 'CheckLoadStatus' cat,
+    'ShipStageContents' sep, 
+    ssc.*,
+    'StagingLocStatus' sep,
+    lm.stoloc,
+    lm.maxqvl,
+    lm.curqvl,
+    lm.pndqvl,
+    lm.useflg,
+    lm.cipflg,
+    lm.rescod,
+    'LoadStatus' gap,
+    ssv.car_move_id,
+    ssv.ship_id,
+    ssv.shpsts,
+    ssv.alcdte,
+    ssv.stgdte,
+    ssv.loddte,
+    ssv.early_shpdte,
+    ssv.late_shpdte,
+    ssv.trlr_id,
+    ssv.trlr_stat,
+    t.yard_loc,
+    t.dispatch_dte
+from ship_struct_view ssv
+left join locmst lm
+on ssv.ship_id = lm.rescod
+left join ship_staging_contents ssc
+on ssc.ship_id  = ssv.ship_id
+left join trlr t
+on ssv.trlr_id = t.trlr_id
+order by lm.stoloc]

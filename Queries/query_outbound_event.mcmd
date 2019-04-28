@@ -1,0 +1,10 @@
+/* Get event data:*/
+[select e.evt_stat_cd, r.*
+   from sl_evt_data e,
+        sl_evt_arg_data r
+  where e.evt_id ='SHIP_LOAD'
+    and e.evt_data_seq = r.evt_data_seq
+    and r.evt_arg_id ='TRAILER_ID'
+    and to_char(evt_dt,'yyyy-mm-dd') = '2017-02-13'
+    and evt_arg_val in (select trlr_id from ship_struct_view ssv where ship_id in (select ship_id from ship_struct_view ssv2 where ssv.car_move_id = ssv2.car_move_id and not exists (select 'x' from pckwrk_view pv where pv.ship_id = ssv.ship_id)))]
+

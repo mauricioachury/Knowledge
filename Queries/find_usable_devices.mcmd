@@ -1,0 +1,10 @@
+/* 2 Ways to find device which is not currently being used by someone.*/
+a.) check devmst table with lst_usr_id is null:
+[select *
+   from devmst
+  where lst_usr_id is null]
+
+b.) check rftmst curstoloc is null
+[select *
+   from rftmst
+  where curstoloc is null]

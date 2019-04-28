@@ -1,0 +1,21 @@
+2.Configure user/rdt to able to get a directed work.
+Configuration needed:
+a. 'Directed Work Operation Maintenance'.
+   Select the oprcod, add users for the oprcod and add the Vehicle Type for the oprcod.
+b. 'Vehicle Type Maintenance'
+   Make sure the vehicle type has access to the location access.
+c. 'Device Maintenance'
+   Configure the work area for the rdt device.
+d. Use below query to find what devcod and oprcod can be used by user, and what locacc assigned to the vehtyp:
+[select distinct vehopr.oprcod, rftmst.devcod, vehacc.locacc
+   from rftmst,
+        usropr,
+        vehopr,
+        vehacc
+  where rftmst.wh_id = 'PNRDC'
+    and usropr.usr_id = '9849'
+    and rftmst.vehtyp = vehopr.vehtyp
+    and rftmst.wh_id = vehopr.wh_id
+    and vehopr.oprcod = usropr.oprcod
+    and vehopr.vehtyp = vehacc.vehtyp
+    and vehopr.wh_id = usropr.wh_id]   

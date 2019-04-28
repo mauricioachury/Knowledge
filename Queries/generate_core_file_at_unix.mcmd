@@ -1,0 +1,4 @@
+add 'ulimit -c unlimited' to /etc/profile
+echo "/tmp/core-%e-%p" > /proc/sys/kernel/core_pattern
+gcc -o main -g a.c
+gdb main /tmp/core-main-10815

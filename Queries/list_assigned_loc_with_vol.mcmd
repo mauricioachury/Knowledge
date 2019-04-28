@@ -1,0 +1,83 @@
+/* Below query will list assigned location with qvl data, used for check replenishment pick unlock issue */
+[select 'CheckAsgnLocStatus' cat, 
+          lm.stoloc,
+          lm.loclen,
+          lm.locwid,
+          lm.lochgt,
+          lm.loccod,
+          lm.loclen* lm.locwid* lm.lochgt phyqvl,
+          lm.maxqvl,
+          lm.curqvl,
+          lm.pndqvl,
+          iv2.totqty,
+          iv2.totcas,
+          iv2.invvol,
+          at.asset_typ,
+          at.asset_len* at.asset_hgt* at.asset_wid asset_qvl,
+          at.asset_wid,
+          at.asset_len,
+          at.asset_hgt,
+          q.prtnum qw_prtnum,
+          q.asset_typ qw_asset_typ,
+          q.pndqvl qw_pndqvl,
+          r.rplnum,
+          r.invsts,
+          r.pctflg,
+          r.maxunt,
+          r.minunt,
+          r.maxloc,
+          r.inc_pct_flg,
+          r.inc_unt,
+          r.rls_pct
+   from locmst lm
+     join 
+   (select sum(iv.untqty) totqty,
+             sum(iv.untqty / iv.untcas) totcas,
+             sum(iv.untqty / iv.untcas * pv.caslen* pv.caswid*pv.cashgt) invvol,
+             iv.asset_typ,
+             iv.stoloc,
+             iv.wh_id
+    from  inventory_view iv
+     join prtftp_view pv
+       on iv.prtnum = pv.prtnum
+     and iv.prt_client_id = pv.prt_client_id
+    and iv.ftpcod = pv.ftpcod
+    and iv.wh_id = pv.wh_id
+ group by iv.asset_typ,
+               iv.stoloc,
+               iv.wh_id) iv2
+       on lm.stoloc = iv2.stoloc
+     and lm.wh_id = iv2.wh_id
+  join asset_typ at
+    on iv2.asset_typ = at.asset_typ
+ join rplcfg r
+   on lm.stoloc = r.stoloc
+ and lm.wh_id = r.wh_id
+left join qvlwrk q
+  on lm.stoloc = q.stoloc
+and lm.wh_id = q.wh_id
+ where lm.stoloc = 'SP0941']
+
+/* Assigned Location statistics */
+
+     [select lm.wh_id,
+             lm.arecod,
+             sz.sto_zone_id,
+             sz.sto_zone_cod,
+             sum(decode(lm.locsts, 'P', 1, 0)) PartialLocCnt,
+             sum(decode(lm.locsts, 'F', 1, 0)) FullLocCnt,
+             sum(decode(lm.locsts, 'E', 1, 0)) EmptyLocCnt,
+             sum(decode(lm.locsts, 'P', 0, 'E', 0, 'F', 0, 1)) ErrorLocCnt,
+             sum(decode(lm.useflg, 1, 1, 0)) useableLocCnt,
+             sum(decode(lm.useflg, 1, 0, 1)) notUseableLocCnt
+        from rplcfg r,
+             locmst lm,
+             sto_zone sz
+       where r.stoloc = lm.stoloc
+         and r.wh_id = lm.wh_id
+         and lm.sto_zone_id = sz.sto_zone_id
+         and lm.useflg = 1
+       group by lm.wh_id,
+             lm.arecod,
+             sz.sto_zone_id,
+             sz.sto_zone_cod]

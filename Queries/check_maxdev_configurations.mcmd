@@ -1,0 +1,13 @@
+11. Define max device access:
+
+/* For given vehtyp for work area*/
+[select maxdev
+   from wrkare_veh_typ]
+   
+/* For given work zone */
+[select maxdev
+   from zonmst]
+
+/* For given vehtyp for work zone*/
+[select maxdev
+   from wrkzon_veh_typ]
