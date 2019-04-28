@@ -1,0 +1,34 @@
+<command>
+
+<name>list slot location</name>
+
+<description>List Slot Location</description>
+
+<type>Local Syntax</type>
+
+<local-syntax>
+<![CDATA[
+        [
+         select * from rplcfg 
+         where @+rplnum and @*
+         ]
+     ]]>
+</local-syntax>
+
+<argument name="rplnum" required="yes" datatype="string"></argument>
+<argument name="wh_id" required="yes" datatype="string"></argument>
+
+<documentation>
+
+<remarks>
+<![CDATA[
+  <p>
+  This command is used to list slot location</p>
+]]>
+</remarks>
+
+<exception value="eOK">Normal successful completion</exception>
+
+</documentation>
+
+</command>

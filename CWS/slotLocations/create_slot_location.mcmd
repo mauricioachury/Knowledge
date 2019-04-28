@@ -1,0 +1,48 @@
+<command>
+
+<name>create slot location</name>
+
+<description>Create Slot Location</description>
+
+<type>Local Syntax</type>
+
+<local-syntax>
+<![CDATA[
+    create record where table_name = 'rplcfg' 
+    and mod_usr_id = nvl(@usr_id, @@usr_id)
+    and @*
+     ]]>
+</local-syntax>
+
+<argument name="wh_id"         datatype="string">Id of the warehouse.</argument>
+<argument name="rplnum"        datatype="string">rplnum</argument>
+<argument name="prtnum"        datatype="string">Item Number.</argument>
+<argument name="prt_client_id" datatype="string">Item Client ID.</argument>
+<argument name="stoloc"        datatype="string">Slot Location.</argument>
+<argument name="mov_zone_id"   datatype="string">Movement Zone ID.</argument>
+<argument name="invsts"        datatype="string">Inventory Status.</argument>
+<argument name="pctflg"        datatype="string">Percentage Flag.</argument>
+<argument name="maxunt"        datatype="integer">Max Quantity.</argument>
+<argument name="minunt"        datatype="integer">Min Quantity.</argument>
+<argument name="maxloc"        datatype="integer">Max Num Locations.</argument>
+<argument name="cmpflg"        datatype="integer">Complete Flag.</argument>
+<argument name="rpldte"        datatype="date">Replenish Date.</argument>
+<argument name="inc_pct_flg"   datatype="integer">Increment Percentage Flag.</argument>
+<argument name="inc_unt"       datatype="integer">Increment Unit.</argument>
+<argument name="rls_pct"       datatype="integer">Release Percentage.</argument>
+<argument name="mod_usr_id"    datatype="string">Modify User ID.</argument> 
+
+<documentation>
+
+<remarks>
+<![CDATA[
+  <p>
+  This command is used to list slot locations</p>
+]]>
+</remarks>
+
+<exception value="eOK">Normal successful completion</exception>
+
+</documentation>
+
+</command>

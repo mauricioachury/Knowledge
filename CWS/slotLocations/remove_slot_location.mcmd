@@ -1,0 +1,11 @@
+<command>
+<name>remove slot location</name>
+<description>Remove Slot Location</description>
+<argument name="rplnum" datatype="string"> </argument>
+<type>Local Syntax</type>
+<local-syntax>
+<![CDATA[
+remove record where table_name = 'rplcfg' and @*
+]]>
+</local-syntax>
+</command>

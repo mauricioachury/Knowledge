@@ -1,0 +1,21 @@
+<action>
+    <id>deleteSlotLocation</id>
+     <name>Delete_Slot_Location</name>
+     <description>Delete the Slot Location</description>
+     
+    <type>DELETE</type>
+    <ws>
+        <method>DELETE</method>
+        <href>/slotLocations/{pk}</href>
+    </ws>
+    <impl>
+        <command>remove slot location</command>
+        <arguments>
+            <argument name="rplnum" type="string" required="true" location="path" description="Repl Number."/>
+        </arguments>
+    </impl>
+    <auth>
+        <opt>optOpen</opt>
+    </auth>
+    <primary>true</primary>
+</action>

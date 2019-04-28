@@ -1,0 +1,37 @@
+<action>
+
+  <id>Vc_UnprocessedOrders</id>
+
+  <name>Cust-Un-Processed-Orders</name>
+
+  <description>Custom un processed orders</description>
+
+  <type>LIST</type>
+
+  <ws>
+
+    <method>GET</method>
+
+    <href>/UnprocessedOrders</href>
+
+  </ws>
+
+  <impl>
+
+    <command>var list unprocessed orders</command>
+
+  <arguments> 
+
+    <argument name="wh_id"  type="string"   required="false" location="body"/>
+
+  </arguments>
+
+  </impl>
+
+  <auth>
+
+    <opt>optOpen</opt>
+
+  </auth>
+
+</action>

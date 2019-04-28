@@ -1,0 +1,17 @@
+<command>
+
+<name>change slot location</name>
+
+<description>Change Slot Location</description>
+
+<type>Local Syntax</type>
+
+<local-syntax>
+<![CDATA[
+change record
+ where table_name = 'rplcfg'
+   and @*
+]]>
+</local-syntax>
+
+</command>

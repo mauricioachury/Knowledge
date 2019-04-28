@@ -1,0 +1,22 @@
+<action>
+    <id>toggleCmpFlg</id>
+    <name>toggle_cmp_flg</name>
+    <description>Toggle cmpflg</description>
+    
+    <type>ACTION</type>
+
+    <ws>
+        <method>GET</method>
+        <href>/slotLocations/{pk}/toggle_cmpflg</href>
+    </ws>
+    <impl>
+        <command>toggle complete flag</command>
+        <arguments>
+            <argument name="rplnum" type="string" required="true" location="path" description="Relp No."/>
+        </arguments>
+    </impl>
+    <auth>
+        <opt>optOpen</opt>
+    </auth>
+    <primary>true</primary>
+</action>

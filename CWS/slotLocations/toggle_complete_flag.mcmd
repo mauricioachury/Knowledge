@@ -1,0 +1,16 @@
+<command>
+
+<name>toggle complete flag</name>
+
+<description>toggle complete flag</description>
+
+<type>Local Syntax</type>
+
+<local-syntax>
+<![CDATA[
+[UPDATE rplcfg SET cmpflg = 1-cmpflg where @*]
+]]>
+<argument name="rplnum" datatype="string"/>
+</local-syntax>
+
+</command>

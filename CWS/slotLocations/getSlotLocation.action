@@ -1,0 +1,23 @@
+<action>
+    <id>getSlotLocation</id>
+    <name>Get_Slot_Location</name>
+    <description>Get Slot Location.</description>
+    
+    <type>GET</type>
+
+    <ws>
+        <method>GET</method>
+        <href>/slotLocations/{pk}</href>
+    </ws>
+    <impl>
+        <command>list slot location</command>
+        <arguments>
+            <argument name="rplnum" type="string" required="true" location="path" description="Order number."/>
+            <argument name="wh_id" type="string" required="true" location="path" description="ID of the warehouse."/>
+        </arguments>
+    </impl>
+    <auth>
+        <opt>optOpen</opt>
+    </auth>
+    <primary>true</primary>
+</action>

@@ -1,0 +1,22 @@
+<action>
+    <id>editSlotLocation</id>
+    <name>Edit_Slot_Location</name>
+    <description>Edit Slot Location</description>
+     
+    <type>EDIT</type>
+ 
+    <ws>
+        <method>PUT</method>
+        <href>/slotLocations/{myid}</href>
+    </ws>
+    <impl>
+        <command>change slot location</command>
+        <arguments>
+            <argument name="rplnum" type="string" required="true" location="path" description="Repl Number."/>
+        </arguments>
+    </impl>
+    <auth>
+        <opt>optOpen</opt>
+    </auth>
+    <primary>true</primary>
+</action>
