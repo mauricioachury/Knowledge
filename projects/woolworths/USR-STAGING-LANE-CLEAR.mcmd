@@ -1,0 +1,193 @@
+[select distinct l.stoloc ,
+        l.locsts ,
+        l.pndqvl ,
+        l.useflg ,
+        l.mov_zone_id,
+        spv.ship_id,
+        spv.shpsts ,
+        spv.stcust ,
+        spv.stop_id ,
+        cm.route_id ,
+        s.stop_seq ,
+        t.trlr_id ,
+        t.trlr_stat , 'D' || to_char(t.dispatch_dte,'YYYYMMDDHHMMSS') as Dispatchdate
+   from locmst l,
+        shipping_pckwrk_view spv,
+        car_move cm,
+        stop s,
+        trlr t
+  where spv.stop_id = s.stop_id
+    and cm.trlr_id = t.trlr_id
+    and spv.car_move_id = cm.car_move_id
+    and spv.ship_id = l.rescod
+    and l.stoloc like 'LNE%'
+    and t.trlr_stat = 'D'
+    and spv.shpsts = 'C'
+    and l.rescod is not null
+  order by l.stoloc]catch(@?) >>res
+|
+if (rowcount(@res) > 0)
+{
+write csv file where resData = @res and path = '\\NESKWHGFFS001\Share\SLDC JDA Volume Viewer\StagingLaneCleanup' and filnam = 'StagingLaneCleanup' || to_char(sysdate,'DDMMYYYYHHMI') || '.CSV'
+|
+[SELECT *
+   from SHIP_STAGING_CONTENTS
+  where ship_id in (select distinct l.rescod
+                     from locmst l,
+                          shipping_pckwrk_view spv,
+                          car_move cm,
+                          stop s,
+                          trlr t
+                    where spv.stop_id = s.stop_id
+                      and cm.trlr_id = t.trlr_id
+                      and spv.car_move_id = cm.car_move_id
+                      and spv.ship_id = l.rescod
+                      and l.stoloc like 'LNE%'
+                      and t.trlr_stat = 'D'
+                      and spv.shpsts = 'C'
+                      and l.rescod is not null)]catch(@?) >> res_ss
+|
+if (rowcount(@res_ss) > 0)
+{
+    write csv file where resData = @res_ss and path = '\\NESKWHGFFS001\Share\SLDC JDA Volume Viewer\StagingLaneCleanup' and filnam = 'StagingLaneCleanup_ShipmentStagingcontent' || to_char(sysdate,'DDMMYYYYHHMI') || '.CSV'
+    |
+    [delete
+       from SHIP_STAGING_CONTENTS
+       where ship_id in (select distinct l.rescod
+                     from locmst l,
+                          shipping_pckwrk_view spv,
+                          car_move cm,
+                          stop s,
+                          trlr t
+                    where spv.stop_id = s.stop_id
+                      and cm.trlr_id = t.trlr_id
+                      and spv.car_move_id = cm.car_move_id
+                      and spv.ship_id = l.rescod
+                      and l.stoloc like 'LNE%'
+                      and t.trlr_stat = 'D'
+                      and spv.shpsts = 'C'
+                      and l.rescod is not null)] catch(@?)
+}
+|
+[select * 
+  from pckmov 
+ where stoloc is not null and rescod in (select distinct l.rescod
+                     from locmst l,
+                          shipping_pckwrk_view spv,
+                          car_move cm,
+                          stop s,
+                          trlr t
+                    where spv.stop_id = s.stop_id
+                      and cm.trlr_id = t.trlr_id
+                      and spv.car_move_id = cm.car_move_id
+                      and spv.ship_id = l.rescod
+                      and l.stoloc like 'LNE%'
+                      and t.trlr_stat = 'D'
+                      and spv.shpsts = 'C'
+                      and l.rescod is not null)]catch(@?) >> res_pm
+|
+if (rowcount(@res_pm) > 0)
+{
+    write csv file where resData = @res_pm and path = '\\NESKWHGFFS001\Share\SLDC JDA Volume Viewer\StagingLaneCleanup' and filnam = 'StagingLaneCleanup_PickMove' || to_char(sysdate,'DDMMYYYYHHMI') || '.CSV'
+    |
+    [update pckmov 
+        set stoloc = ''
+      where rescod in (select distinct l.rescod
+                     from locmst l,
+                          shipping_pckwrk_view spv,
+                          car_move cm,
+                          stop s,
+                          trlr t
+                    where spv.stop_id = s.stop_id
+                      and cm.trlr_id = t.trlr_id
+                      and spv.car_move_id = cm.car_move_id
+                      and spv.ship_id = l.rescod
+                      and l.stoloc like 'LNE%'
+                      and t.trlr_stat = 'D'
+                      and spv.shpsts = 'C'
+                      and l.rescod is not null)] catch(@?)
+}
+|
+[select distinct l.stoloc,
+        l.locsts,
+        l.pndqvl,
+        l.useflg,
+        l.mov_zone_id,
+        spv.ship_id,
+        spv.shpsts,
+        spv.stcust,
+        spv.stop_id,
+        cm.route_id,
+        s.stop_seq,
+        t.trlr_id,
+        t.trlr_stat,
+        t.yard_loc
+   from locmst l,
+        shipping_pckwrk_view spv,
+        car_move cm,
+        stop s,
+        trlr t
+  where spv.stop_id = s.stop_id
+    and cm.trlr_id = t.trlr_id
+    and spv.car_move_id = cm.car_move_id
+    and spv.ship_id = l.rescod
+    and l.stoloc like 'LNE%'
+    and t.trlr_stat = 'D'
+    and spv.shpsts = 'C'
+    and l.rescod is not null
+  order by l.stoloc] catch(@?)
+|
+[update locmst
+    set rescod = NULL,
+        pndqvl = 0,
+        curqvl = 0,
+        locsts = 'E'
+  where stoloc = @stoloc] catch(@?)
+|
+[SELECT count(stoloc) qvl_count,
+        LISTAGG(prtnum, ',') WITHIN GROUP (ORDER BY prtnum) items,
+        stoloc qvl_stoloc,
+        wh_id
+   FROM qvlwrk
+  where stoloc = @stoloc
+GROUP BY stoloc,
+        wh_id] catch(@?)
+|
+write daily transaction
+        where actcod = 'RESCODCLEAR'
+          and frstol = @stoloc
+          and ship_id = @ship_id
+          and cmnt = @items
+|
+[select * 
+  from invmov 
+ where stoloc in (select stoloc 
+                    from locmst 
+                   where stoloc like 'LNE%' 
+                     and rescod is null 
+                     and locsts = 'E' 
+                     and pndqvl = '0')]catch(@?) >> res_im
+|
+if (rowcount(@res_im) > 0)
+{
+    write csv file where resData = @res_im and path = '\\NESKWHGFFS001\Share\SLDC JDA Volume Viewer\StagingLaneCleanup' and filnam = 'StagingLaneCleanup_InventoryMove' || to_char(sysdate,'DDMMYYYYHHMI') || '.CSV'
+    |
+    [delete from invmov where stoloc in (select stoloc from locmst where stoloc like 'LNE%' and rescod is null and locsts = 'E' and pndqvl = '0')] catch(@?)
+}
+|
+[select * 
+  from qvlwrk 
+ where stoloc in (select stoloc 
+                    from locmst 
+                   where stoloc like 'LNE%' 
+                     and rescod is null 
+                     and locsts = 'E' 
+                     and pndqvl = '0')]catch(@?) >> res_qvl
+|
+if (rowcount(@res_qvl) > 0)
+{
+    write csv file where resData = @res_qvl and path = '\\NESKWHGFFS001\Share\SLDC JDA Volume Viewer\UAT\StagingLaneCleanup' and filnam = 'StagingLaneCleanup_QVLwork' || to_char(sysdate,'DDMMYYYYHHMI') || '.CSV'
+    |
+    [delete from qvlwrk where stoloc in (select stoloc from locmst where stoloc like 'LNE%' and rescod is null and locsts = 'E' and pndqvl = '0')] catch(@?)
+}
+}

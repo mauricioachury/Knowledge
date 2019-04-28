@@ -1,0 +1,44 @@
+<trigger>
+
+<name>check complete pick list</name>
+
+<on-command>get vocie picks</on-command>
+
+<fire-sequence>1000</fire-sequence>
+
+<local-syntax>
+<![CDATA[
+    /* Ideally the wrkque should be completed in 'get voice pick batch' which is called in 'get voice picks', however sometime
+     * the wrkque is not completed, here once again we check if this wrkque is finished
+     * with all picking, if so complete the assignment and wrkque.
+     */
+    [select 'x'
+       from dual
+      where not exists (select 'x' from pckwrk_hdr ph where ph.list_id = @assign_id and ph.pckqty > ph.appqty)
+        and exists (select 'x' from wrkque q where q.list_id = @assign_id)] catch(-1403)
+    |
+    if (@? = 0)
+    {
+        complete rf pick list
+          where list_id = @assign_id
+    }
+]]>
+</local-syntax>
+
+<documentation>
+<remarks>
+<![CDATA[
+    <p>
+    This trigger is added to handle a rare situation where the assignment
+    are all picked but left wrkque in db with 'PEND' status. it is suspected
+    that sometime in the 'get voice picks' command the part 'complete rf pick list'
+    may not be called properly, since we are not able to capture this issue
+    with a trace, so here we do once again a check to see if we need to complete
+    the pick list.
+    </p>
+]]>
+</remarks>
+
+</documentation>
+
+</trigger>

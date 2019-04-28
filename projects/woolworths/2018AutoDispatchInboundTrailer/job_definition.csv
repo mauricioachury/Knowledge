@@ -1,0 +1,2 @@
+job_id,role_id,name,enabled,type,command,log_file,trace_level,overlap,schedule,start_delay,timer,grp_nam
+USR-DISPATCH-CLOSED-INB-TRAILER,JOBS,"Process usr dispatch closed inb trailer",1,timer,"[select wh_id from wh] | process usr dispatch closed inbound trailer where wh_id = @wh_id",$LESDIR/log/usr_dispatch_inb_trailer.log,,0,,0,900,USR

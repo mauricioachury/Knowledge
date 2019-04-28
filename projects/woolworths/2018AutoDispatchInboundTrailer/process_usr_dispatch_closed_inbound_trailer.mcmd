@@ -1,0 +1,81 @@
+<command>
+  <name>process usr dispatch closed inbound trailer</name>
+  <description>process usr dispatch closed inbound trailer</description>
+  <type>Local Syntax</type>
+  <local-syntax>
+<![CDATA[
+validate stack variable not null
+   where name = 'wh_id'
+|
+/* Note for below policy:
+ * rtnum1 means enable/disable.
+ * rtnum2 means how many minutes after latest trailer activity for dispatch.
+ */
+[select rtnum2 dispatch_after_minutes
+   from poldat_view
+ where polcod = 'USR'
+   and polvar = 'AUTO-DISPATCH-CLOSED-INB-TRAILER'
+   and polval = 'AUTO-DESP-TIME'
+   and rtnum1 = 1
+   and wh_id = @wh_id] catch(-1403)
+|
+if (@? = 0 )
+{
+    /* We only auto dispatch inbound trailer which is closed already */
+    [select distinct t.trlr_id
+       from rcvtrk r
+       join trlr t
+         on r.trlr_id = t.trlr_id
+      where r.rcvtrk_stat = 'C'
+        and t.trlr_stat = 'C'
+        and r.wh_id = @wh_id] catch(-1403)
+    |
+    if (@? = 0)
+    {
+        check trailer work exists  
+          where trlr_id = @trlr_id
+        |
+        if (@workExists = 0)
+        {
+            check trailer has pending move   
+              where trlr_id = @trlr_id
+            |
+            if (@pendingMove = 0)
+            {
+                /* If time elapsed dispatch_in_minutes since last trailer
+                 * activity, then dispatch the trailer.
+                 */
+                [select max(trndte) lst_trlract_dte
+                   from trlract
+                  where trlr_id = @trlr_id
+                    having(max(trndte) < sysdate - @dispatch_after_minutes /60 /24)] catch(-1403)
+                 |
+                 if (@? = 0)
+                 {
+                     execute server command with new transaction
+                       where cmd = "process trailer dispatch where trlr_id = '" || @trlr_id || "'" catch(@?)
+                 }
+            }
+        }
+    }
+}
+]]>
+</local-syntax>
+<documentation>
+
+<remarks>
+<![CDATA[
+  <p>
+   This command is developped for job 'USR-DISPATCH-CLOSED-INB-TRAILER'
+   to auto dispatch a closed inbound trailer if the policy defined minutes
+   elapsed since last trailer activity and the trailer has no associated
+   work in work queue.
+
+                                                   Consulting team: Sam Ni.
+  </p>
+]]>
+</remarks>
+<argument name="wh_id" required="yes" datatype="">Warehouse id</argument>
+
+</documentation>
+</command>

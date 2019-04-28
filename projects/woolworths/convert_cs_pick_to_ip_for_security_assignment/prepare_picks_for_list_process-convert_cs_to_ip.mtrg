@@ -1,0 +1,75 @@
+<trigger>
+
+<name>convert cs to ip</name>
+
+<on-command>prepare picks for list process</on-command>
+
+<fire-sequence>1000</fire-sequence>
+
+<local-syntax>
+<![CDATA[
+/* Below policy defines:
+ * rtnum1: enable/disable this trigger.
+ * rtnum2: pck_zone_id from where the pick generated will be affected.
+ */
+[select rtnum2 pck_zone_id
+   from poldat_view pv
+  where pv.polcod = 'USR'
+    and pv.polvar = 'CONVERT-CS-TO-IP-FOR-PICK'
+    and pv.polvar = 'PICK-ZONE'
+    and pv.wh_id = @wh_id
+    and pv.rtnum1 = 1] catch(-1403)
+ |
+ if (@? = 0)
+ {
+     [select wrkref,
+             pdip.uomcod uom_ip
+        from pckwrk_hdr ph
+        join locmst lm
+          on ph.srcloc = lm.stoloc
+         and ph.wh_id = lm.wh_id
+        join prtftp_dtl pdip
+          on pdip.prtnum = ph.prtnum
+         and pdip.prt_client_id = ph.prt_client_id
+         and pdip.wh_id = ph.wh_id
+         and pdip.ftpcod = ph.ftpcod
+         and pdip.pak_flg = 1
+       where ph.wh_id = @wh_id
+         and ph.pcksts = 'L'
+         and ph.pck_uom = (select uomcod
+                             from prtftp_dtl pdcs
+                            where pdcs.prtnum = ph.prtnum
+                              and pdcs.prt_client_id = ph.prt_client_id
+                              and pdcs.ftpcod = ph.ftpcod
+                              and pdcs.wh_id = ph.wh_id
+                              and pdcs.cas_flg = 1)
+         and lm.pck_zone_id = @pck_zone_id] catch(-1403)
+      |
+      if (@? = 0)
+      {
+           [update pckwrk_hdr
+               set pck_uom = @uom_ip
+             where wrkref = @wrkref
+               and wh_id = @wh_id]
+      }
+ }
+         
+]]>
+</local-syntax>
+
+<documentation>
+<remarks>
+<![CDATA[
+<p>
+This trigger is used to convert CS pick into IP pick in the pckwrk_hdr table, this is done
+for picks from security, becuase the max volume for security list rule is configrued with 32000
+which could be smaller than a single case volume for some item. we need to convert the pck_uom
+for such pick from 'CS' to 'IP' so during planning the pick into such assignment, system will
+be able to split the pick based on 'IP'.
+
+</p>
+]]>
+</remarks>
+</documentation>
+
+</trigger>

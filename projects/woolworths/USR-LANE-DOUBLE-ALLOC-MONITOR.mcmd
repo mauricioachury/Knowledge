@@ -1,0 +1,73 @@
+[select max(sequence.seqnum) pm_seqnum,
+        max (list_seqnum) maxseqnum,
+        asset_slot,
+        list_id,
+        pckwrk_view.wh_id 
+   from pckwrk_view 
+   join pckmov 
+     on pckmov.cmbcod = pckwrk_view.cmbcod
+   join (select pm.cmbcod,
+                max(pm.seqnum) seqnum
+           from pckmov pm
+          group by cmbcod)sequence
+     on sequence.seqnum = pckmov.seqnum
+    and sequence.cmbcod = pckmov.cmbcod  
+  where list_id is not null
+    and pckwrk_view.pcksts not in ('P', 'C', 'B') 
+having count (distinct stoloc) > 1 
+group by list_id,
+ asset_slot,
+ pckwrk_view.wh_id]
+|
+ [select badpckmov.updated_cmbcod updated_cmbcod,
+         badpckmov.stoloc pckmov_invalid_stoloc,         
+         origpckmov.stoloc origstoloc,
+         badpckmov.rescod pckmov_rescod
+    from (select pv.asset_slot, 
+                 pv.cmbcod updated_cmbcod,
+                 pm.stoloc,
+                 pm.rescod,
+                 pv.list_id
+            from pckmov pm,
+                 pckwrk_view pv
+           where list_id = @list_id
+             and pm.cmbcod = pv.cmbcod
+             and pm.seqnum = @pm_seqnum
+             and pv.list_seqnum = @maxseqnum) badpckmov,         
+         (select pv.asset_slot, 
+                 pv.list_id, 
+                 pv.cmbcod origcmbcod,
+                 pm.stoloc
+            from pckmov pm,
+                 pckwrk_view pv
+           where list_id = @list_id
+             and pm.cmbcod = pv.cmbcod
+             and pm.seqnum = @pm_seqnum
+             and pv.list_seqnum = (@maxseqnum - 1)) origpckmov
+   where origpckmov.list_id = badpckmov.list_id
+     and origpckmov.asset_slot = badpckmov.asset_slot] CATCH(-1403)
+|
+if(@? = 0)
+{
+    [select @list_id list_id,
+            @asset_slot asset_slot,
+            @updated_cmbcod updated_cmbcod,
+            @pckmov_invalid_stoloc pckmov_invalid_stoloc,
+            @pckmov_rescod pckmov_rescod,
+            @origstoloc pckmov_orig_stoloc,
+            @pm_seqnum pckmov_seqnum
+       from dual ]  >> res
+    |
+    write csv file where resData = @res and path = '\\NESKWHGFFS001\Share\SLDC JDA Volume Viewer\DespatchLaneMultiShipment' and filnam =  'Two_Lane_OneAssign_' || to_date(sysdate,('YYYYMMDDHH24MISS')) || @list_id || '.csv'
+    |
+    [update pckmov
+        set stoloc = @origstoloc
+      where cmbcod = @updated_cmbcod
+        and seqnum = @pm_seqnum] catch(-1403)
+    |
+    fix validation errors for location WHERE stoloc = @pckmov_invalid_stoloc catch(@?)
+    |
+    deallocate resource location where stoloc = @pckmov_invalid_stoloc and wh_id = @wh_id catch(@?)
+    |
+    refresh ship staging contents where stoloc = @pckmov_invalid_stoloc and wh_id = @wh_id catch(@?)
+}

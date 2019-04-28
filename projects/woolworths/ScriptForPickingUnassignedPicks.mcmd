@@ -1,0 +1,68 @@
+publish data
+ where ship_id = 'SID0037509'
+   and dstloc = 'RW001'
+   and wh_id = 'PNRDC'
+   and oprcod = 'LPCK'
+|
+generate next number
+ where numcod = 'lodnum'
+|
+publish data
+ where dstlod = @nxtnum
+|
+[select wrkref,
+        prtnum,
+        prt_client_id
+   from pckwrk_view
+  where pcksts = 'U'
+    and pckqty > appqty
+    and ship_id = @ship_id]
+|
+publish data
+ where wrkref = @wrkref
+   and dstloc = @dstloc
+|
+[select srcloc,
+        pckqty - appqty pckqty,
+        wrkref
+   from pckwrk_view
+  where wrkref = @wrkref]
+|
+{
+    process inventory move
+     where srcref = @wrkref
+       and wh_id = @wh_id
+       and srcloc = @srcloc
+       and srcqty = @pckqty
+       and oprcod = @oprcod
+       and dstlod = @dstlod
+       and dstloc = @dstloc
+       and newdst = 1;
+    [select iv.untqty / decode(pw.dspuom, 'CS', pv.untcas, 'IP', pv.untpak, 'EA', 1, 'PA', pv.untpal) numuom,
+            iv.untpak,
+            iv.untcas,
+            iv.untqty,
+            iv.lodnum
+       from inventory_view iv
+       join prtmst_view pw
+         on iv.prtnum = pw.prtnum
+        and iv.prt_client_id = pw.prt_client_id
+        and iv.wh_id = pw.wh_id
+       join prtftp_view pv
+         on iv.prtnum = pv.prtnum
+        and iv.prt_client_id = pv.prt_client_id
+        and iv.wh_id = pv.wh_id
+        and iv.ftpcod = pv.ftpcod
+      where iv.lodnum = @dstlod]
+}
+|
+publish data
+ where ship_id = @ship_id
+   and srcloc = @srcloc
+   and dst_loc = @dstloc
+   and dst_lpn = @lodnum
+   and prtnum = @prtnum
+   and untpak = @untpak
+   and untcas = @untcas
+   and numuom = @numuom
+   and untqty = @untqty;
