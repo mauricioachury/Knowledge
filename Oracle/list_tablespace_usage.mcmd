@@ -1,0 +1,47 @@
+/* Below query will return total temp space usage*/
+[select f.tablespace_name,
+        sum(f.bytes_free + f.bytes_used) / 1024 / 1024 / 1024 "total GB",
+        sum((f.bytes_free + f.bytes_used) - nvl(p.bytes_used, 0)) / 1024 / 1024 / 1024 "Free GB",
+        sum(nvl(p.bytes_used, 0)) / 1024 / 1024 / 1024 "Used GB"
+   from sys.v_$temp_space_header f,
+        dba_temp_files d,
+        sys.v_$temp_extent_pool p
+  where f.tablespace_name(+) = d.tablespace_name
+    and f.file_id(+) = d.file_id
+    and p.file_id(+) = d.file_id
+  group by f.tablespace_name];
+
+/* Temp space used by each session */
+[select b.tablespace,
+        b.segfile#,
+        (b.segblk#) *to_number(rtrim(p.value)) / 1024 / 1024 / 1024 Tot_GB,
+        b.blocks,
+        b.blocks*to_number(rtrim(p.value)) / 1024 / 1024 / 1024 Used_GB,
+        a.sid,
+        a.serial#,
+        a.username,
+        a.osuser,
+        a.status,
+        c.sql_text,
+        b.contents
+   from v$session a,
+        v$sort_usage b,
+        v$parameter p,
+        v$sql c
+  where a.saddr = b.session_addr
+    and a.sql_address = c.address
+    and p.name = 'db_block_size'
+    order by b.blocks desc];
+
+/* Other non-temp tablespace usage */
+[SELECT a.tablespace_name,
+        a.bytes / 1024 / 1024 / 1024 total_gb,
+        b.bytes / 1024 / 1024 / 1024 used_gb,
+        c.bytes / 1024 / 1024 / 1024 free_gb,
+        (b.bytes * 100) / a.bytes "% USED ",
+        (c.bytes * 100) / a.bytes "% FREE "
+   FROM sys.sm$ts_avail a,
+        sys.sm$ts_used b,
+        sys.sm$ts_free c
+  WHERE a.tablespace_name = b.tablespace_name
+    AND a.tablespace_name = c.tablespace_name];

@@ -1,0 +1,40 @@
+1. Open flashback and setting:
+SQL> shutdown immediate;
+SQL> startup mount;
+SQL> alter database archivelog;
+SQL> alter database flashback on;
+SQL> alter system set db_recovery_file_dest='D:/Oracle/flash_recovery_area' scope=both;
+SQL> alter system set db_recovery_file_dest_size=2G scope=both;
+SQL> alter system set db_flashback_retention_target=2880 scope=both;
+SQL> select name, log_mode, flashback_on from v$database;
+SQL> archive log list;
+SQL> show parameter db_recovery_file_dest;
+SQL> alter database open;
+
+db_recovery_file_dest : 指定闪回恢复区的位置，需要提前手动创建好目录
+db_recovery_file_dest_size : 指定闪回恢复区的可用空间大小
+db_flashback_retention_target : 指定数据库可以回退的时间，单位为分钟，默认1天（1440分钟），配合db_recovery_file_dest_size一起使用，也就是说闪回恢复区要能够放得下在这段时间内所产生的需要回退的数据
+
+2. Flashback 3 ways:
+create restore point before_relese_pt_wave2 guarantee flashback database;
+flashback database to timestamp to_timestamp('2014-09-06 12:17:26', 'yyyy-mm-dd hh24:mi:ss');
+select dbms_flashback.get_system_change_number as scn_no from dual
+
+sql>create restore point flashpoint_1 grarantee flashback database;
+sql>shutdown immediate
+sql>startup mount;
+sql>flashback  database  to  restore point before_relese_pt_wave2;
+sql>alter database open resetlogs;
+sql>drop restore point before_relese_pt_wave2;
+sql>create restore point flashpoint_2 grarantee flashback database;
+
+select * from v$restore_point;
+alter database open resetlogs;
+
+3. Turn off flashback:
+SQL> shutdown immediate;
+SQL> startup mount;
+SQL> alter database flashback off;
+SQL> alter database noarchivelog;
+SQL> select name, log_mode, flashback_on from v$database;
+SQL> alter database open;
