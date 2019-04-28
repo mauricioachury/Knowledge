@@ -1,0 +1,7 @@
+1.      The trace you provided failed because the locmst.pckflg is turned off for ¡®NOLOC¡¯ record, after turn it on, you will get the pick work generated successfully(tested in PNRDC SIT).
+
+2.      Next when I tried to do the work, the work will be completed automatically the moment when I acknowledge the work, this is because the srcloc is P&D location, this feature is not supported for P&D location, the reason could be that P&D location is usually used for outbound picking, you would not expect someone generate a directed move inventory work for outbound picked pallet.
+
+3.      Next I turned off the pdflg flag, then I was able to acknowledge the work, but there is command called ¡®get quantity for picking uom¡¯ failed so it loops back to acknowledge the same work, looking at the trace, the command is trying to validate proper allocation search path is configured, which is not we expected(we don¡¯t want system generate outbound picking from ¡®NOLOC¡¯), there is flag on mov_zone.alloc_max_uom_rpl_flg will bypass the check if it is on.
+
+4.      The last flag is mov_zone.recalc_putaway, this flag needs to be off, because it will run recalculate putaway logic before pickup my pallet, and this will end up with prompting me deposit back to ¡®NOLOC¡¯.
