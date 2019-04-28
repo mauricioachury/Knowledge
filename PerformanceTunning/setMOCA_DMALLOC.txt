@@ -1,0 +1,1511 @@
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] Tracing started 11/07/2018 at 10:51:14 []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1]  []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1]    Registry: E:\JDA\wmuat\les\data\registry []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1]  []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] Category        Library         Version []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] --------------- --------------- ------------------------- []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1]  -- PATCH: WW-2                 2017.1.1.10.1             []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1]  -- PATCH: WW-2                 2017.1.1.10.12            []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1]  -- PATCH: WW-2                 2017.1.1.10.26            []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1]  -- PATCH: WW-2                 2017.1.1.10.25            []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] MOCAadmin                       2017.1.1.8                []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] MOCAbase        MOCAbase        2017.1.1.8                []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] MOCAdbupgrade                   2017.1.1.8                []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] MOCAdbutl                       2017.1.1.8                []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] MOCAems                         2017.1.1.8                []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] MOCArepository                  2017.1.1.8                []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] MOCAextensibili                 2017.1.1.8                []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] MOCAsecurity                    2017.1.1.8                []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] MOCAxml         MOCAxml         2017.1.1.8                []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] MOCAcrud                        2017.1.1.8                []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] MCSI18N         MCSi18n         2017.1.1.10.12            []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] MCSbase         MCSbase         2017.1.1.10.12            []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] MCSems                          2017.1.1.10.12            []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] MCSdda          MCSdda          2017.1.1.10.12            []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] MCSDoc                          2017.1.1.10.12            []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] MCSSecurity     MCSbase         2017.1.1.10.12            []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] MCSMedia                        2017.1.1.10.12            []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] reportingshared                                           []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] Search                          2017.1.1.10.12            []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] reporting                       2017.1.1.9                []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] MTFint                          2017.1.1.10               []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] MCSShared                       2017.1.1.10.12            []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] SALSlot         SALslot         2017.1.1.10               []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] SALbase         SALbase         2017.1.1.10               []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] SALems          SALbase         2017.1.1.10               []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] SALlex          SALlex          2017.1.1.10               []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] SALora          SALora          2017.1.1.10               []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] SALpronumber    SALpronumber    2017.1.1.10.25            []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] SALprt          SALprt          2017.1.1.10               []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] SALrpt          SALrpt          2017.1.1.10               []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] SALweb          SALweb          2017.1.1.10               []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] encryption                      2017.1.1.10.25            []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] reportingconfig                                           []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] SALbatch        SALbatch        2017.1.1.10               []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] schedule                        2017.1.1.10.25            []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] SALprtftp       SALprtftp       2017.1.1.10               []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] SALcbs          SALcbs          2017.1.1.10               []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] SALlbl          SALlbl          2017.1.1.10               []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] SALpm           SALpm           2017.1.1.10               []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] SALcbsrpt       SALcbsrpt       2017.1.1.10               []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] SALarc          SALarc          2017.1.1.10               []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] SALent          SALent          2017.1.1.10               []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] SALvoc          SALvoc          2017.1.1.10               []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] SALgeoloc       SALgeoloc       2017.1.1.10               []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] SeamLES         libSeamLES      2017.1.1.9                []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] SLems           slems           2017.1.1.9                []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] SLjms                           2017.1.1.9                []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] SLtrg           sltrg           2017.1.1.9                []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] slinternaldb                    2017.1.1.9                []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] slsapidoc                       2017.1.1.9                []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] DCSwcsint                       2017.1.1.10.26            []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] SLhttp                                                    []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] SLjsock                         2017.1.1.9                []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] SLmcsi                          2017.1.1.9                []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] SALtag          SALtag          2017.1.1.10               []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] SALopto         SALopto         2017.1.1.10               []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] DCSasset        DCSasset        2017.1.1.10.26            []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] DCSbill                         2017.1.1.10.26            []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] DCScbs          DCScbs          2017.1.1.10.26            []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] DCScontext      DCScontext      2017.1.1.10.26            []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] DCSdash         DCSdash         2017.1.1.10.26            []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] DCSdistro       DCSdistro       2017.1.1.10.26            []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] DCSequip        DCSequip        2017.1.1.10.26            []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] DCSfilter       DCSfilter       2017.1.1.10.26            []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] DCSint          DCSint          2017.1.1.10.26            []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] DCSjob                          2017.1.1.10.26            []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] DCSlist         DCSlist         2017.1.1.10.26            []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] DCSpalctl       DCSpalctl       2017.1.1.10.26            []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] DCSpolicies                     2017.1.1.10.26            []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] DCSrcv          DCSrcv          2017.1.1.10.26            []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] DCSrpl                          2017.1.1.10.26            []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] DCSvoc          DCSvoc          2017.1.1.10.26            []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] dcsasync                        2017.1.1.10.26            []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] dcssource                       2017.1.1.10.26            []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] dcsutil_java                    2017.1.1.10.26            []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] dcsutils_core                   2017.1.1.10.26            []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] dcsvoc_java                     2017.1.1.10.26            []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] dcsxdk                          2017.1.1.10.26            []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] DCSscm          DCSscm          2017.1.1.10.26            []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] DCSrf           DCSrf           2017.1.1.10.26            []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] DCSrpweb                        2017.1.1.10.26            []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] DCSwo           DCSwo           2017.1.1.10.26            []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] MCSWeb                          2017.1.1.10.12            []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] DCSrps                          2017.1.1.10.26            []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] dcsconnect                      2017.1.1.10.26            []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] DCSlm           DCSlm           2017.1.1.10.26            []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] mcsi            mcsi            2017.1.1.10.26            []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] dcsdyncfg       dcsdyncfg       2017.1.1.10.26            []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] DCSalloc                        2017.1.1.10.26            []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] DCSpck          DCSpck          2017.1.1.10.26            []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] DCSordact       DCSordact       2017.1.1.10.26            []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] DCSserv         DCSserv         2017.1.1.10.26            []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] DCStm           DCStm           2017.1.1.10.26            []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] DCSfdx          DCSfdx          2017.1.1.10.26            []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] DCScmdrqa       DCScmdrqa       2017.1.1.10.26            []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] DCSems          DCSems          2017.1.1.10.26            []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] DCSpm           DCSpm           2017.1.1.10.26            []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] DCSsup          DCSsup          2017.1.1.10.26            []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] DCSallocation                   2017.1.1.10.26            []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] DCSrfid         DCSrfid         2017.1.1.10.26            []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] DCSi18n         DCSi18n         2017.1.1.10.26            []
+2018-11-07 10:51:14,526 INFO  [1209 8320] DefaultServerContext [1] DCStools        DCStools        2017.1.1.10.26            []
+2018-11-07 10:51:14,542 INFO  [1209 8320] DefaultServerContext [1] dcsmgtopr       dcsmgtopr       2017.1.1.10.26            []
+2018-11-07 10:51:14,542 INFO  [1209 8320] DefaultServerContext [1] dcslvl          DCSint          2017.1.1.10.26            []
+2018-11-07 10:51:14,542 INFO  [1209 8320] DefaultServerContext [1] DCSlbl          DCSlbl          2017.1.1.10.26            []
+2018-11-07 10:51:14,542 INFO  [1209 8320] DefaultServerContext [1] DCSrpt          DCSrpt          2017.1.1.10.26            []
+2018-11-07 10:51:14,542 INFO  [1209 8320] DefaultServerContext [1] DCSlens         DCSlens         2017.1.1.10.26            []
+2018-11-07 10:51:14,542 INFO  [1209 8320] DefaultServerContext [1] DCStrlract      DCStrlract      2017.1.1.10.26            []
+2018-11-07 10:51:14,542 INFO  [1209 8320] DefaultServerContext [1] DCSinvact       DCSinvact       2017.1.1.10.26            []
+2018-11-07 10:51:14,542 INFO  [1209 8320] DefaultServerContext [1] DCSBarcode                      2017.1.1.10.26            []
+2018-11-07 10:51:14,542 INFO  [1209 8320] DefaultServerContext [1] DCSslot         DCSslot         2017.1.1.10.26            []
+2018-11-07 10:51:14,542 INFO  [1209 8320] DefaultServerContext [1] DCSintegrtr     DCSintegrtr     2017.1.1.10.26            []
+2018-11-07 10:51:14,542 INFO  [1209 8320] DefaultServerContext [1] SALintegrtr                     2017.1.1.10.25            []
+2018-11-07 10:51:14,542 INFO  [1209 8320] DefaultServerContext [1] DCSprtftp       DCSprtftp       2017.1.1.10.26            []
+2018-11-07 10:51:14,542 INFO  [1209 8320] DefaultServerContext [1] LMAssignControl LMAssignments   2017.1.1.10               []
+2018-11-07 10:51:14,542 INFO  [1209 8320] DefaultServerContext [1] LMAssignments   LMAssignments   2017.1.1.10               []
+2018-11-07 10:51:14,542 INFO  [1209 8320] DefaultServerContext [1] LMBase          LMBase          2017.1.1.10               []
+2018-11-07 10:51:14,542 INFO  [1209 8320] DefaultServerContext [1] LMClockPunch    LMClockPunch    2017.1.1.10               []
+2018-11-07 10:51:14,542 INFO  [1209 8320] DefaultServerContext [1] LMCustomer      LMint           2017.1.1.10               []
+2018-11-07 10:51:14,542 INFO  [1209 8320] DefaultServerContext [1] LMDiscreteCalcu LMDiscreteCalcu 2017.1.1.10               []
+2018-11-07 10:51:14,542 INFO  [1209 8320] DefaultServerContext [1] LMEms           LMEms           2017.1.1.10               []
+2018-11-07 10:51:14,542 INFO  [1209 8320] DefaultServerContext [1] LMInterface     LMint           2017.1.1.10               []
+2018-11-07 10:51:14,542 INFO  [1209 8320] DefaultServerContext [1] LMInventory     LMBase          2017.1.1.10               []
+2018-11-07 10:51:14,542 INFO  [1209 8320] DefaultServerContext [1] LMLearningCurve LMint           2017.1.1.10               []
+2018-11-07 10:51:14,542 INFO  [1209 8320] DefaultServerContext [1] LMMobile        LMMobile        2017.1.1.10               []
+2018-11-07 10:51:14,542 INFO  [1209 8320] DefaultServerContext [1] LMObservation   LMint           2017.1.1.10               []
+2018-11-07 10:51:14,542 INFO  [1209 8320] DefaultServerContext [1] LMPCLog         LMPCLog         2017.1.1.10               []
+2018-11-07 10:51:14,542 INFO  [1209 8320] DefaultServerContext [1] LMPay           LMint           2017.1.1.10               []
+2018-11-07 10:51:14,542 INFO  [1209 8320] DefaultServerContext [1] LMPickError     LMPickError     2017.1.1.10               []
+2018-11-07 10:51:14,542 INFO  [1209 8320] DefaultServerContext [1] LMProcessLog    LMProcessLog    2017.1.1.10               []
+2018-11-07 10:51:14,542 INFO  [1209 8320] DefaultServerContext [1] LMPurge         LMPurge         2017.1.1.10               []
+2018-11-07 10:51:14,542 INFO  [1209 8320] DefaultServerContext [1] LMRPWeb         LMBase          2017.1.1.10               []
+2018-11-07 10:51:14,542 INFO  [1209 8320] DefaultServerContext [1] LMRegen         LMRegen         2017.1.1.10               []
+2018-11-07 10:51:14,542 INFO  [1209 8320] DefaultServerContext [1] LMReportCard    LMReportCard    2017.1.1.10               []
+2018-11-07 10:51:14,542 INFO  [1209 8320] DefaultServerContext [1] LMReports       LMrpt           2017.1.1.10               []
+2018-11-07 10:51:14,542 INFO  [1209 8320] DefaultServerContext [1] LMScard         LMScard         2017.1.1.10               []
+2018-11-07 10:51:14,542 INFO  [1209 8320] DefaultServerContext [1] LMScheduler     LMScheduler     2017.1.1.10               []
+2018-11-07 10:51:14,542 INFO  [1209 8320] DefaultServerContext [1] LMSignOn        LMSignOn        2017.1.1.10               []
+2018-11-07 10:51:14,542 INFO  [1209 8320] DefaultServerContext [1] LMSimulation    LMSimulation    2017.1.1.10               []
+2018-11-07 10:51:14,542 INFO  [1209 8320] DefaultServerContext [1] LMStandards     LMStandards     2017.1.1.10               []
+2018-11-07 10:51:14,542 INFO  [1209 8320] DefaultServerContext [1] LMStatistics    LMStatistics    2017.1.1.10               []
+2018-11-07 10:51:14,542 INFO  [1209 8320] DefaultServerContext [1] LMTableAccess   LMTableAccess   2017.1.1.10               []
+2018-11-07 10:51:14,542 INFO  [1209 8320] DefaultServerContext [1] LMUser          LMBase          2017.1.1.10               []
+2018-11-07 10:51:14,542 INFO  [1209 8320] DefaultServerContext [1] LMUserGrouping  LMint           2017.1.1.10               []
+2018-11-07 10:51:14,542 INFO  [1209 8320] DefaultServerContext [1] LMVocollect     LMVocollect     2017.1.1.10               []
+2018-11-07 10:51:14,542 INFO  [1209 8320] DefaultServerContext [1] LMWarehouseCopy LMint           2017.1.1.10               []
+2018-11-07 10:51:14,542 INFO  [1209 8320] DefaultServerContext [1] LMWarehouseMAP  LMBase          2017.1.1.10               []
+2018-11-07 10:51:14,542 INFO  [1209 8320] DefaultServerContext [1] LMWarehouseTran LMBase          2017.1.1.10               []
+2018-11-07 10:51:14,542 INFO  [1209 8320] DefaultServerContext [1] CTClockPunch    CTClockPunch    2017.1.1.5                []
+2018-11-07 10:51:14,542 INFO  [1209 8320] DefaultServerContext [1] CTDiagnostic    CTint           2017.1.1.5                []
+2018-11-07 10:51:14,542 INFO  [1209 8320] DefaultServerContext [1] CTDifferential  CTint           2017.1.1.5                []
+2018-11-07 10:51:14,542 INFO  [1209 8320] DefaultServerContext [1] CTIncentives    CTint           2017.1.1.5                []
+2018-11-07 10:51:14,542 INFO  [1209 8320] DefaultServerContext [1] CTNonWorkedTime CTNonWorkedTime 2017.1.1.5                []
+2018-11-07 10:51:14,542 INFO  [1209 8320] DefaultServerContext [1] CTOvertime      CTint           2017.1.1.5                []
+2018-11-07 10:51:14,542 INFO  [1209 8320] DefaultServerContext [1] CTPayRules      CTPayRules      2017.1.1.5                []
+2018-11-07 10:51:14,542 INFO  [1209 8320] DefaultServerContext [1] CTWarehouseCopy CTint           2017.1.1.5                []
+2018-11-07 10:51:14,542 INFO  [1209 8320] DefaultServerContext [1] ctPurge         CTint           2017.1.1.5                []
+2018-11-07 10:51:14,542 INFO  [1209 8320] DefaultServerContext [1] ctReports       CTrpt           2017.1.1.5                []
+2018-11-07 10:51:14,542 INFO  [1209 8320] DefaultServerContext [1] ctbase          ctbase          2017.1.1.5                []
+2018-11-07 10:51:14,542 INFO  [1209 8320] DefaultServerContext [1] ctems           CTint           2017.1.1.5                []
+2018-11-07 10:51:14,542 INFO  [1209 8320] DefaultServerContext [1] ctsynel         ctbase          2017.1.1.5                []
+2018-11-07 10:51:14,542 INFO  [1209 8320] DefaultServerContext [1] DCSdiagnostic                                             []
+2018-11-07 10:51:14,542 INFO  [1209 8320] DefaultServerContext [1] SALlens         SALlens         2017.1.1.10               []
+2018-11-07 10:51:14,542 INFO  [1209 8320] DefaultServerContext [1] VARint          VARint          Build Date: Sep  4 2018   []
+2018-11-07 10:51:14,542 INFO  [1209 8320] DefaultServerContext [1] USRint          USRint          Build Date: Sep  4 2018   []
+2018-11-07 10:51:14,542 DEBUG [1209 8320] DefaultServerContext [1] Executed Command: MOCAbase/set trace []
+2018-11-07 10:51:14,542 DEBUG [1209 8320] MocaTransactionManager [0] Commit []
+2018-11-07 10:51:14,542 DEBUG [1209 8320] MocaTransactionManager [0] No current transaction []
+2018-11-07 10:51:14,542 DEBUG [1209 8320] CommandDispatcher [0] Returning 1 row(s) []
+2018-11-07 10:51:14,542 DEBUG [1209 8320] Activity [0] command="set trace where activate = 1 and level = "WSMXARC" and filename = "test.log" and mode = "a+" " duration="16" env="{LOCALE_ID=US_ENGLISH, USR_ID=9849, WEB_CLIENT_ADDR=10.168.234.73, WEB_SESSIONID=c8e59a01f2c88320}" error="0" rowCount="1" []
+2018-11-07 10:51:14,542 DEBUG [1209 8320] CommandDispatcher [0] Executing Activity Hook: com.redprairie.mcs.hooks.AuditCommandDispatchHook []
+2018-11-07 10:51:14,542 DEBUG [1209 8320] CommandDispatcher [0] Releasing Session context.  []
+2018-11-07 10:51:14,542 DEBUG [1209 8320] DefaultServerContext [0] Server Context Closed []
+2018-11-07 10:51:14,542 DEBUG [1209 8320] CommandDispatcher [0] Dispatched command []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] CommandDispatcher [0] Dispatching command... []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] CommandDispatcher [0] Server got: publish data where wh_id = 'PNRDC'
+and cancod = 'C-R-U'
+and wrkref = 'W0000003P32J'
+and schbat = 'GGHHGG'
+|
+[select rtnum1 as shtpckenabled 
+   from poldat_view 
+  where polcod='USR' 
+	and polvar='SHORT-PICK-WORK' 
+	and polval='ENABLED'
+	and wh_id=nvl(@wh_id,@@wh_id)] catch (@?)
+|
+if (@?=0 and @shtpckenabled = 1)
+{
+	if(@cancod='C-R-U' OR @cancod='PRE-CAN')
+	{
+		/* Update Pick work Header when Unassign flag is ON and Pick Status is Unassigned */
+		[update pckwrk_hdr set inv_attr_str18 = '1' where wrkref=nvl(@wrkref,@oldref) and schbat=@schbat and pcksts='U' and unassign_flg=1 and wh_id=nvl(@wh_id,@@wh_id)] catch(@?)
+		|
+		if (@?=0)
+		{
+			[select rtstr1 as shtpckmz_id ,
+			        rtstr2 as shtpckrescod
+			  from poldat_view 
+			 where polcod='USR' 
+			   and polvar='SHORT-PICK-WORK' 
+			   and polval='MOVE-ZONE-ID'
+			   and rtnum1=1
+			   and wh_id=nvl(@wh_id,@@wh_id)]catch(@?)
+			|
+			if (@?=0)
+			{
+				[update pckwrk_dtl
+					set dst_mov_zone_id = @shtpckmz_id
+				  where wrkref=nvl(@wrkref,@oldref) 
+					and schbat = @schbat
+					and wh_id=nvl(@wh_id,@@wh_id)] catch(@?)
+				|
+				if (@?=0)
+				{
+					[update pckmov
+					    set mov_zone_id = @shtpckmz_id,
+					        rescod = @shtpckrescod,
+							seqnum = seqnum + 1
+					  where cmbcod in (select cmbcod
+							             from pckwrk_dtl
+							            where wrkref=nvl(@wrkref,@oldref) 
+							              and schbat = @schbat
+							              and wh_id=nvl(@wh_id,@@wh_id))] catch(-1403)
+					|
+					[select distinct mov_zone_id src_mov_zon_id,
+                            cmbcod, 
+							lodlvl							
+					   from locmst l
+					   join pckwrk_view pv
+					     on l.stoloc = pv.srcloc
+					    and l.wh_id = pv.wh_id
+						and pv.wrkref = @wrkref] catch(-1403)
+					|  
+					[select md.hop_mov_zone_id
+                       from mov_path mp
+                  left join mov_path_dtl md
+                         on md.src_mov_zone_id = mp.src_mov_zone_id
+                        and md.dst_mov_zone_id = mp.dst_mov_zone_id
+                        and md.lodlvl = mp.lodlvl
+                  left join mov_zone mz_src
+                         on mz_src.mov_zone_id = md.src_mov_zone_id
+                  left join mov_zone mz_dst
+                         on mz_dst.mov_zone_id = md.dst_mov_zone_id
+                  left join mov_zone mz_hop
+                         on mz_hop.mov_zone_id = md.hop_mov_zone_id
+                      where mp.src_mov_zone_id = @src_mov_zon_id
+                        and mp.dst_mov_zone_id = @shtpckmz_id
+                        and mp.lodlvl = @lodlvl] catch(-1403)
+                    |
+                    [insert  into pckmov(cmbcod, seqnum, mov_zone_id, wh_id, stoloc, rescod, arrqty, prcqty)
+                    (select cmbcod,  seqnum -1, @hop_mov_zone_id, wh_id, stoloc, rescod, arrqty, prcqty
+					from pckmov pm
+					where pm.cmbcod = @cmbcod
+					and pm.seqnum = (select min(seqnum) from pckmov t where t.cmbcod = @cmbcod))] catch(-1403)				
+				}
+			}
+		}
+    }
+}
+;
+[select 'x' from dual where 1=2] []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] DefaultServerContext [0] Parsing command...  []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] DefaultServerContext [0] Parsed command []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] DefaultServerContext [0] Executing... []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] DefaultServerContext [1] Looking up command: publish data []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] Argument [1] Argument  wh_id=PNRDC  (STRING) []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] Argument [1] Argument  cancod=C-R-U  (STRING) []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] Argument [1] Argument  wrkref=W0000003P32J  (STRING) []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] Argument [1] Argument  schbat=GGHHGG  (STRING) []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] DefaultServerContext [1] -------------------------------------- []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] DefaultServerContext [1] -------------------------------------- []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] DefaultServerContext [1] Executing Command: MOCAbase/publish data []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] MocaWebAuthorization [1] Open role option found. Allowing... []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] ComponentAdapter [1] Creating instance of com.redprairie.moca.components.base.CoreService []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] ComponentAdapter [1] Invoking method: public com.redprairie.moca.MocaResults com.redprairie.moca.components.base.CoreService.publishData(com.redprairie.moca.MocaContext) []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] DefaultServerContext [1] Executed Command: MOCAbase/publish data []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] DefaultServerContext [2] -------------------------------------- []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] Argument [2] Published  wh_id=PNRDC  (STRING) []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] Argument [2] Published  cancod=C-R-U  (STRING) []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] Argument [2] Published  wrkref=W0000003P32J  (STRING) []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] Argument [2] Published  schbat=GGHHGG  (STRING) []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] Argument [2] Argument  wh_id=PNRDC  (STRING) []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] Argument [2] Argument  cancod=C-R-U  (STRING) []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] Argument [2] Argument  wrkref=W0000003P32J  (STRING) []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] Argument [2] Argument  schbat=GGHHGG  (STRING) []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] DefaultServerContext [2] -------------------------------------- []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] DefaultServerContext [2] -------------------------------------- []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] MinIdleBlockingPool [2] Requesting object from pool [Connection]: busy: 1, idle: 14, started 15 / 100 []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] NonXAMocaDBConnection [2] Enlisting connection into transaction []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] NonXAMocaDBConnection [2] Started non xa tx - < formatId=131077, gtrid_length=29, bqual_length=36, tx_uid=0:ffff0a988412:ed72:5be1ed5d:10f4d, node_name=1, branch_uid=0:ffff0a988412:ed72:5be1ed5d:10f4f, subordinatenodename=null, eis_name=0 > []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] MinIdleBlockingPool [2] Object retrieved from pool [Connection]: busy: 2, idle: 13, started 15 / 100 []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] ConnectionPoolDataSource [2] Retrieving wmuat-000002 from db pool. []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] JDBCAdapter [2] Executing SQL: select rtnum1 as shtpckenabled 
+   from poldat_view 
+  where polcod='USR' 
+	and polvar='SHORT-PICK-WORK' 
+	and polval='ENABLED'
+	and wh_id=nvl(:var_wh_id,:var0) []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] JDBCAdapter [2] XLATE: select rtnum1 as shtpckenabled 
+   from poldat_view 
+  where polcod=:q0 
+	and polvar=:q1 
+	and polval=:q2
+	and wh_id=nvl(:var_wh_id,:var0) []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] JDBCAdapter [2] Found passed-in bind list []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] JDBCAdapter [2] UNBIND: select rtnum1 as shtpckenabled 
+   from poldat_view 
+  where polcod='USR' 
+	and polvar='SHORT-PICK-WORK' 
+	and polval='ENABLED'
+	and wh_id=nvl('PNRDC',NULL) []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] JDBCAdapter [2] Executing statement with bound parameters []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] JDBCAdapter [2] Query returned 1 rows []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] Performance [2] Execute Time: 0.002558203 s []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] JDBCAdapter [2] SQL execution completed []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] CommandStatement [3] Evaluating conditional test: @?=(TYPE: INTEGER, VALUE: 0) AND @shtpckenabled=(TYPE: INTEGER, VALUE: 1) []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] CommandStatement [3] If-test passed - executing if block []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] CommandStatement [4] Evaluating conditional test: @cancod=(TYPE: STRING, VALUE: C-R-U) OR @cancod=(TYPE: STRING, VALUE: PRE-CAN) []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] CommandStatement [4] If-test passed - executing if block []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] DefaultServerContext [5] -------------------------------------- []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] DefaultServerContext [5] -------------------------------------- []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] DefaultServerContext [5] -------------------------------------- []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] Argument [5] Published  shtpckenabled=1  (INTEGER) []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] DefaultServerContext [5] -------------------------------------- []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] Argument [5] Published  wh_id=PNRDC  (STRING) []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] Argument [5] Published  cancod=C-R-U  (STRING) []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] Argument [5] Published  wrkref=W0000003P32J  (STRING) []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] Argument [5] Published  schbat=GGHHGG  (STRING) []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] Argument [5] Argument  wh_id=PNRDC  (STRING) []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] Argument [5] Argument  cancod=C-R-U  (STRING) []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] Argument [5] Argument  wrkref=W0000003P32J  (STRING) []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] Argument [5] Argument  schbat=GGHHGG  (STRING) []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] DefaultServerContext [5] -------------------------------------- []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] DefaultServerContext [5] -------------------------------------- []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] JDBCAdapter [5] Executing SQL: update pckwrk_hdr set inv_attr_str18 = '1' where wrkref=nvl(:var_wrkref,:var_oldref) and schbat=:var_schbat and pcksts='U' and unassign_flg=1 and wh_id=nvl(:var_wh_id,:var0) []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] JDBCAdapter [5] XLATE: update pckwrk_hdr set inv_attr_str18 = :q0 where wrkref=nvl(:var_wrkref,:var_oldref) and schbat=:var_schbat and pcksts=:q1 and unassign_flg=:i2 and wh_id=nvl(:var_wh_id,:var0) []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] JDBCAdapter [5] Found passed-in bind list []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] JDBCAdapter [5] UNBIND: update pckwrk_hdr set inv_attr_str18 = '1' where wrkref=nvl('W0000003P32J',NULL) and schbat='GGHHGG' and pcksts='U' and unassign_flg=1 and wh_id=nvl('PNRDC',NULL) []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] JDBCAdapter [5] Executing statement with bound parameters []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] JDBCAdapter [5] Statement affected 1 rows []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] Performance [5] Execute Time: 0.0008841763 s []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] JDBCAdapter [5] SQL execution completed []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] CommandStatement [6] Evaluating conditional test: @?=(TYPE: INTEGER, VALUE: 0) []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] CommandStatement [6] If-test passed - executing if block []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] DefaultServerContext [7] -------------------------------------- []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] DefaultServerContext [7] -------------------------------------- []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] DefaultServerContext [7] -------------------------------------- []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] DefaultServerContext [7] -------------------------------------- []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] DefaultServerContext [7] -------------------------------------- []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] Argument [7] Published  shtpckenabled=1  (INTEGER) []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] DefaultServerContext [7] -------------------------------------- []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] Argument [7] Published  wh_id=PNRDC  (STRING) []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] Argument [7] Published  cancod=C-R-U  (STRING) []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] Argument [7] Published  wrkref=W0000003P32J  (STRING) []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] Argument [7] Published  schbat=GGHHGG  (STRING) []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] Argument [7] Argument  wh_id=PNRDC  (STRING) []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] Argument [7] Argument  cancod=C-R-U  (STRING) []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] Argument [7] Argument  wrkref=W0000003P32J  (STRING) []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] Argument [7] Argument  schbat=GGHHGG  (STRING) []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] DefaultServerContext [7] -------------------------------------- []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] DefaultServerContext [7] -------------------------------------- []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] JDBCAdapter [7] Executing SQL: select rtstr1 as shtpckmz_id ,
+			        rtstr2 as shtpckrescod
+			  from poldat_view 
+			 where polcod='USR' 
+			   and polvar='SHORT-PICK-WORK' 
+			   and polval='MOVE-ZONE-ID'
+			   and rtnum1=1
+			   and wh_id=nvl(:var_wh_id,:var0) []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] JDBCAdapter [7] XLATE: select rtstr1 as shtpckmz_id ,
+			        rtstr2 as shtpckrescod
+			  from poldat_view 
+			 where polcod=:q0 
+			   and polvar=:q1 
+			   and polval=:q2
+			   and rtnum1=:i3
+			   and wh_id=nvl(:var_wh_id,:var0) []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] JDBCAdapter [7] Found passed-in bind list []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] JDBCAdapter [7] UNBIND: select rtstr1 as shtpckmz_id ,
+			        rtstr2 as shtpckrescod
+			  from poldat_view 
+			 where polcod='USR' 
+			   and polvar='SHORT-PICK-WORK' 
+			   and polval='MOVE-ZONE-ID'
+			   and rtnum1=1
+			   and wh_id=nvl('PNRDC',NULL) []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] JDBCAdapter [7] Executing statement with bound parameters []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] JDBCAdapter [7] Query returned 1 rows []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] Performance [7] Execute Time: 0.0006143783 s []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] JDBCAdapter [7] SQL execution completed []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] CommandStatement [8] Evaluating conditional test: @?=(TYPE: INTEGER, VALUE: 0) []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] CommandStatement [8] If-test passed - executing if block []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] DefaultServerContext [9] -------------------------------------- []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] DefaultServerContext [9] -------------------------------------- []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] Argument [9] Published  shtpckmz_id=10522  (STRING) []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] Argument [9] Published  shtpckrescod=XXXX  (STRING) []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] DefaultServerContext [9] -------------------------------------- []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] DefaultServerContext [9] -------------------------------------- []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] DefaultServerContext [9] -------------------------------------- []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] DefaultServerContext [9] -------------------------------------- []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] DefaultServerContext [9] -------------------------------------- []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] Argument [9] Published  shtpckenabled=1  (INTEGER) []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] DefaultServerContext [9] -------------------------------------- []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] Argument [9] Published  wh_id=PNRDC  (STRING) []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] Argument [9] Published  cancod=C-R-U  (STRING) []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] Argument [9] Published  wrkref=W0000003P32J  (STRING) []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] Argument [9] Published  schbat=GGHHGG  (STRING) []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] Argument [9] Argument  wh_id=PNRDC  (STRING) []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] Argument [9] Argument  cancod=C-R-U  (STRING) []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] Argument [9] Argument  wrkref=W0000003P32J  (STRING) []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] Argument [9] Argument  schbat=GGHHGG  (STRING) []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] DefaultServerContext [9] -------------------------------------- []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] DefaultServerContext [9] -------------------------------------- []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] JDBCAdapter [9] Executing SQL: update pckwrk_dtl
+					set dst_mov_zone_id = :var_shtpckmz_id
+				  where wrkref=nvl(:var_wrkref,:var_oldref) 
+					and schbat = :var_schbat
+					and wh_id=nvl(:var_wh_id,:var0) []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] JDBCAdapter [9] XLATE: update pckwrk_dtl
+					set dst_mov_zone_id = :var_shtpckmz_id
+				  where wrkref=nvl(:var_wrkref,:var_oldref) 
+					and schbat = :var_schbat
+					and wh_id=nvl(:var_wh_id,:var0) []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] JDBCAdapter [9] Found passed-in bind list []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] JDBCAdapter [9] UNBIND: update pckwrk_dtl
+					set dst_mov_zone_id = '10522'
+				  where wrkref=nvl('W0000003P32J',NULL) 
+					and schbat = 'GGHHGG'
+					and wh_id=nvl('PNRDC',NULL) []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] JDBCAdapter [9] Executing statement with bound parameters []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] JDBCAdapter [9] Statement affected 1 rows []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] Performance [9] Execute Time: 0.0006696083 s []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] JDBCAdapter [9] SQL execution completed []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] CommandStatement [10] Evaluating conditional test: @?=(TYPE: INTEGER, VALUE: 0) []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] CommandStatement [10] If-test passed - executing if block []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] DefaultServerContext [11] -------------------------------------- []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] DefaultServerContext [11] -------------------------------------- []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] DefaultServerContext [11] -------------------------------------- []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] DefaultServerContext [11] -------------------------------------- []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] Argument [11] Published  shtpckmz_id=10522  (STRING) []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] Argument [11] Published  shtpckrescod=XXXX  (STRING) []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] DefaultServerContext [11] -------------------------------------- []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] DefaultServerContext [11] -------------------------------------- []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] DefaultServerContext [11] -------------------------------------- []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] DefaultServerContext [11] -------------------------------------- []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] DefaultServerContext [11] -------------------------------------- []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] Argument [11] Published  shtpckenabled=1  (INTEGER) []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] DefaultServerContext [11] -------------------------------------- []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] Argument [11] Published  wh_id=PNRDC  (STRING) []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] Argument [11] Published  cancod=C-R-U  (STRING) []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] Argument [11] Published  wrkref=W0000003P32J  (STRING) []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] Argument [11] Published  schbat=GGHHGG  (STRING) []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] Argument [11] Argument  wh_id=PNRDC  (STRING) []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] Argument [11] Argument  cancod=C-R-U  (STRING) []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] Argument [11] Argument  wrkref=W0000003P32J  (STRING) []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] Argument [11] Argument  schbat=GGHHGG  (STRING) []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] DefaultServerContext [11] -------------------------------------- []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] DefaultServerContext [11] -------------------------------------- []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] JDBCAdapter [11] Executing SQL: update pckmov
+					    set mov_zone_id = :var_shtpckmz_id,
+					        rescod = :var_shtpckrescod,
+							seqnum = seqnum + 1
+					  where cmbcod in (select cmbcod
+							             from pckwrk_dtl
+							            where wrkref=nvl(:var_wrkref,:var_oldref) 
+							              and schbat = :var_schbat
+							              and wh_id=nvl(:var_wh_id,:var0)) []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] JDBCAdapter [11] XLATE: update pckmov
+					    set mov_zone_id = :var_shtpckmz_id,
+					        rescod = :var_shtpckrescod,
+							seqnum = seqnum + :i0
+					  where cmbcod in (select cmbcod
+							             from pckwrk_dtl
+							            where wrkref=nvl(:var_wrkref,:var_oldref) 
+							              and schbat = :var_schbat
+							              and wh_id=nvl(:var_wh_id,:var0)) []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] JDBCAdapter [11] Found passed-in bind list []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] JDBCAdapter [11] UNBIND: update pckmov
+					    set mov_zone_id = '10522',
+					        rescod = 'XXXX',
+							seqnum = seqnum + 1
+					  where cmbcod in (select cmbcod
+							             from pckwrk_dtl
+							            where wrkref=nvl('W0000003P32J',NULL) 
+							              and schbat = 'GGHHGG'
+							              and wh_id=nvl('PNRDC',NULL)) []
+2018-11-07 10:51:17,276 DEBUG [1260 8320] JDBCAdapter [11] Executing statement with bound parameters []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] JDBCAdapter [11] Statement affected 1 rows []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] Performance [11] Execute Time: 0.003820193 s []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] JDBCAdapter [11] SQL execution completed []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] DefaultServerContext [12] -------------------------------------- []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] DefaultServerContext [12] -------------------------------------- []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] DefaultServerContext [12] -------------------------------------- []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] DefaultServerContext [12] -------------------------------------- []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] DefaultServerContext [12] -------------------------------------- []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] Argument [12] Published  shtpckmz_id=10522  (STRING) []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] Argument [12] Published  shtpckrescod=XXXX  (STRING) []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] DefaultServerContext [12] -------------------------------------- []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] DefaultServerContext [12] -------------------------------------- []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] DefaultServerContext [12] -------------------------------------- []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] DefaultServerContext [12] -------------------------------------- []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] DefaultServerContext [12] -------------------------------------- []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] Argument [12] Published  shtpckenabled=1  (INTEGER) []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] DefaultServerContext [12] -------------------------------------- []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] Argument [12] Published  wh_id=PNRDC  (STRING) []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] Argument [12] Published  cancod=C-R-U  (STRING) []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] Argument [12] Published  wrkref=W0000003P32J  (STRING) []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] Argument [12] Published  schbat=GGHHGG  (STRING) []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] Argument [12] Argument  wh_id=PNRDC  (STRING) []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] Argument [12] Argument  cancod=C-R-U  (STRING) []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] Argument [12] Argument  wrkref=W0000003P32J  (STRING) []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] Argument [12] Argument  schbat=GGHHGG  (STRING) []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] DefaultServerContext [12] -------------------------------------- []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] DefaultServerContext [12] -------------------------------------- []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] JDBCAdapter [12] Executing SQL: select distinct mov_zone_id src_mov_zon_id,
+                            cmbcod, 
+							lodlvl							
+					   from locmst l
+					   join pckwrk_view pv
+					     on l.stoloc = pv.srcloc
+					    and l.wh_id = pv.wh_id
+						and pv.wrkref = :var_wrkref []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] JDBCAdapter [12] XLATE: select distinct mov_zone_id src_mov_zon_id,
+                            cmbcod, 
+							lodlvl							
+					   from locmst l
+					   join pckwrk_view pv
+					     on l.stoloc = pv.srcloc
+					    and l.wh_id = pv.wh_id
+						and pv.wrkref = :var_wrkref []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] JDBCAdapter [12] Found passed-in bind list []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] JDBCAdapter [12] UNBIND: select distinct mov_zone_id src_mov_zon_id,
+                            cmbcod, 
+							lodlvl							
+					   from locmst l
+					   join pckwrk_view pv
+					     on l.stoloc = pv.srcloc
+					    and l.wh_id = pv.wh_id
+						and pv.wrkref = 'W0000003P32J' []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] JDBCAdapter [12] Executing statement with bound parameters []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] JDBCAdapter [12] Query returned 1 rows []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] Performance [12] Execute Time: 0.01020253 s []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] JDBCAdapter [12] SQL execution completed []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] DefaultServerContext [13] -------------------------------------- []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] Argument [13] Published  src_mov_zon_id=10477  (INTEGER) []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] Argument [13] Published  cmbcod=CMB003Q76I  (STRING) []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] Argument [13] Published  lodlvl=S  (STRING) []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] DefaultServerContext [13] -------------------------------------- []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] DefaultServerContext [13] -------------------------------------- []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] DefaultServerContext [13] -------------------------------------- []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] DefaultServerContext [13] -------------------------------------- []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] DefaultServerContext [13] -------------------------------------- []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] Argument [13] Published  shtpckmz_id=10522  (STRING) []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] Argument [13] Published  shtpckrescod=XXXX  (STRING) []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] DefaultServerContext [13] -------------------------------------- []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] DefaultServerContext [13] -------------------------------------- []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] DefaultServerContext [13] -------------------------------------- []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] DefaultServerContext [13] -------------------------------------- []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] DefaultServerContext [13] -------------------------------------- []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] Argument [13] Published  shtpckenabled=1  (INTEGER) []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] DefaultServerContext [13] -------------------------------------- []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] Argument [13] Published  wh_id=PNRDC  (STRING) []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] Argument [13] Published  cancod=C-R-U  (STRING) []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] Argument [13] Published  wrkref=W0000003P32J  (STRING) []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] Argument [13] Published  schbat=GGHHGG  (STRING) []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] Argument [13] Argument  wh_id=PNRDC  (STRING) []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] Argument [13] Argument  cancod=C-R-U  (STRING) []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] Argument [13] Argument  wrkref=W0000003P32J  (STRING) []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] Argument [13] Argument  schbat=GGHHGG  (STRING) []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] DefaultServerContext [13] -------------------------------------- []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] DefaultServerContext [13] -------------------------------------- []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] JDBCAdapter [13] Executing SQL: select md.hop_mov_zone_id
+                       from mov_path mp
+                  left join mov_path_dtl md
+                         on md.src_mov_zone_id = mp.src_mov_zone_id
+                        and md.dst_mov_zone_id = mp.dst_mov_zone_id
+                        and md.lodlvl = mp.lodlvl
+                  left join mov_zone mz_src
+                         on mz_src.mov_zone_id = md.src_mov_zone_id
+                  left join mov_zone mz_dst
+                         on mz_dst.mov_zone_id = md.dst_mov_zone_id
+                  left join mov_zone mz_hop
+                         on mz_hop.mov_zone_id = md.hop_mov_zone_id
+                      where mp.src_mov_zone_id = :var_src_mov_zon_id
+                        and mp.dst_mov_zone_id = :var_shtpckmz_id
+                        and mp.lodlvl = :var_lodlvl []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] JDBCAdapter [13] XLATE: select md.hop_mov_zone_id
+                       from mov_path mp
+                  left join mov_path_dtl md
+                         on md.src_mov_zone_id = mp.src_mov_zone_id
+                        and md.dst_mov_zone_id = mp.dst_mov_zone_id
+                        and md.lodlvl = mp.lodlvl
+                  left join mov_zone mz_src
+                         on mz_src.mov_zone_id = md.src_mov_zone_id
+                  left join mov_zone mz_dst
+                         on mz_dst.mov_zone_id = md.dst_mov_zone_id
+                  left join mov_zone mz_hop
+                         on mz_hop.mov_zone_id = md.hop_mov_zone_id
+                      where mp.src_mov_zone_id = :var_src_mov_zon_id
+                        and mp.dst_mov_zone_id = :var_shtpckmz_id
+                        and mp.lodlvl = :var_lodlvl []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] JDBCAdapter [13] Found passed-in bind list []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] JDBCAdapter [13] UNBIND: select md.hop_mov_zone_id
+                       from mov_path mp
+                  left join mov_path_dtl md
+                         on md.src_mov_zone_id = mp.src_mov_zone_id
+                        and md.dst_mov_zone_id = mp.dst_mov_zone_id
+                        and md.lodlvl = mp.lodlvl
+                  left join mov_zone mz_src
+                         on mz_src.mov_zone_id = md.src_mov_zone_id
+                  left join mov_zone mz_dst
+                         on mz_dst.mov_zone_id = md.dst_mov_zone_id
+                  left join mov_zone mz_hop
+                         on mz_hop.mov_zone_id = md.hop_mov_zone_id
+                      where mp.src_mov_zone_id = 10477
+                        and mp.dst_mov_zone_id = '10522'
+                        and mp.lodlvl = 'S' []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] JDBCAdapter [13] Executing statement with bound parameters []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] JDBCAdapter [13] Query returned 0 rows []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] JDBCAdapter [13] Throwing NotFoundException []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] Performance [13] Execute Time: 0.002439433 s []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] JDBCAdapter [13] SQL execution completed []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] CommandStatement [13] Evaluating try-catch expression... (TYPE: INTEGER, VALUE: -1403) []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] CommandStatement [13] Catch condition met - executing catch block... []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] DefaultServerContext [14] -------------------------------------- []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] DefaultServerContext [14] -------------------------------------- []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] Argument [14] Published  src_mov_zon_id=10477  (INTEGER) []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] Argument [14] Published  cmbcod=CMB003Q76I  (STRING) []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] Argument [14] Published  lodlvl=S  (STRING) []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] DefaultServerContext [14] -------------------------------------- []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] DefaultServerContext [14] -------------------------------------- []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] DefaultServerContext [14] -------------------------------------- []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] DefaultServerContext [14] -------------------------------------- []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] DefaultServerContext [14] -------------------------------------- []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] Argument [14] Published  shtpckmz_id=10522  (STRING) []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] Argument [14] Published  shtpckrescod=XXXX  (STRING) []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] DefaultServerContext [14] -------------------------------------- []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] DefaultServerContext [14] -------------------------------------- []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] DefaultServerContext [14] -------------------------------------- []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] DefaultServerContext [14] -------------------------------------- []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] DefaultServerContext [14] -------------------------------------- []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] Argument [14] Published  shtpckenabled=1  (INTEGER) []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] DefaultServerContext [14] -------------------------------------- []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] Argument [14] Published  wh_id=PNRDC  (STRING) []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] Argument [14] Published  cancod=C-R-U  (STRING) []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] Argument [14] Published  wrkref=W0000003P32J  (STRING) []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] Argument [14] Published  schbat=GGHHGG  (STRING) []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] Argument [14] Argument  wh_id=PNRDC  (STRING) []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] Argument [14] Argument  cancod=C-R-U  (STRING) []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] Argument [14] Argument  wrkref=W0000003P32J  (STRING) []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] Argument [14] Argument  schbat=GGHHGG  (STRING) []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] DefaultServerContext [14] -------------------------------------- []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] DefaultServerContext [14] -------------------------------------- []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] JDBCAdapter [14] Executing SQL: insert  into pckmov(cmbcod, seqnum, mov_zone_id, wh_id, stoloc, rescod, arrqty, prcqty)
+                    (select cmbcod,  seqnum -1, :var_hop_mov_zone_id, wh_id, stoloc, rescod, arrqty, prcqty
+					from pckmov pm
+					where pm.cmbcod = :var_cmbcod
+					and pm.seqnum = (select min(seqnum) from pckmov t where t.cmbcod = :var_cmbcod)) []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] JDBCAdapter [14] XLATE: insert  into pckmov(cmbcod, seqnum, mov_zone_id, wh_id, stoloc, rescod, arrqty, prcqty)
+                    (select cmbcod,  seqnum -:i0, :var_hop_mov_zone_id, wh_id, stoloc, rescod, arrqty, prcqty
+					from pckmov pm
+					where pm.cmbcod = :var_cmbcod
+					and pm.seqnum = (select min(seqnum) from pckmov t where t.cmbcod = :var_cmbcod)) []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] JDBCAdapter [14] Found passed-in bind list []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] JDBCAdapter [14] UNBIND: insert  into pckmov(cmbcod, seqnum, mov_zone_id, wh_id, stoloc, rescod, arrqty, prcqty)
+                    (select cmbcod,  seqnum -1, NULL, wh_id, stoloc, rescod, arrqty, prcqty
+					from pckmov pm
+					where pm.cmbcod = 'CMB003Q76I'
+					and pm.seqnum = (select min(seqnum) from pckmov t where t.cmbcod = 'CMB003Q76I')) []
+2018-11-07 10:51:17,292 DEBUG [1260 8320] JDBCAdapter [14] Executing statement with bound parameters []
+2018-11-07 10:51:17,307 DEBUG [1260 8320] JDBCAdapter [14] SQL Exception []
+java.sql.SQLIntegrityConstraintViolationException: ORA-01400: cannot insert NULL into ("WMPNRDC"."PCKMOV"."MOV_ZONE_ID")
+	at oracle.jdbc.driver.T4CTTIoer11.processError(T4CTTIoer11.java:494) ~[ojdbc8.jar:12.2.0.1.0]
+	at oracle.jdbc.driver.T4CTTIoer11.processError(T4CTTIoer11.java:446) ~[ojdbc8.jar:12.2.0.1.0]
+	at oracle.jdbc.driver.T4C8Oall.processError(T4C8Oall.java:1054) ~[ojdbc8.jar:12.2.0.1.0]
+	at oracle.jdbc.driver.T4CTTIfun.receive(T4CTTIfun.java:623) ~[ojdbc8.jar:12.2.0.1.0]
+	at oracle.jdbc.driver.T4CTTIfun.doRPC(T4CTTIfun.java:252) ~[ojdbc8.jar:12.2.0.1.0]
+	at oracle.jdbc.driver.T4C8Oall.doOALL(T4C8Oall.java:612) ~[ojdbc8.jar:12.2.0.1.0]
+	at oracle.jdbc.driver.T4CPreparedStatement.doOall8(T4CPreparedStatement.java:226) ~[ojdbc8.jar:12.2.0.1.0]
+	at oracle.jdbc.driver.T4CPreparedStatement.doOall8(T4CPreparedStatement.java:59) ~[ojdbc8.jar:12.2.0.1.0]
+	at oracle.jdbc.driver.T4CPreparedStatement.executeForRows(T4CPreparedStatement.java:910) ~[ojdbc8.jar:12.2.0.1.0]
+	at oracle.jdbc.driver.OracleStatement.doExecuteWithTimeout(OracleStatement.java:1119) ~[ojdbc8.jar:12.2.0.1.0]
+	at oracle.jdbc.driver.OraclePreparedStatement.executeInternal(OraclePreparedStatement.java:3780) ~[ojdbc8.jar:12.2.0.1.0]
+	at oracle.jdbc.driver.T4CPreparedStatement.executeInternal(T4CPreparedStatement.java:1343) ~[ojdbc8.jar:12.2.0.1.0]
+	at oracle.jdbc.driver.OraclePreparedStatement.execute(OraclePreparedStatement.java:3887) ~[ojdbc8.jar:12.2.0.1.0]
+	at oracle.jdbc.driver.OraclePreparedStatementWrapper.execute(OraclePreparedStatementWrapper.java:1079) ~[ojdbc8.jar:12.2.0.1.0]
+	at sun.reflect.GeneratedMethodAccessor763.invoke(Unknown Source) ~[?:?]
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(Unknown Source) ~[?:1.8.0_121]
+	at java.lang.reflect.Method.invoke(Unknown Source) ~[?:1.8.0_121]
+	at com.redprairie.moca.server.db.jdbc.StatementHandler.proxyInvoke(StatementHandler.java:68) ~[moca-server.jar:?]
+	at com.redprairie.util.AbstractInvocationHandler.invoke(AbstractInvocationHandler.java:72) ~[moca-core.jar:?]
+	at com.sun.proxy.$Proxy106.execute(Unknown Source) ~[?:?]
+	at com.redprairie.moca.server.db.JDBCAdapter$_PreparedStatementExecute.call(JDBCAdapter.java:1328) ~[moca-server.jar:?]
+	at com.redprairie.moca.server.db.JDBCAdapter$_PreparedStatementExecute.call(JDBCAdapter.java:1320) ~[moca-server.jar:?]
+	at java.util.concurrent.FutureTask.run(Unknown Source) ~[?:1.8.0_121]
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(Unknown Source) [?:1.8.0_121]
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source) [?:1.8.0_121]
+	at java.lang.Thread.run(Unknown Source) [?:1.8.0_121]
+	at com.redprairie.moca.util.NonMocaDaemonThreadFactory$1.run(NonMocaDaemonThreadFactory.java:65) ~[moca-server.jar:?]
+Caused by: oracle.jdbc.OracleDatabaseException: ORA-01400: cannot insert NULL into ("WMPNRDC"."PCKMOV"."MOV_ZONE_ID")
+	at oracle.jdbc.driver.T4CTTIoer11.processError(T4CTTIoer11.java:498) ~[ojdbc8.jar:12.2.0.1.0]
+	... 26 more
+2018-11-07 10:51:17,307 DEBUG [1260 8320] JDBCAdapter [14] SQL Error Code: [1400] []
+2018-11-07 10:51:17,307 DEBUG [1260 8320] JDBCAdapter [14] SQL State: [23000] []
+2018-11-07 10:51:17,307 DEBUG [1260 8320] Performance [14] Execute Time: 0.002831423 s []
+2018-11-07 10:51:17,307 DEBUG [1260 8320] JDBCAdapter [14] SQL execution completed []
+2018-11-07 10:51:17,307 DEBUG [1260 8320] JDBCAdapter [14] ==> Retrying with bound variables unbound... []
+2018-11-07 10:51:17,307 DEBUG [1260 8320] JDBCAdapter [14] Executing SQL: insert  into pckmov(cmbcod, seqnum, mov_zone_id, wh_id, stoloc, rescod, arrqty, prcqty)
+                    (select cmbcod,  seqnum -1, :var_hop_mov_zone_id, wh_id, stoloc, rescod, arrqty, prcqty
+					from pckmov pm
+					where pm.cmbcod = :var_cmbcod
+					and pm.seqnum = (select min(seqnum) from pckmov t where t.cmbcod = :var_cmbcod)) []
+2018-11-07 10:51:17,307 DEBUG [1260 8320] JDBCAdapter [14] XLATE: insert  into pckmov(cmbcod, seqnum, mov_zone_id, wh_id, stoloc, rescod, arrqty, prcqty)
+                    (select cmbcod,  seqnum -1, NULL, wh_id, stoloc, rescod, arrqty, prcqty
+					from pckmov pm
+					where pm.cmbcod = 'CMB003Q76I'
+					and pm.seqnum = (select min(seqnum) from pckmov t where t.cmbcod = 'CMB003Q76I')) []
+2018-11-07 10:51:17,307 DEBUG [1260 8320] JDBCAdapter [14] Found passed-in bind list []
+2018-11-07 10:51:17,307 DEBUG [1260 8320] JDBCAdapter [14] UNBIND: insert  into pckmov(cmbcod, seqnum, mov_zone_id, wh_id, stoloc, rescod, arrqty, prcqty)
+                    (select cmbcod,  seqnum -1, NULL, wh_id, stoloc, rescod, arrqty, prcqty
+					from pckmov pm
+					where pm.cmbcod = 'CMB003Q76I'
+					and pm.seqnum = (select min(seqnum) from pckmov t where t.cmbcod = 'CMB003Q76I')) []
+2018-11-07 10:51:17,307 DEBUG [1260 8320] JDBCAdapter [14] Executing statement without parameters []
+2018-11-07 10:51:17,307 DEBUG [1260 8320] JDBCAdapter [14] SQL Exception []
+java.sql.SQLIntegrityConstraintViolationException: ORA-01400: cannot insert NULL into ("WMPNRDC"."PCKMOV"."MOV_ZONE_ID")
+	at oracle.jdbc.driver.T4CTTIoer11.processError(T4CTTIoer11.java:494) ~[ojdbc8.jar:12.2.0.1.0]
+	at oracle.jdbc.driver.T4CTTIoer11.processError(T4CTTIoer11.java:446) ~[ojdbc8.jar:12.2.0.1.0]
+	at oracle.jdbc.driver.T4C8Oall.processError(T4C8Oall.java:1054) ~[ojdbc8.jar:12.2.0.1.0]
+	at oracle.jdbc.driver.T4CTTIfun.receive(T4CTTIfun.java:623) ~[ojdbc8.jar:12.2.0.1.0]
+	at oracle.jdbc.driver.T4CTTIfun.doRPC(T4CTTIfun.java:252) ~[ojdbc8.jar:12.2.0.1.0]
+	at oracle.jdbc.driver.T4C8Oall.doOALL(T4C8Oall.java:612) ~[ojdbc8.jar:12.2.0.1.0]
+	at oracle.jdbc.driver.T4CStatement.doOall8(T4CStatement.java:213) ~[ojdbc8.jar:12.2.0.1.0]
+	at oracle.jdbc.driver.T4CStatement.doOall8(T4CStatement.java:37) ~[ojdbc8.jar:12.2.0.1.0]
+	at oracle.jdbc.driver.T4CStatement.executeForRows(T4CStatement.java:896) ~[ojdbc8.jar:12.2.0.1.0]
+	at oracle.jdbc.driver.OracleStatement.doExecuteWithTimeout(OracleStatement.java:1119) ~[ojdbc8.jar:12.2.0.1.0]
+	at oracle.jdbc.driver.OracleStatement.executeInternal(OracleStatement.java:1737) ~[ojdbc8.jar:12.2.0.1.0]
+	at oracle.jdbc.driver.OracleStatement.execute(OracleStatement.java:1692) ~[ojdbc8.jar:12.2.0.1.0]
+	at oracle.jdbc.driver.OracleStatementWrapper.execute(OracleStatementWrapper.java:300) ~[ojdbc8.jar:12.2.0.1.0]
+	at sun.reflect.GeneratedMethodAccessor872.invoke(Unknown Source) ~[?:?]
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(Unknown Source) ~[?:1.8.0_121]
+	at java.lang.reflect.Method.invoke(Unknown Source) ~[?:1.8.0_121]
+	at com.redprairie.moca.server.db.jdbc.StatementHandler.proxyInvoke(StatementHandler.java:68) ~[moca-server.jar:?]
+	at com.redprairie.util.AbstractInvocationHandler.invoke(AbstractInvocationHandler.java:72) ~[moca-core.jar:?]
+	at com.sun.proxy.$Proxy185.execute(Unknown Source) ~[?:?]
+	at com.redprairie.moca.server.db.JDBCAdapter$_StatementExecute.call(JDBCAdapter.java:1309) ~[moca-server.jar:?]
+	at com.redprairie.moca.server.db.JDBCAdapter$_StatementExecute.call(JDBCAdapter.java:1300) ~[moca-server.jar:?]
+	at java.util.concurrent.FutureTask.run(Unknown Source) ~[?:1.8.0_121]
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(Unknown Source) [?:1.8.0_121]
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source) [?:1.8.0_121]
+	at java.lang.Thread.run(Unknown Source) [?:1.8.0_121]
+	at com.redprairie.moca.util.NonMocaDaemonThreadFactory$1.run(NonMocaDaemonThreadFactory.java:65) ~[moca-server.jar:?]
+Caused by: oracle.jdbc.OracleDatabaseException: ORA-01400: cannot insert NULL into ("WMPNRDC"."PCKMOV"."MOV_ZONE_ID")
+	at oracle.jdbc.driver.T4CTTIoer11.processError(T4CTTIoer11.java:498) ~[ojdbc8.jar:12.2.0.1.0]
+	... 25 more
+2018-11-07 10:51:17,307 DEBUG [1260 8320] JDBCAdapter [14] SQL Error Code: [1400] []
+2018-11-07 10:51:17,307 DEBUG [1260 8320] JDBCAdapter [14] SQL State: [23000] []
+2018-11-07 10:51:17,307 DEBUG [1260 8320] Performance [14] Execute Time: 0.002436493 s []
+2018-11-07 10:51:17,307 DEBUG [1260 8320] JDBCAdapter [14] SQL execution completed []
+2018-11-07 10:51:17,307 DEBUG [1260 8320] CommandStatement [14] Evaluating try-catch expression... (TYPE: INTEGER, VALUE: -1403) []
+2018-11-07 10:51:17,307 DEBUG [1260 8320] CommandStatement [14] No catch expression matched throwing exception []
+2018-11-07 10:51:17,307 DEBUG [1260 8320] CommandDispatcher [0] Exception raised from command: com.redprairie.moca.exceptions.MocaDBException: ORA-01400: cannot insert NULL into ("WMPNRDC"."PCKMOV"."MOV_ZONE_ID")
+ []
+com.redprairie.moca.exceptions.MocaDBException: ORA-01400: cannot insert NULL into ("WMPNRDC"."PCKMOV"."MOV_ZONE_ID")
+	at com.redprairie.moca.server.exec.DefaultServerContext.executeSQLWithVars(DefaultServerContext.java:1151) ~[moca-server.jar:?]
+	at com.redprairie.moca.server.exec.DefaultServerContext.executeSQLWithVars(DefaultServerContext.java:1098) ~[moca-server.jar:?]
+	at com.redprairie.moca.server.exec.MocaCommandUnit.execute(MocaCommandUnit.java:150) ~[moca-server.jar:?]
+	at com.redprairie.moca.server.exec.CommandBlock.execute(CommandBlock.java:82) ~[moca-server.jar:?]
+	at com.redprairie.moca.server.exec.CommandStatement._executeStatement(CommandStatement.java:204) ~[moca-server.jar:?]
+	at com.redprairie.moca.server.exec.CommandStatement.execute(CommandStatement.java:112) ~[moca-server.jar:?]
+	at com.redprairie.moca.server.exec.CommandGroup.execute(CommandGroup.java:69) ~[moca-server.jar:?]
+	at com.redprairie.moca.server.exec.CommandStream.executeOnStack(CommandStream.java:125) ~[moca-server.jar:?]
+	at com.redprairie.moca.server.exec.CommandStream.executeOnStack(CommandStream.java:135) ~[moca-server.jar:?]
+	at com.redprairie.moca.server.exec.CommandStream.executeOnStack(CommandStream.java:153) ~[moca-server.jar:?]
+	at com.redprairie.moca.server.exec.CommandStream.executeOnStack(CommandStream.java:135) ~[moca-server.jar:?]
+	at com.redprairie.moca.server.exec.CommandStream.execute(CommandStream.java:68) ~[moca-server.jar:?]
+	at com.redprairie.moca.server.exec.CommandSequence.execute(CommandSequence.java:53) ~[moca-server.jar:?]
+	at com.redprairie.moca.server.exec.CommandBlock.execute(CommandBlock.java:85) ~[moca-server.jar:?]
+	at com.redprairie.moca.server.exec.CommandStatement._executeStatement(CommandStatement.java:204) ~[moca-server.jar:?]
+	at com.redprairie.moca.server.exec.CommandStatement.execute(CommandStatement.java:112) ~[moca-server.jar:?]
+	at com.redprairie.moca.server.exec.CommandStatement._executeStatement(CommandStatement.java:190) ~[moca-server.jar:?]
+	at com.redprairie.moca.server.exec.CommandStatement.execute(CommandStatement.java:112) ~[moca-server.jar:?]
+	at com.redprairie.moca.server.exec.CommandGroup.execute(CommandGroup.java:69) ~[moca-server.jar:?]
+	at com.redprairie.moca.server.exec.CommandStream.executeOnStack(CommandStream.java:125) ~[moca-server.jar:?]
+	at com.redprairie.moca.server.exec.CommandStream.executeOnStack(CommandStream.java:135) ~[moca-server.jar:?]
+	at com.redprairie.moca.server.exec.CommandStream.execute(CommandStream.java:68) ~[moca-server.jar:?]
+	at com.redprairie.moca.server.exec.CommandSequence.execute(CommandSequence.java:53) ~[moca-server.jar:?]
+	at com.redprairie.moca.server.exec.CommandBlock.execute(CommandBlock.java:85) ~[moca-server.jar:?]
+	at com.redprairie.moca.server.exec.CommandStatement._executeStatement(CommandStatement.java:204) ~[moca-server.jar:?]
+	at com.redprairie.moca.server.exec.CommandStatement.execute(CommandStatement.java:112) ~[moca-server.jar:?]
+	at com.redprairie.moca.server.exec.CommandStatement._executeStatement(CommandStatement.java:190) ~[moca-server.jar:?]
+	at com.redprairie.moca.server.exec.CommandStatement.execute(CommandStatement.java:112) ~[moca-server.jar:?]
+	at com.redprairie.moca.server.exec.CommandGroup.execute(CommandGroup.java:69) ~[moca-server.jar:?]
+	at com.redprairie.moca.server.exec.CommandStream.executeOnStack(CommandStream.java:125) ~[moca-server.jar:?]
+	at com.redprairie.moca.server.exec.CommandStream.executeOnStack(CommandStream.java:153) ~[moca-server.jar:?]
+	at com.redprairie.moca.server.exec.CommandStream.execute(CommandStream.java:68) ~[moca-server.jar:?]
+	at com.redprairie.moca.server.exec.CommandSequence.execute(CommandSequence.java:53) ~[moca-server.jar:?]
+	at com.redprairie.moca.server.exec.CommandBlock.execute(CommandBlock.java:85) ~[moca-server.jar:?]
+	at com.redprairie.moca.server.exec.CommandStatement._executeStatement(CommandStatement.java:204) ~[moca-server.jar:?]
+	at com.redprairie.moca.server.exec.CommandStatement.execute(CommandStatement.java:112) ~[moca-server.jar:?]
+	at com.redprairie.moca.server.exec.CommandStatement._executeStatement(CommandStatement.java:190) ~[moca-server.jar:?]
+	at com.redprairie.moca.server.exec.CommandStatement.execute(CommandStatement.java:112) ~[moca-server.jar:?]
+	at com.redprairie.moca.server.exec.CommandGroup.execute(CommandGroup.java:69) ~[moca-server.jar:?]
+	at com.redprairie.moca.server.exec.CommandStream.executeOnStack(CommandStream.java:125) ~[moca-server.jar:?]
+	at com.redprairie.moca.server.exec.CommandStream.executeOnStack(CommandStream.java:135) ~[moca-server.jar:?]
+	at com.redprairie.moca.server.exec.CommandStream.execute(CommandStream.java:68) ~[moca-server.jar:?]
+	at com.redprairie.moca.server.exec.CommandSequence.execute(CommandSequence.java:53) ~[moca-server.jar:?]
+	at com.redprairie.moca.server.exec.CommandBlock.execute(CommandBlock.java:85) ~[moca-server.jar:?]
+	at com.redprairie.moca.server.exec.CommandStatement._executeStatement(CommandStatement.java:204) ~[moca-server.jar:?]
+	at com.redprairie.moca.server.exec.CommandStatement.execute(CommandStatement.java:112) ~[moca-server.jar:?]
+	at com.redprairie.moca.server.exec.CommandStatement._executeStatement(CommandStatement.java:190) ~[moca-server.jar:?]
+	at com.redprairie.moca.server.exec.CommandStatement.execute(CommandStatement.java:112) ~[moca-server.jar:?]
+	at com.redprairie.moca.server.exec.CommandGroup.execute(CommandGroup.java:69) ~[moca-server.jar:?]
+	at com.redprairie.moca.server.exec.CommandStream.executeOnStack(CommandStream.java:125) ~[moca-server.jar:?]
+	at com.redprairie.moca.server.exec.CommandStream.execute(CommandStream.java:68) ~[moca-server.jar:?]
+	at com.redprairie.moca.server.exec.CommandSequence.execute(CommandSequence.java:53) ~[moca-server.jar:?]
+	at com.redprairie.moca.server.exec.CommandBlock.execute(CommandBlock.java:85) ~[moca-server.jar:?]
+	at com.redprairie.moca.server.exec.CommandStatement._executeStatement(CommandStatement.java:204) ~[moca-server.jar:?]
+	at com.redprairie.moca.server.exec.CommandStatement.execute(CommandStatement.java:112) ~[moca-server.jar:?]
+	at com.redprairie.moca.server.exec.CommandStatement._executeStatement(CommandStatement.java:190) ~[moca-server.jar:?]
+	at com.redprairie.moca.server.exec.CommandStatement.execute(CommandStatement.java:112) ~[moca-server.jar:?]
+	at com.redprairie.moca.server.exec.CommandGroup.execute(CommandGroup.java:69) ~[moca-server.jar:?]
+	at com.redprairie.moca.server.exec.CommandStream.executeOnStack(CommandStream.java:125) ~[moca-server.jar:?]
+	at com.redprairie.moca.server.exec.CommandStream.executeOnStack(CommandStream.java:153) ~[moca-server.jar:?]
+	at com.redprairie.moca.server.exec.CommandStream.executeOnStack(CommandStream.java:153) ~[moca-server.jar:?]
+	at com.redprairie.moca.server.exec.CommandStream.execute(CommandStream.java:68) ~[moca-server.jar:?]
+	at com.redprairie.moca.server.exec.CommandSequence.execute(CommandSequence.java:53) ~[moca-server.jar:?]
+	at com.redprairie.moca.server.exec.DefaultServerContext._executeQuery(DefaultServerContext.java:1968) ~[moca-server.jar:?]
+	at com.redprairie.moca.server.exec.DefaultServerContext.executeCommandWithRemoteContext(DefaultServerContext.java:1709) ~[moca-server.jar:?]
+	at com.redprairie.moca.advice.ForwardingServerContext.executeCommandWithRemoteContext(ForwardingServerContext.java:292) ~[moca-server.jar:?]
+	at com.redprairie.moca.advice.ServerContextConfig$OurServerContext.executeCommandWithRemoteContext(ServerContextConfig.java:381) ~[moca-server.jar:?]
+	at com.redprairie.moca.server.dispatch.RequestDispatcher.executeCommand(RequestDispatcher.java:207) ~[moca-server.jar:?]
+	at com.redprairie.moca.servlet.MocaServlet.dispatchAndRespond(MocaServlet.java:364) ~[moca-server.jar:?]
+	at com.redprairie.moca.servlet.MocaServlet.handleXMLRequest(MocaServlet.java:276) ~[moca-server.jar:?]
+	at com.redprairie.moca.servlet.MocaServlet.doPost(MocaServlet.java:185) ~[moca-server.jar:?]
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:707) ~[servlet-api-3.1.0.jar:1.0.0.Final]
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:790) ~[servlet-api-3.1.0.jar:1.0.0.Final]
+	at org.eclipse.jetty.servlet.ServletHolder.handle(ServletHolder.java:848) ~[jetty-servlet-9.3.16.v20170120.jar:9.3.16.v20170120]
+	at org.eclipse.jetty.servlet.ServletHandler.doHandle(ServletHandler.java:584) ~[jetty-servlet-9.3.16.v20170120.jar:9.3.16.v20170120]
+	at org.eclipse.jetty.server.handler.ScopedHandler.handle(ScopedHandler.java:143) ~[jetty-server-9.3.16.v20170120.jar:9.3.16.v20170120]
+	at org.eclipse.jetty.security.SecurityHandler.handle(SecurityHandler.java:548) ~[jetty-security-9.3.16.v20170120.jar:9.3.16.v20170120]
+	at org.eclipse.jetty.server.session.SessionHandler.doHandle(SessionHandler.java:226) ~[jetty-server-9.3.16.v20170120.jar:9.3.16.v20170120]
+	at org.eclipse.jetty.server.handler.ContextHandler.doHandle(ContextHandler.java:1180) ~[jetty-server-9.3.16.v20170120.jar:9.3.16.v20170120]
+	at org.eclipse.jetty.servlet.ServletHandler.doScope(ServletHandler.java:512) ~[jetty-servlet-9.3.16.v20170120.jar:9.3.16.v20170120]
+	at org.eclipse.jetty.server.session.SessionHandler.doScope(SessionHandler.java:185) ~[jetty-server-9.3.16.v20170120.jar:9.3.16.v20170120]
+	at org.eclipse.jetty.server.handler.ContextHandler.doScope(ContextHandler.java:1112) ~[jetty-server-9.3.16.v20170120.jar:9.3.16.v20170120]
+	at org.eclipse.jetty.server.handler.ScopedHandler.handle(ScopedHandler.java:141) ~[jetty-server-9.3.16.v20170120.jar:9.3.16.v20170120]
+	at org.eclipse.jetty.server.handler.HandlerList.handle(HandlerList.java:52) ~[jetty-server-9.3.16.v20170120.jar:9.3.16.v20170120]
+	at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:134) ~[jetty-server-9.3.16.v20170120.jar:9.3.16.v20170120]
+	at org.eclipse.jetty.server.Server.handle(Server.java:534) ~[jetty-server-9.3.16.v20170120.jar:9.3.16.v20170120]
+	at org.eclipse.jetty.server.HttpChannel.handle(HttpChannel.java:320) ~[jetty-server-9.3.16.v20170120.jar:9.3.16.v20170120]
+	at org.eclipse.jetty.server.HttpConnection.onFillable(HttpConnection.java:251) ~[jetty-server-9.3.16.v20170120.jar:9.3.16.v20170120]
+	at org.eclipse.jetty.io.AbstractConnection$ReadCallback.succeeded(AbstractConnection.java:283) ~[jetty-io-9.3.16.v20170120.jar:9.3.16.v20170120]
+	at org.eclipse.jetty.io.FillInterest.fillable(FillInterest.java:110) ~[jetty-io-9.3.16.v20170120.jar:9.3.16.v20170120]
+	at org.eclipse.jetty.io.SelectChannelEndPoint$2.run(SelectChannelEndPoint.java:93) ~[jetty-io-9.3.16.v20170120.jar:9.3.16.v20170120]
+	at org.eclipse.jetty.util.thread.strategy.ExecuteProduceConsume.executeProduceConsume(ExecuteProduceConsume.java:303) ~[jetty-util-9.3.16.v20170120.jar:9.3.16.v20170120]
+	at org.eclipse.jetty.util.thread.strategy.ExecuteProduceConsume.produceConsume(ExecuteProduceConsume.java:148) ~[jetty-util-9.3.16.v20170120.jar:9.3.16.v20170120]
+	at org.eclipse.jetty.util.thread.strategy.ExecuteProduceConsume.run(ExecuteProduceConsume.java:136) ~[jetty-util-9.3.16.v20170120.jar:9.3.16.v20170120]
+	at org.eclipse.jetty.util.thread.QueuedThreadPool.runJob(QueuedThreadPool.java:671) ~[jetty-util-9.3.16.v20170120.jar:9.3.16.v20170120]
+	at org.eclipse.jetty.util.thread.QueuedThreadPool$2.run(QueuedThreadPool.java:589) ~[jetty-util-9.3.16.v20170120.jar:9.3.16.v20170120]
+	at java.lang.Thread.run(Unknown Source) [?:1.8.0_121]
+Caused by: java.sql.SQLIntegrityConstraintViolationException: ORA-01400: cannot insert NULL into ("WMPNRDC"."PCKMOV"."MOV_ZONE_ID")
+	at oracle.jdbc.driver.T4CTTIoer11.processError(T4CTTIoer11.java:494) ~[ojdbc8.jar:12.2.0.1.0]
+	at oracle.jdbc.driver.T4CTTIoer11.processError(T4CTTIoer11.java:446) ~[ojdbc8.jar:12.2.0.1.0]
+	at oracle.jdbc.driver.T4C8Oall.processError(T4C8Oall.java:1054) ~[ojdbc8.jar:12.2.0.1.0]
+	at oracle.jdbc.driver.T4CTTIfun.receive(T4CTTIfun.java:623) ~[ojdbc8.jar:12.2.0.1.0]
+	at oracle.jdbc.driver.T4CTTIfun.doRPC(T4CTTIfun.java:252) ~[ojdbc8.jar:12.2.0.1.0]
+	at oracle.jdbc.driver.T4C8Oall.doOALL(T4C8Oall.java:612) ~[ojdbc8.jar:12.2.0.1.0]
+	at oracle.jdbc.driver.T4CStatement.doOall8(T4CStatement.java:213) ~[ojdbc8.jar:12.2.0.1.0]
+	at oracle.jdbc.driver.T4CStatement.doOall8(T4CStatement.java:37) ~[ojdbc8.jar:12.2.0.1.0]
+	at oracle.jdbc.driver.T4CStatement.executeForRows(T4CStatement.java:896) ~[ojdbc8.jar:12.2.0.1.0]
+	at oracle.jdbc.driver.OracleStatement.doExecuteWithTimeout(OracleStatement.java:1119) ~[ojdbc8.jar:12.2.0.1.0]
+	at oracle.jdbc.driver.OracleStatement.executeInternal(OracleStatement.java:1737) ~[ojdbc8.jar:12.2.0.1.0]
+	at oracle.jdbc.driver.OracleStatement.execute(OracleStatement.java:1692) ~[ojdbc8.jar:12.2.0.1.0]
+	at oracle.jdbc.driver.OracleStatementWrapper.execute(OracleStatementWrapper.java:300) ~[ojdbc8.jar:12.2.0.1.0]
+	at sun.reflect.GeneratedMethodAccessor872.invoke(Unknown Source) ~[?:?]
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(Unknown Source) ~[?:1.8.0_121]
+	at java.lang.reflect.Method.invoke(Unknown Source) ~[?:1.8.0_121]
+	at com.redprairie.moca.server.db.jdbc.StatementHandler.proxyInvoke(StatementHandler.java:68) ~[moca-server.jar:?]
+	at com.redprairie.util.AbstractInvocationHandler.invoke(AbstractInvocationHandler.java:72) ~[moca-core.jar:?]
+	at com.sun.proxy.$Proxy185.execute(Unknown Source) ~[?:?]
+	at com.redprairie.moca.server.db.JDBCAdapter$_StatementExecute.call(JDBCAdapter.java:1309) ~[moca-server.jar:?]
+	at com.redprairie.moca.server.db.JDBCAdapter$_StatementExecute.call(JDBCAdapter.java:1300) ~[moca-server.jar:?]
+	at java.util.concurrent.FutureTask.run(Unknown Source) ~[?:1.8.0_121]
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(Unknown Source) [?:1.8.0_121]
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source) [?:1.8.0_121]
+	at java.lang.Thread.run(Unknown Source) ~[?:1.8.0_121]
+	at com.redprairie.moca.util.NonMocaDaemonThreadFactory$1.run(NonMocaDaemonThreadFactory.java:65) ~[moca-server.jar:?]
+Caused by: oracle.jdbc.OracleDatabaseException: ORA-01400: cannot insert NULL into ("WMPNRDC"."PCKMOV"."MOV_ZONE_ID")
+	at oracle.jdbc.driver.T4CTTIoer11.processError(T4CTTIoer11.java:498) ~[ojdbc8.jar:12.2.0.1.0]
+	at oracle.jdbc.driver.T4CTTIoer11.processError(T4CTTIoer11.java:446) ~[ojdbc8.jar:12.2.0.1.0]
+	at oracle.jdbc.driver.T4C8Oall.processError(T4C8Oall.java:1054) ~[ojdbc8.jar:12.2.0.1.0]
+	at oracle.jdbc.driver.T4CTTIfun.receive(T4CTTIfun.java:623) ~[ojdbc8.jar:12.2.0.1.0]
+	at oracle.jdbc.driver.T4CTTIfun.doRPC(T4CTTIfun.java:252) ~[ojdbc8.jar:12.2.0.1.0]
+	at oracle.jdbc.driver.T4C8Oall.doOALL(T4C8Oall.java:612) ~[ojdbc8.jar:12.2.0.1.0]
+	at oracle.jdbc.driver.T4CStatement.doOall8(T4CStatement.java:213) ~[ojdbc8.jar:12.2.0.1.0]
+	at oracle.jdbc.driver.T4CStatement.doOall8(T4CStatement.java:37) ~[ojdbc8.jar:12.2.0.1.0]
+	at oracle.jdbc.driver.T4CStatement.executeForRows(T4CStatement.java:896) ~[ojdbc8.jar:12.2.0.1.0]
+	at oracle.jdbc.driver.OracleStatement.doExecuteWithTimeout(OracleStatement.java:1119) ~[ojdbc8.jar:12.2.0.1.0]
+	at oracle.jdbc.driver.OracleStatement.executeInternal(OracleStatement.java:1737) ~[ojdbc8.jar:12.2.0.1.0]
+	at oracle.jdbc.driver.OracleStatement.execute(OracleStatement.java:1692) ~[ojdbc8.jar:12.2.0.1.0]
+	at oracle.jdbc.driver.OracleStatementWrapper.execute(OracleStatementWrapper.java:300) ~[ojdbc8.jar:12.2.0.1.0]
+	at sun.reflect.GeneratedMethodAccessor872.invoke(Unknown Source) ~[?:?]
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(Unknown Source) ~[?:1.8.0_121]
+	at java.lang.reflect.Method.invoke(Unknown Source) ~[?:1.8.0_121]
+	at com.redprairie.moca.server.db.jdbc.StatementHandler.proxyInvoke(StatementHandler.java:68) ~[moca-server.jar:?]
+	at com.redprairie.util.AbstractInvocationHandler.invoke(AbstractInvocationHandler.java:72) ~[moca-core.jar:?]
+	at com.sun.proxy.$Proxy185.execute(Unknown Source) ~[?:?]
+	at com.redprairie.moca.server.db.JDBCAdapter$_StatementExecute.call(JDBCAdapter.java:1309) ~[moca-server.jar:?]
+	at com.redprairie.moca.server.db.JDBCAdapter$_StatementExecute.call(JDBCAdapter.java:1300) ~[moca-server.jar:?]
+	at java.util.concurrent.FutureTask.run(Unknown Source) ~[?:1.8.0_121]
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(Unknown Source) ~[?:1.8.0_121]
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source) ~[?:1.8.0_121]
+	at java.lang.Thread.run(Unknown Source) ~[?:1.8.0_121]
+	at com.redprairie.moca.util.NonMocaDaemonThreadFactory$1.run(NonMocaDaemonThreadFactory.java:65) ~[moca-server.jar:?]
+2018-11-07 10:51:17,307 DEBUG [1260 8320] MocaTransactionManager [0] Rollback []
+2018-11-07 10:51:17,307 DEBUG [1260 8320] MocaTransactionManager [0] Calling rollback []
+2018-11-07 10:51:17,307 DEBUG [1260 8320] NonXAMocaDBConnection [0] Rolling back non xa tx - < formatId=131077, gtrid_length=29, bqual_length=36, tx_uid=0:ffff0a988412:ed72:5be1ed5d:10f4d, node_name=1, branch_uid=0:ffff0a988412:ed72:5be1ed5d:10f4f, subordinatenodename=null, eis_name=0 > []
+2018-11-07 10:51:17,307 DEBUG [1260 8320] NonXAMocaDBConnection [0] Unassociated transaction TransactionImple < ac, BasicAction: 0:ffff0a988412:ed72:5be1ed5d:10f4d status: ActionStatus.ABORTED > []
+2018-11-07 10:51:17,307 DEBUG [1260 8320] ConnectionPoolDataSource [0] Returning wmuat-000002 to the db pool. []
+2018-11-07 10:51:17,307 DEBUG [1260 8320] MinIdleBlockingPool [0] Object returned to pool [Connection]: busy: 1, idle: 14, started 15 / 100 []
+2018-11-07 10:51:17,307 DEBUG [1260 8320] CommandDispatcher [0] Returning error 511 to client []
+2018-11-07 10:51:17,307 DEBUG [1260 8320] DefaultServerContext [0] Command initiated: [get mls text  where locale_id = 'US_ENGLISH'    and mls_id = 'err511'], Inline: false []
+2018-11-07 10:51:17,307 DEBUG [1260 8320] DefaultServerContext [0] Parsing command...  []
+2018-11-07 10:51:17,307 DEBUG [1260 8320] DefaultServerContext [0] Parsed command []
+2018-11-07 10:51:17,307 DEBUG [1260 8320] DefaultServerContext [0] Executing... []
+2018-11-07 10:51:17,307 DEBUG [1260 8320] DefaultServerContext [1] Looking up command: get mls text []
+2018-11-07 10:51:17,307 DEBUG [1260 8320] Argument [1] Argument  locale_id=US_ENGLISH  (STRING) []
+2018-11-07 10:51:17,307 DEBUG [1260 8320] Argument [1] Argument  mls_id=err511  (STRING) []
+2018-11-07 10:51:17,307 DEBUG [1260 8320] DefaultServerContext [1] -------------------------------------- []
+2018-11-07 10:51:17,307 DEBUG [1260 8320] DefaultServerContext [1] -------------------------------------- []
+2018-11-07 10:51:17,307 DEBUG [1260 8320] DefaultServerContext [1] Executing Command: MCSI18N/get mls text []
+2018-11-07 10:51:17,307 DEBUG [1260 8320] MocaWebAuthorization [1] Open role option found. Allowing... []
+2018-11-07 10:51:17,307 DEBUG [1260 8320] ComponentAdapter [1] Creating instance of com.redprairie.mcs.components.globalization.MlsCatalogService []
+2018-11-07 10:51:17,307 DEBUG [1260 8320] ComponentAdapter [1] Invoking method: public com.redprairie.moca.MocaResults com.redprairie.mcs.components.globalization.MlsCatalogService.getMlsText(com.redprairie.moca.MocaContext,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.Integer,java.lang.Integer) throws com.redprairie.moca.MocaException []
+2018-11-07 10:51:17,307 DEBUG [1260 8320] DefaultServerContext [1] Command initiated: [[select decode(vartn, 'LES', 0, 8) + decode(appl_id, 'LES', 0, 4) + decode(frm_id, 'LES', 0, 2) + decode(prod_id, 'LES', 0, 1) precedence,   mls_text, mls_id from les_mls_cat where locale_id = 'US_ENGLISH'   and decode(prod_id, 'LES', prod_id, '') = prod_id   and decode(appl_id, 'LES', appl_id, '') = appl_id   and decode(frm_id, 'LES', frm_id, '') = frm_id   and decode(vartn, 'LES', vartn, '') = vartn    and mls_id = 'err511'    order by mls_id, precedence desc, cust_lvl desc, srt_seq ] ], Inline: false []
+2018-11-07 10:51:17,307 DEBUG [1260 8320] DefaultServerContext [1] Parsing command...  []
+2018-11-07 10:51:17,307 DEBUG [1260 8320] DefaultServerContext [1] Parsed command []
+2018-11-07 10:51:17,307 DEBUG [1260 8320] DefaultServerContext [2] Executing... []
+2018-11-07 10:51:17,307 DEBUG [1260 8320] DefaultServerContext [3] -------------------------------------- []
+2018-11-07 10:51:17,307 DEBUG [1260 8320] DefaultServerContext [3] -------------------------------------- []
+2018-11-07 10:51:17,307 DEBUG [1260 8320] MinIdleBlockingPool [3] Requesting object from pool [Connection]: busy: 1, idle: 14, started 15 / 100 []
+2018-11-07 10:51:17,307 DEBUG [1260 8320] NonXAMocaDBConnection [3] Enlisting connection into transaction []
+2018-11-07 10:51:17,307 DEBUG [1260 8320] NonXAMocaDBConnection [3] Started non xa tx - < formatId=131077, gtrid_length=29, bqual_length=36, tx_uid=0:ffff0a988412:ed72:5be1ed5d:10f51, node_name=1, branch_uid=0:ffff0a988412:ed72:5be1ed5d:10f53, subordinatenodename=null, eis_name=0 > []
+2018-11-07 10:51:17,307 DEBUG [1260 8320] MinIdleBlockingPool [3] Object retrieved from pool [Connection]: busy: 2, idle: 13, started 15 / 100 []
+2018-11-07 10:51:17,307 DEBUG [1260 8320] ConnectionPoolDataSource [3] Retrieving wmuat-000007 from db pool. []
+2018-11-07 10:51:17,307 DEBUG [1260 8320] JDBCAdapter [3] Executing SQL: select decode(vartn, 'LES', 0, 8) + decode(appl_id, 'LES', 0, 4) + decode(frm_id, 'LES', 0, 2) + decode(prod_id, 'LES', 0, 1) precedence,   mls_text, mls_id from les_mls_cat where locale_id = 'US_ENGLISH'   and decode(prod_id, 'LES', prod_id, '') = prod_id   and decode(appl_id, 'LES', appl_id, '') = appl_id   and decode(frm_id, 'LES', frm_id, '') = frm_id   and decode(vartn, 'LES', vartn, '') = vartn    and mls_id = 'err511'    order by mls_id, precedence desc, cust_lvl desc, srt_seq  []
+2018-11-07 10:51:17,307 DEBUG [1260 8320] JDBCAdapter [3] XLATE: select decode(vartn, :q0, :i1, :i2) + decode(appl_id, :q3, :i4, :i5) + decode(frm_id, :q6, :i7, :i8) + decode(prod_id, :q9, :i10, :i11) precedence,   mls_text, mls_id from les_mls_cat where locale_id = :q12   and decode(prod_id, :q13, prod_id, :q14) = prod_id   and decode(appl_id, :q15, appl_id, :q16) = appl_id   and decode(frm_id, :q17, frm_id, :q18) = frm_id   and decode(vartn, :q19, vartn, :q20) = vartn    and mls_id = :q21    order by mls_id, precedence desc, cust_lvl desc, srt_seq  []
+2018-11-07 10:51:17,307 DEBUG [1260 8320] JDBCAdapter [3] Found passed-in bind list []
+2018-11-07 10:51:17,307 DEBUG [1260 8320] JDBCAdapter [3] UNBIND: select decode(vartn, 'LES', 0, 8) + decode(appl_id, 'LES', 0, 4) + decode(frm_id, 'LES', 0, 2) + decode(prod_id, 'LES', 0, 1) precedence,   mls_text, mls_id from les_mls_cat where locale_id = 'US_ENGLISH'   and decode(prod_id, 'LES', prod_id, NULL) = prod_id   and decode(appl_id, 'LES', appl_id, NULL) = appl_id   and decode(frm_id, 'LES', frm_id, NULL) = frm_id   and decode(vartn, 'LES', vartn, NULL) = vartn    and mls_id = 'err511'    order by mls_id, precedence desc, cust_lvl desc, srt_seq  []
+2018-11-07 10:51:17,307 DEBUG [1260 8320] JDBCAdapter [3] Executing statement with bound parameters []
+2018-11-07 10:51:17,307 DEBUG [1260 8320] JDBCAdapter [3] Query returned 1 rows []
+2018-11-07 10:51:17,307 DEBUG [1260 8320] Performance [3] Execute Time: 0.001418883 s []
+2018-11-07 10:51:17,307 DEBUG [1260 8320] JDBCAdapter [3] SQL execution completed []
+2018-11-07 10:51:17,307 DEBUG [1260 8320] DefaultServerContext [1] Executed Command: MCSI18N/get mls text []
+2018-11-07 10:51:17,307 DEBUG [1260 8320] CommandDispatcher [0] Database Error: 511 - ORA-01400: cannot insert NULL into ("WMPNRDC"."PCKMOV"."MOV_ZONE_ID")
+ []
+2018-11-07 10:51:17,307 DEBUG [1260 8320] Activity [0] command="publish data where wh_id = 'PNRDC' and cancod = 'C-R-U' and wrkref = 'W0000003P32J' and schbat = 'GGHHGG' | [select rtnum1 as shtpckenabled from poldat_view where polcod='USR' and polvar='SHORT-PICK-WORK' and polval='ENABLED' and wh_id=nvl(@wh_id,@@wh_id)] catch (@?) | if (@?=0 and @shtpckenabled = 1) { if(@cancod='C-R-U' OR @cancod='PRE-CAN') { /* Update Pick work Header when Unassign flag is ON and Pick Status is Unassigned */ [update pckwrk_hdr set inv_attr_str18 = '1' where wrkref=nvl(@wrkref,@oldref) and schbat=@schbat and pcksts='U' and unassign_flg=1 and wh_id=nvl(@wh_id,@@wh_id)] catch(@?) | if (@?=0) { [select rtstr1 as shtpckmz_id , rtstr2 as shtpckrescod from poldat_view where polcod='USR' and polvar='SHORT-PICK-WORK' and polval='MOVE-ZONE-ID' and rtnum1=1 and wh_id=nvl(@wh_id,@@wh_id)]catch(@?) | if (@?=0) { [update pckwrk_dtl set dst_mov_zone_id = @shtpckmz_id where wrkref=nvl(@wrkref,@oldref) and schbat = @schbat and wh_id=nvl(@wh_id,@@wh_id)] catch(@?) | if (@?=0) { [update pckmov set mov_zone_id = @shtpckmz_id, rescod = @shtpckrescod, seqnum = seqnum + 1 where cmbcod in (select cmbcod from pckwrk_dtl where wrkref=nvl(@wrkref,@oldref) and schbat = @schbat and wh_id=nvl(@wh_id,@@wh_id))] catch(-1403) | [select distinct mov_zone_id src_mov_zon_id, cmbcod, lodlvl from locmst l join pckwrk_view pv on l.stoloc = pv.srcloc and l.wh_id = pv.wh_id and pv.wrkref = @wrkref] catch(-1403) | [select md.hop_mov_zone_id from mov_path mp left join mov_path_dtl md on md.src_mov_zone_id = mp.src_mov_zone_id and md.dst_mov_zone_id = mp.dst_mov_zone_id and md.lodlvl = mp.lodlvl left join mov_zone mz_src on mz_src.mov_zone_id = md.src_mov_zone_id left join mov_zone mz_dst on mz_dst.mov_zone_id = md.dst_mov_zone_id left join mov_zone mz_hop on mz_hop.mov_zone_id = md.hop_mov_zone_id where mp.src_mov_zone_id = @src_mov_zon_id and mp.dst_mov_zone_id = @shtpckmz_id and mp.lodlvl = @lodlvl] catch(-1403) | [insert into pckmov(cmbcod, seqnum, mov_zone_id, wh_id, stoloc, rescod, arrqty, prcqty) (select cmbcod, seqnum -1, @hop_mov_zone_id, wh_id, stoloc, rescod, arrqty, prcqty from pckmov pm where pm.cmbcod = @cmbcod and pm.seqnum = (select min(seqnum) from pckmov t where t.cmbcod = @cmbcod))] catch(-1403) } } } } } ; [select 'x' from dual where 1=2]" duration="31" env="{USR_ID=9849, WEB_SESSIONID=c8e59a01f2c88320, SESSION_KEY=;uid=9849|sid=52969703-104f-4900-a967-48fffe886b90|dt=jo69nsdd|sec=ALL;z.H_Kgiy6vBg4i79RIBi04M2.0, LOCALE_ID=US_ENGLISH, WEB_CLIENT_ADDR=10.168.234.73, MOCA_APPL_ID=WinMSQL}" error="511" rowCount="0" []
+2018-11-07 10:51:17,307 DEBUG [1260 8320] CommandDispatcher [0] Executing Activity Hook: com.redprairie.mcs.hooks.AuditCommandDispatchHook []
+2018-11-07 10:51:17,307 DEBUG [1260 8320] CommandDispatcher [0] Releasing Session context.  []
+2018-11-07 10:51:17,307 DEBUG [1260 8320] DefaultServerContext [0] Server Context Closed []
+2018-11-07 10:51:17,307 DEBUG [1260 8320] MocaTransactionManager [0] Rollback []
+2018-11-07 10:51:17,307 DEBUG [1260 8320] MocaTransactionManager [0] Calling rollback []
+2018-11-07 10:51:17,307 DEBUG [1260 8320] NonXAMocaDBConnection [0] Rolling back non xa tx - < formatId=131077, gtrid_length=29, bqual_length=36, tx_uid=0:ffff0a988412:ed72:5be1ed5d:10f51, node_name=1, branch_uid=0:ffff0a988412:ed72:5be1ed5d:10f53, subordinatenodename=null, eis_name=0 > []
+2018-11-07 10:51:17,307 DEBUG [1260 8320] NonXAMocaDBConnection [0] Unassociated transaction TransactionImple < ac, BasicAction: 0:ffff0a988412:ed72:5be1ed5d:10f51 status: ActionStatus.ABORTED > []
+2018-11-07 10:51:17,307 DEBUG [1260 8320] ConnectionPoolDataSource [0] Returning wmuat-000007 to the db pool. []
+2018-11-07 10:51:17,307 DEBUG [1260 8320] MinIdleBlockingPool [0] Object returned to pool [Connection]: busy: 1, idle: 14, started 15 / 100 []
+2018-11-07 10:51:17,307 DEBUG [1260 8320] CommandDispatcher [0] Dispatched command []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] CommandDispatcher [0] Dispatching command... []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] CommandDispatcher [0] Server got: publish data where wh_id = 'PNRDC'
+and cancod = 'C-R-U'
+and wrkref = 'W0000003P32J'
+and schbat = 'GGHHGG'
+|
+[select rtnum1 as shtpckenabled 
+   from poldat_view 
+  where polcod='USR' 
+	and polvar='SHORT-PICK-WORK' 
+	and polval='ENABLED'
+	and wh_id=nvl(@wh_id,@@wh_id)] catch (@?)
+|
+if (@?=0 and @shtpckenabled = 1)
+{
+	if(@cancod='C-R-U' OR @cancod='PRE-CAN')
+	{
+		/* Update Pick work Header when Unassign flag is ON and Pick Status is Unassigned */
+		[update pckwrk_hdr set inv_attr_str18 = '1' where wrkref=nvl(@wrkref,@oldref) and schbat=@schbat and pcksts='U' and unassign_flg=1 and wh_id=nvl(@wh_id,@@wh_id)] catch(@?)
+		|
+		if (@?=0)
+		{
+			[select rtstr1 as shtpckmz_id ,
+			        rtstr2 as shtpckrescod
+			  from poldat_view 
+			 where polcod='USR' 
+			   and polvar='SHORT-PICK-WORK' 
+			   and polval='MOVE-ZONE-ID'
+			   and rtnum1=1
+			   and wh_id=nvl(@wh_id,@@wh_id)]catch(@?)
+			|
+			if (@?=0)
+			{
+				[update pckwrk_dtl
+					set dst_mov_zone_id = @shtpckmz_id
+				  where wrkref=nvl(@wrkref,@oldref) 
+					and schbat = @schbat
+					and wh_id=nvl(@wh_id,@@wh_id)] catch(@?)
+				|
+				if (@?=0)
+				{
+					[update pckmov
+					    set mov_zone_id = @shtpckmz_id,
+					        rescod = @shtpckrescod,
+							seqnum = seqnum + 1
+					  where cmbcod in (select cmbcod
+							             from pckwrk_dtl
+							            where wrkref=nvl(@wrkref,@oldref) 
+							              and schbat = @schbat
+							              and wh_id=nvl(@wh_id,@@wh_id))] catch(-1403)
+					|
+					[select distinct mov_zone_id src_mov_zon_id,
+                            cmbcod, 
+							lodlvl							
+					   from locmst l
+					   join pckwrk_view pv
+					     on l.stoloc = pv.srcloc
+					    and l.wh_id = pv.wh_id
+						and pv.wrkref = @wrkref] catch(-1403)
+					|  
+					[select md.hop_mov_zone_id
+                       from mov_path mp
+                  left join mov_path_dtl md
+                         on md.src_mov_zone_id = mp.src_mov_zone_id
+                        and md.dst_mov_zone_id = mp.dst_mov_zone_id
+                        and md.lodlvl = mp.lodlvl
+                  left join mov_zone mz_src
+                         on mz_src.mov_zone_id = md.src_mov_zone_id
+                  left join mov_zone mz_dst
+                         on mz_dst.mov_zone_id = md.dst_mov_zone_id
+                  left join mov_zone mz_hop
+                         on mz_hop.mov_zone_id = md.hop_mov_zone_id
+                      where mp.src_mov_zone_id = @src_mov_zon_id
+                        and mp.dst_mov_zone_id = @shtpckmz_id
+                        ] catch(-1403)
+                    |
+                    [insert  into pckmov(cmbcod, seqnum, mov_zone_id, wh_id, stoloc, rescod, arrqty, prcqty)
+                    (select cmbcod,  seqnum -1, @hop_mov_zone_id, wh_id, stoloc, rescod, arrqty, prcqty
+					from pckmov pm
+					where pm.cmbcod = @cmbcod
+					and pm.seqnum = (select min(seqnum) from pckmov t where t.cmbcod = @cmbcod))] catch(-1403)				
+				}
+			}
+		}
+    }
+}
+;
+[select 'x' from dual where 1=2] []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] DefaultServerContext [0] Parsing command...  []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] DefaultServerContext [0] Parsed command []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] DefaultServerContext [0] Executing... []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] DefaultServerContext [1] Looking up command: publish data []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] Argument [1] Argument  wh_id=PNRDC  (STRING) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] Argument [1] Argument  cancod=C-R-U  (STRING) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] Argument [1] Argument  wrkref=W0000003P32J  (STRING) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] Argument [1] Argument  schbat=GGHHGG  (STRING) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] DefaultServerContext [1] -------------------------------------- []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] DefaultServerContext [1] -------------------------------------- []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] DefaultServerContext [1] Executing Command: MOCAbase/publish data []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] MocaWebAuthorization [1] Open role option found. Allowing... []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] ComponentAdapter [1] Creating instance of com.redprairie.moca.components.base.CoreService []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] ComponentAdapter [1] Invoking method: public com.redprairie.moca.MocaResults com.redprairie.moca.components.base.CoreService.publishData(com.redprairie.moca.MocaContext) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] DefaultServerContext [1] Executed Command: MOCAbase/publish data []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] DefaultServerContext [2] -------------------------------------- []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] Argument [2] Published  wh_id=PNRDC  (STRING) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] Argument [2] Published  cancod=C-R-U  (STRING) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] Argument [2] Published  wrkref=W0000003P32J  (STRING) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] Argument [2] Published  schbat=GGHHGG  (STRING) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] Argument [2] Argument  wh_id=PNRDC  (STRING) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] Argument [2] Argument  cancod=C-R-U  (STRING) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] Argument [2] Argument  wrkref=W0000003P32J  (STRING) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] Argument [2] Argument  schbat=GGHHGG  (STRING) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] DefaultServerContext [2] -------------------------------------- []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] DefaultServerContext [2] -------------------------------------- []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] MinIdleBlockingPool [2] Requesting object from pool [Connection]: busy: 1, idle: 14, started 15 / 100 []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] NonXAMocaDBConnection [2] Enlisting connection into transaction []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] NonXAMocaDBConnection [2] Started non xa tx - < formatId=131077, gtrid_length=29, bqual_length=36, tx_uid=0:ffff0a988412:ed72:5be1ed5d:11041, node_name=1, branch_uid=0:ffff0a988412:ed72:5be1ed5d:11043, subordinatenodename=null, eis_name=0 > []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] MinIdleBlockingPool [2] Object retrieved from pool [Connection]: busy: 2, idle: 13, started 15 / 100 []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] ConnectionPoolDataSource [2] Retrieving wmuat-00000a from db pool. []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] JDBCAdapter [2] Executing SQL: select rtnum1 as shtpckenabled 
+   from poldat_view 
+  where polcod='USR' 
+	and polvar='SHORT-PICK-WORK' 
+	and polval='ENABLED'
+	and wh_id=nvl(:var_wh_id,:var0) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] JDBCAdapter [2] XLATE: select rtnum1 as shtpckenabled 
+   from poldat_view 
+  where polcod=:q0 
+	and polvar=:q1 
+	and polval=:q2
+	and wh_id=nvl(:var_wh_id,:var0) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] JDBCAdapter [2] Found passed-in bind list []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] JDBCAdapter [2] UNBIND: select rtnum1 as shtpckenabled 
+   from poldat_view 
+  where polcod='USR' 
+	and polvar='SHORT-PICK-WORK' 
+	and polval='ENABLED'
+	and wh_id=nvl('PNRDC',NULL) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] JDBCAdapter [2] Executing statement with bound parameters []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] JDBCAdapter [2] Query returned 1 rows []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] Performance [2] Execute Time: 0.001566493 s []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] JDBCAdapter [2] SQL execution completed []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] CommandStatement [3] Evaluating conditional test: @?=(TYPE: INTEGER, VALUE: 0) AND @shtpckenabled=(TYPE: INTEGER, VALUE: 1) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] CommandStatement [3] If-test passed - executing if block []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] CommandStatement [4] Evaluating conditional test: @cancod=(TYPE: STRING, VALUE: C-R-U) OR @cancod=(TYPE: STRING, VALUE: PRE-CAN) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] CommandStatement [4] If-test passed - executing if block []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] DefaultServerContext [5] -------------------------------------- []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] DefaultServerContext [5] -------------------------------------- []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] DefaultServerContext [5] -------------------------------------- []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] Argument [5] Published  shtpckenabled=1  (INTEGER) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] DefaultServerContext [5] -------------------------------------- []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] Argument [5] Published  wh_id=PNRDC  (STRING) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] Argument [5] Published  cancod=C-R-U  (STRING) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] Argument [5] Published  wrkref=W0000003P32J  (STRING) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] Argument [5] Published  schbat=GGHHGG  (STRING) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] Argument [5] Argument  wh_id=PNRDC  (STRING) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] Argument [5] Argument  cancod=C-R-U  (STRING) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] Argument [5] Argument  wrkref=W0000003P32J  (STRING) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] Argument [5] Argument  schbat=GGHHGG  (STRING) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] DefaultServerContext [5] -------------------------------------- []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] DefaultServerContext [5] -------------------------------------- []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] JDBCAdapter [5] Executing SQL: update pckwrk_hdr set inv_attr_str18 = '1' where wrkref=nvl(:var_wrkref,:var_oldref) and schbat=:var_schbat and pcksts='U' and unassign_flg=1 and wh_id=nvl(:var_wh_id,:var0) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] JDBCAdapter [5] XLATE: update pckwrk_hdr set inv_attr_str18 = :q0 where wrkref=nvl(:var_wrkref,:var_oldref) and schbat=:var_schbat and pcksts=:q1 and unassign_flg=:i2 and wh_id=nvl(:var_wh_id,:var0) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] JDBCAdapter [5] Found passed-in bind list []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] JDBCAdapter [5] UNBIND: update pckwrk_hdr set inv_attr_str18 = '1' where wrkref=nvl('W0000003P32J',NULL) and schbat='GGHHGG' and pcksts='U' and unassign_flg=1 and wh_id=nvl('PNRDC',NULL) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] JDBCAdapter [5] Executing statement with bound parameters []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] JDBCAdapter [5] Statement affected 1 rows []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] Performance [5] Execute Time: 0.001170103 s []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] JDBCAdapter [5] SQL execution completed []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] CommandStatement [6] Evaluating conditional test: @?=(TYPE: INTEGER, VALUE: 0) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] CommandStatement [6] If-test passed - executing if block []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] DefaultServerContext [7] -------------------------------------- []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] DefaultServerContext [7] -------------------------------------- []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] DefaultServerContext [7] -------------------------------------- []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] DefaultServerContext [7] -------------------------------------- []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] DefaultServerContext [7] -------------------------------------- []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] Argument [7] Published  shtpckenabled=1  (INTEGER) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] DefaultServerContext [7] -------------------------------------- []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] Argument [7] Published  wh_id=PNRDC  (STRING) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] Argument [7] Published  cancod=C-R-U  (STRING) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] Argument [7] Published  wrkref=W0000003P32J  (STRING) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] Argument [7] Published  schbat=GGHHGG  (STRING) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] Argument [7] Argument  wh_id=PNRDC  (STRING) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] Argument [7] Argument  cancod=C-R-U  (STRING) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] Argument [7] Argument  wrkref=W0000003P32J  (STRING) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] Argument [7] Argument  schbat=GGHHGG  (STRING) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] DefaultServerContext [7] -------------------------------------- []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] DefaultServerContext [7] -------------------------------------- []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] JDBCAdapter [7] Executing SQL: select rtstr1 as shtpckmz_id ,
+			        rtstr2 as shtpckrescod
+			  from poldat_view 
+			 where polcod='USR' 
+			   and polvar='SHORT-PICK-WORK' 
+			   and polval='MOVE-ZONE-ID'
+			   and rtnum1=1
+			   and wh_id=nvl(:var_wh_id,:var0) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] JDBCAdapter [7] XLATE: select rtstr1 as shtpckmz_id ,
+			        rtstr2 as shtpckrescod
+			  from poldat_view 
+			 where polcod=:q0 
+			   and polvar=:q1 
+			   and polval=:q2
+			   and rtnum1=:i3
+			   and wh_id=nvl(:var_wh_id,:var0) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] JDBCAdapter [7] Found passed-in bind list []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] JDBCAdapter [7] UNBIND: select rtstr1 as shtpckmz_id ,
+			        rtstr2 as shtpckrescod
+			  from poldat_view 
+			 where polcod='USR' 
+			   and polvar='SHORT-PICK-WORK' 
+			   and polval='MOVE-ZONE-ID'
+			   and rtnum1=1
+			   and wh_id=nvl('PNRDC',NULL) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] JDBCAdapter [7] Executing statement with bound parameters []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] JDBCAdapter [7] Query returned 1 rows []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] Performance [7] Execute Time: 0.0004398883 s []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] JDBCAdapter [7] SQL execution completed []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] CommandStatement [8] Evaluating conditional test: @?=(TYPE: INTEGER, VALUE: 0) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] CommandStatement [8] If-test passed - executing if block []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] DefaultServerContext [9] -------------------------------------- []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] DefaultServerContext [9] -------------------------------------- []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] Argument [9] Published  shtpckmz_id=10522  (STRING) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] Argument [9] Published  shtpckrescod=XXXX  (STRING) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] DefaultServerContext [9] -------------------------------------- []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] DefaultServerContext [9] -------------------------------------- []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] DefaultServerContext [9] -------------------------------------- []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] DefaultServerContext [9] -------------------------------------- []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] DefaultServerContext [9] -------------------------------------- []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] Argument [9] Published  shtpckenabled=1  (INTEGER) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] DefaultServerContext [9] -------------------------------------- []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] Argument [9] Published  wh_id=PNRDC  (STRING) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] Argument [9] Published  cancod=C-R-U  (STRING) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] Argument [9] Published  wrkref=W0000003P32J  (STRING) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] Argument [9] Published  schbat=GGHHGG  (STRING) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] Argument [9] Argument  wh_id=PNRDC  (STRING) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] Argument [9] Argument  cancod=C-R-U  (STRING) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] Argument [9] Argument  wrkref=W0000003P32J  (STRING) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] Argument [9] Argument  schbat=GGHHGG  (STRING) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] DefaultServerContext [9] -------------------------------------- []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] DefaultServerContext [9] -------------------------------------- []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] JDBCAdapter [9] Executing SQL: update pckwrk_dtl
+					set dst_mov_zone_id = :var_shtpckmz_id
+				  where wrkref=nvl(:var_wrkref,:var_oldref) 
+					and schbat = :var_schbat
+					and wh_id=nvl(:var_wh_id,:var0) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] JDBCAdapter [9] XLATE: update pckwrk_dtl
+					set dst_mov_zone_id = :var_shtpckmz_id
+				  where wrkref=nvl(:var_wrkref,:var_oldref) 
+					and schbat = :var_schbat
+					and wh_id=nvl(:var_wh_id,:var0) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] JDBCAdapter [9] Found passed-in bind list []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] JDBCAdapter [9] UNBIND: update pckwrk_dtl
+					set dst_mov_zone_id = '10522'
+				  where wrkref=nvl('W0000003P32J',NULL) 
+					and schbat = 'GGHHGG'
+					and wh_id=nvl('PNRDC',NULL) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] JDBCAdapter [9] Executing statement with bound parameters []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] JDBCAdapter [9] Statement affected 1 rows []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] Performance [9] Execute Time: 0.001196503 s []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] JDBCAdapter [9] SQL execution completed []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] CommandStatement [10] Evaluating conditional test: @?=(TYPE: INTEGER, VALUE: 0) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] CommandStatement [10] If-test passed - executing if block []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] DefaultServerContext [11] -------------------------------------- []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] DefaultServerContext [11] -------------------------------------- []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] DefaultServerContext [11] -------------------------------------- []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] DefaultServerContext [11] -------------------------------------- []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] Argument [11] Published  shtpckmz_id=10522  (STRING) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] Argument [11] Published  shtpckrescod=XXXX  (STRING) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] DefaultServerContext [11] -------------------------------------- []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] DefaultServerContext [11] -------------------------------------- []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] DefaultServerContext [11] -------------------------------------- []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] DefaultServerContext [11] -------------------------------------- []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] DefaultServerContext [11] -------------------------------------- []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] Argument [11] Published  shtpckenabled=1  (INTEGER) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] DefaultServerContext [11] -------------------------------------- []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] Argument [11] Published  wh_id=PNRDC  (STRING) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] Argument [11] Published  cancod=C-R-U  (STRING) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] Argument [11] Published  wrkref=W0000003P32J  (STRING) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] Argument [11] Published  schbat=GGHHGG  (STRING) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] Argument [11] Argument  wh_id=PNRDC  (STRING) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] Argument [11] Argument  cancod=C-R-U  (STRING) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] Argument [11] Argument  wrkref=W0000003P32J  (STRING) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] Argument [11] Argument  schbat=GGHHGG  (STRING) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] DefaultServerContext [11] -------------------------------------- []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] DefaultServerContext [11] -------------------------------------- []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] JDBCAdapter [11] Executing SQL: update pckmov
+					    set mov_zone_id = :var_shtpckmz_id,
+					        rescod = :var_shtpckrescod,
+							seqnum = seqnum + 1
+					  where cmbcod in (select cmbcod
+							             from pckwrk_dtl
+							            where wrkref=nvl(:var_wrkref,:var_oldref) 
+							              and schbat = :var_schbat
+							              and wh_id=nvl(:var_wh_id,:var0)) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] JDBCAdapter [11] XLATE: update pckmov
+					    set mov_zone_id = :var_shtpckmz_id,
+					        rescod = :var_shtpckrescod,
+							seqnum = seqnum + :i0
+					  where cmbcod in (select cmbcod
+							             from pckwrk_dtl
+							            where wrkref=nvl(:var_wrkref,:var_oldref) 
+							              and schbat = :var_schbat
+							              and wh_id=nvl(:var_wh_id,:var0)) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] JDBCAdapter [11] Found passed-in bind list []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] JDBCAdapter [11] UNBIND: update pckmov
+					    set mov_zone_id = '10522',
+					        rescod = 'XXXX',
+							seqnum = seqnum + 1
+					  where cmbcod in (select cmbcod
+							             from pckwrk_dtl
+							            where wrkref=nvl('W0000003P32J',NULL) 
+							              and schbat = 'GGHHGG'
+							              and wh_id=nvl('PNRDC',NULL)) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] JDBCAdapter [11] Executing statement with bound parameters []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] JDBCAdapter [11] Statement affected 1 rows []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] Performance [11] Execute Time: 0.003618333 s []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] JDBCAdapter [11] SQL execution completed []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] DefaultServerContext [12] -------------------------------------- []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] DefaultServerContext [12] -------------------------------------- []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] DefaultServerContext [12] -------------------------------------- []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] DefaultServerContext [12] -------------------------------------- []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] DefaultServerContext [12] -------------------------------------- []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] Argument [12] Published  shtpckmz_id=10522  (STRING) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] Argument [12] Published  shtpckrescod=XXXX  (STRING) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] DefaultServerContext [12] -------------------------------------- []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] DefaultServerContext [12] -------------------------------------- []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] DefaultServerContext [12] -------------------------------------- []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] DefaultServerContext [12] -------------------------------------- []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] DefaultServerContext [12] -------------------------------------- []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] Argument [12] Published  shtpckenabled=1  (INTEGER) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] DefaultServerContext [12] -------------------------------------- []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] Argument [12] Published  wh_id=PNRDC  (STRING) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] Argument [12] Published  cancod=C-R-U  (STRING) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] Argument [12] Published  wrkref=W0000003P32J  (STRING) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] Argument [12] Published  schbat=GGHHGG  (STRING) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] Argument [12] Argument  wh_id=PNRDC  (STRING) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] Argument [12] Argument  cancod=C-R-U  (STRING) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] Argument [12] Argument  wrkref=W0000003P32J  (STRING) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] Argument [12] Argument  schbat=GGHHGG  (STRING) []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] DefaultServerContext [12] -------------------------------------- []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] DefaultServerContext [12] -------------------------------------- []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] JDBCAdapter [12] Executing SQL: select distinct mov_zone_id src_mov_zon_id,
+                            cmbcod, 
+							lodlvl							
+					   from locmst l
+					   join pckwrk_view pv
+					     on l.stoloc = pv.srcloc
+					    and l.wh_id = pv.wh_id
+						and pv.wrkref = :var_wrkref []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] JDBCAdapter [12] XLATE: select distinct mov_zone_id src_mov_zon_id,
+                            cmbcod, 
+							lodlvl							
+					   from locmst l
+					   join pckwrk_view pv
+					     on l.stoloc = pv.srcloc
+					    and l.wh_id = pv.wh_id
+						and pv.wrkref = :var_wrkref []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] JDBCAdapter [12] Found passed-in bind list []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] JDBCAdapter [12] UNBIND: select distinct mov_zone_id src_mov_zon_id,
+                            cmbcod, 
+							lodlvl							
+					   from locmst l
+					   join pckwrk_view pv
+					     on l.stoloc = pv.srcloc
+					    and l.wh_id = pv.wh_id
+						and pv.wrkref = 'W0000003P32J' []
+2018-11-07 10:51:47,683 DEBUG [1183 8320] JDBCAdapter [12] Executing statement with bound parameters []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] JDBCAdapter [12] Query returned 1 rows []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] Performance [12] Execute Time: 0.01013553 s []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] JDBCAdapter [12] SQL execution completed []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] DefaultServerContext [13] -------------------------------------- []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] Argument [13] Published  src_mov_zon_id=10477  (INTEGER) []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] Argument [13] Published  cmbcod=CMB003Q76I  (STRING) []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] Argument [13] Published  lodlvl=S  (STRING) []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] DefaultServerContext [13] -------------------------------------- []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] DefaultServerContext [13] -------------------------------------- []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] DefaultServerContext [13] -------------------------------------- []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] DefaultServerContext [13] -------------------------------------- []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] DefaultServerContext [13] -------------------------------------- []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] Argument [13] Published  shtpckmz_id=10522  (STRING) []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] Argument [13] Published  shtpckrescod=XXXX  (STRING) []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] DefaultServerContext [13] -------------------------------------- []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] DefaultServerContext [13] -------------------------------------- []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] DefaultServerContext [13] -------------------------------------- []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] DefaultServerContext [13] -------------------------------------- []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] DefaultServerContext [13] -------------------------------------- []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] Argument [13] Published  shtpckenabled=1  (INTEGER) []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] DefaultServerContext [13] -------------------------------------- []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] Argument [13] Published  wh_id=PNRDC  (STRING) []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] Argument [13] Published  cancod=C-R-U  (STRING) []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] Argument [13] Published  wrkref=W0000003P32J  (STRING) []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] Argument [13] Published  schbat=GGHHGG  (STRING) []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] Argument [13] Argument  wh_id=PNRDC  (STRING) []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] Argument [13] Argument  cancod=C-R-U  (STRING) []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] Argument [13] Argument  wrkref=W0000003P32J  (STRING) []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] Argument [13] Argument  schbat=GGHHGG  (STRING) []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] DefaultServerContext [13] -------------------------------------- []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] DefaultServerContext [13] -------------------------------------- []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] JDBCAdapter [13] Executing SQL: select md.hop_mov_zone_id
+                       from mov_path mp
+                  left join mov_path_dtl md
+                         on md.src_mov_zone_id = mp.src_mov_zone_id
+                        and md.dst_mov_zone_id = mp.dst_mov_zone_id
+                        and md.lodlvl = mp.lodlvl
+                  left join mov_zone mz_src
+                         on mz_src.mov_zone_id = md.src_mov_zone_id
+                  left join mov_zone mz_dst
+                         on mz_dst.mov_zone_id = md.dst_mov_zone_id
+                  left join mov_zone mz_hop
+                         on mz_hop.mov_zone_id = md.hop_mov_zone_id
+                      where mp.src_mov_zone_id = :var_src_mov_zon_id
+                        and mp.dst_mov_zone_id = :var_shtpckmz_id
+                         []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] JDBCAdapter [13] XLATE: select md.hop_mov_zone_id
+                       from mov_path mp
+                  left join mov_path_dtl md
+                         on md.src_mov_zone_id = mp.src_mov_zone_id
+                        and md.dst_mov_zone_id = mp.dst_mov_zone_id
+                        and md.lodlvl = mp.lodlvl
+                  left join mov_zone mz_src
+                         on mz_src.mov_zone_id = md.src_mov_zone_id
+                  left join mov_zone mz_dst
+                         on mz_dst.mov_zone_id = md.dst_mov_zone_id
+                  left join mov_zone mz_hop
+                         on mz_hop.mov_zone_id = md.hop_mov_zone_id
+                      where mp.src_mov_zone_id = :var_src_mov_zon_id
+                        and mp.dst_mov_zone_id = :var_shtpckmz_id
+                         []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] JDBCAdapter [13] Found passed-in bind list []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] JDBCAdapter [13] UNBIND: select md.hop_mov_zone_id
+                       from mov_path mp
+                  left join mov_path_dtl md
+                         on md.src_mov_zone_id = mp.src_mov_zone_id
+                        and md.dst_mov_zone_id = mp.dst_mov_zone_id
+                        and md.lodlvl = mp.lodlvl
+                  left join mov_zone mz_src
+                         on mz_src.mov_zone_id = md.src_mov_zone_id
+                  left join mov_zone mz_dst
+                         on mz_dst.mov_zone_id = md.dst_mov_zone_id
+                  left join mov_zone mz_hop
+                         on mz_hop.mov_zone_id = md.hop_mov_zone_id
+                      where mp.src_mov_zone_id = 10477
+                        and mp.dst_mov_zone_id = '10522'
+                         []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] JDBCAdapter [13] Executing statement with bound parameters []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] JDBCAdapter [13] Query returned 1 rows []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] Performance [13] Execute Time: 0.002009803 s []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] JDBCAdapter [13] SQL execution completed []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] DefaultServerContext [14] -------------------------------------- []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] Argument [14] Published  hop_mov_zone_id=10523  (INTEGER) []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] DefaultServerContext [14] -------------------------------------- []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] Argument [14] Published  src_mov_zon_id=10477  (INTEGER) []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] Argument [14] Published  cmbcod=CMB003Q76I  (STRING) []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] Argument [14] Published  lodlvl=S  (STRING) []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] DefaultServerContext [14] -------------------------------------- []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] DefaultServerContext [14] -------------------------------------- []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] DefaultServerContext [14] -------------------------------------- []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] DefaultServerContext [14] -------------------------------------- []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] DefaultServerContext [14] -------------------------------------- []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] Argument [14] Published  shtpckmz_id=10522  (STRING) []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] Argument [14] Published  shtpckrescod=XXXX  (STRING) []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] DefaultServerContext [14] -------------------------------------- []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] DefaultServerContext [14] -------------------------------------- []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] DefaultServerContext [14] -------------------------------------- []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] DefaultServerContext [14] -------------------------------------- []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] DefaultServerContext [14] -------------------------------------- []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] Argument [14] Published  shtpckenabled=1  (INTEGER) []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] DefaultServerContext [14] -------------------------------------- []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] Argument [14] Published  wh_id=PNRDC  (STRING) []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] Argument [14] Published  cancod=C-R-U  (STRING) []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] Argument [14] Published  wrkref=W0000003P32J  (STRING) []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] Argument [14] Published  schbat=GGHHGG  (STRING) []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] Argument [14] Argument  wh_id=PNRDC  (STRING) []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] Argument [14] Argument  cancod=C-R-U  (STRING) []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] Argument [14] Argument  wrkref=W0000003P32J  (STRING) []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] Argument [14] Argument  schbat=GGHHGG  (STRING) []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] DefaultServerContext [14] -------------------------------------- []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] DefaultServerContext [14] -------------------------------------- []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] JDBCAdapter [14] Executing SQL: insert  into pckmov(cmbcod, seqnum, mov_zone_id, wh_id, stoloc, rescod, arrqty, prcqty)
+                    (select cmbcod,  seqnum -1, :var_hop_mov_zone_id, wh_id, stoloc, rescod, arrqty, prcqty
+					from pckmov pm
+					where pm.cmbcod = :var_cmbcod
+					and pm.seqnum = (select min(seqnum) from pckmov t where t.cmbcod = :var_cmbcod)) []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] JDBCAdapter [14] XLATE: insert  into pckmov(cmbcod, seqnum, mov_zone_id, wh_id, stoloc, rescod, arrqty, prcqty)
+                    (select cmbcod,  seqnum -:i0, :var_hop_mov_zone_id, wh_id, stoloc, rescod, arrqty, prcqty
+					from pckmov pm
+					where pm.cmbcod = :var_cmbcod
+					and pm.seqnum = (select min(seqnum) from pckmov t where t.cmbcod = :var_cmbcod)) []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] JDBCAdapter [14] Found passed-in bind list []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] JDBCAdapter [14] UNBIND: insert  into pckmov(cmbcod, seqnum, mov_zone_id, wh_id, stoloc, rescod, arrqty, prcqty)
+                    (select cmbcod,  seqnum -1, 10523, wh_id, stoloc, rescod, arrqty, prcqty
+					from pckmov pm
+					where pm.cmbcod = 'CMB003Q76I'
+					and pm.seqnum = (select min(seqnum) from pckmov t where t.cmbcod = 'CMB003Q76I')) []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] JDBCAdapter [14] Executing statement with bound parameters []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] JDBCAdapter [14] Statement affected 1 rows []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] Performance [14] Execute Time: 0.002787913 s []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] JDBCAdapter [14] SQL execution completed []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] DefaultServerContext [1] -------------------------------------- []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] DefaultServerContext [1] -------------------------------------- []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] JDBCAdapter [1] Executing SQL: select 'x' from dual where 1=2 []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] JDBCAdapter [1] XLATE: select :q0 from dual where 1=2 []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] JDBCAdapter [1] Found passed-in bind list []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] JDBCAdapter [1] UNBIND: select 'x' from dual where 1=2 []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] JDBCAdapter [1] Executing statement with bound parameters []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] JDBCAdapter [1] Query returned 0 rows []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] JDBCAdapter [1] Throwing NotFoundException []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] Performance [1] Execute Time: 0.0009105693 s []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] JDBCAdapter [1] SQL execution completed []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] CommandDispatcher [0] Exception raised from command: com.redprairie.moca.NotFoundException: no rows affected []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] MocaTransactionManager [0] Rollback []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] MocaTransactionManager [0] Calling rollback []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] NonXAMocaDBConnection [0] Rolling back non xa tx - < formatId=131077, gtrid_length=29, bqual_length=36, tx_uid=0:ffff0a988412:ed72:5be1ed5d:11041, node_name=1, branch_uid=0:ffff0a988412:ed72:5be1ed5d:11043, subordinatenodename=null, eis_name=0 > []
+2018-11-07 10:51:47,699 DEBUG [1183 8320] NonXAMocaDBConnection [0] Unassociated transaction TransactionImple < ac, BasicAction: 0:ffff0a988412:ed72:5be1ed5d:11041 status: ActionStatus.ABORTED > []
+2018-11-07 10:51:47,714 DEBUG [1183 8320] ConnectionPoolDataSource [0] Returning wmuat-00000a to the db pool. []
+2018-11-07 10:51:47,714 DEBUG [1183 8320] MinIdleBlockingPool [0] Object returned to pool [Connection]: busy: 1, idle: 14, started 15 / 100 []
+2018-11-07 10:51:47,714 DEBUG [1183 8320] CommandDispatcher [0] Returning error 510 to client []
+2018-11-07 10:51:47,714 DEBUG [1183 8320] CommandDispatcher [0] No data found. []
+2018-11-07 10:51:47,714 DEBUG [1183 8320] Activity [0] command="publish data where wh_id = 'PNRDC' and cancod = 'C-R-U' and wrkref = 'W0000003P32J' and schbat = 'GGHHGG' | [select rtnum1 as shtpckenabled from poldat_view where polcod='USR' and polvar='SHORT-PICK-WORK' and polval='ENABLED' and wh_id=nvl(@wh_id,@@wh_id)] catch (@?) | if (@?=0 and @shtpckenabled = 1) { if(@cancod='C-R-U' OR @cancod='PRE-CAN') { /* Update Pick work Header when Unassign flag is ON and Pick Status is Unassigned */ [update pckwrk_hdr set inv_attr_str18 = '1' where wrkref=nvl(@wrkref,@oldref) and schbat=@schbat and pcksts='U' and unassign_flg=1 and wh_id=nvl(@wh_id,@@wh_id)] catch(@?) | if (@?=0) { [select rtstr1 as shtpckmz_id , rtstr2 as shtpckrescod from poldat_view where polcod='USR' and polvar='SHORT-PICK-WORK' and polval='MOVE-ZONE-ID' and rtnum1=1 and wh_id=nvl(@wh_id,@@wh_id)]catch(@?) | if (@?=0) { [update pckwrk_dtl set dst_mov_zone_id = @shtpckmz_id where wrkref=nvl(@wrkref,@oldref) and schbat = @schbat and wh_id=nvl(@wh_id,@@wh_id)] catch(@?) | if (@?=0) { [update pckmov set mov_zone_id = @shtpckmz_id, rescod = @shtpckrescod, seqnum = seqnum + 1 where cmbcod in (select cmbcod from pckwrk_dtl where wrkref=nvl(@wrkref,@oldref) and schbat = @schbat and wh_id=nvl(@wh_id,@@wh_id))] catch(-1403) | [select distinct mov_zone_id src_mov_zon_id, cmbcod, lodlvl from locmst l join pckwrk_view pv on l.stoloc = pv.srcloc and l.wh_id = pv.wh_id and pv.wrkref = @wrkref] catch(-1403) | [select md.hop_mov_zone_id from mov_path mp left join mov_path_dtl md on md.src_mov_zone_id = mp.src_mov_zone_id and md.dst_mov_zone_id = mp.dst_mov_zone_id and md.lodlvl = mp.lodlvl left join mov_zone mz_src on mz_src.mov_zone_id = md.src_mov_zone_id left join mov_zone mz_dst on mz_dst.mov_zone_id = md.dst_mov_zone_id left join mov_zone mz_hop on mz_hop.mov_zone_id = md.hop_mov_zone_id where mp.src_mov_zone_id = @src_mov_zon_id and mp.dst_mov_zone_id = @shtpckmz_id ] catch(-1403) | [insert into pckmov(cmbcod, seqnum, mov_zone_id, wh_id, stoloc, rescod, arrqty, prcqty) (select cmbcod, seqnum -1, @hop_mov_zone_id, wh_id, stoloc, rescod, arrqty, prcqty from pckmov pm where pm.cmbcod = @cmbcod and pm.seqnum = (select min(seqnum) from pckmov t where t.cmbcod = @cmbcod))] catch(-1403) } } } } } ; [select 'x' from dual where 1=2]" duration="31" env="{USR_ID=9849, WEB_SESSIONID=c8e59a01f2c88320, SESSION_KEY=;uid=9849|sid=52969703-104f-4900-a967-48fffe886b90|dt=jo69nsdd|sec=ALL;z.H_Kgiy6vBg4i79RIBi04M2.0, LOCALE_ID=US_ENGLISH, WEB_CLIENT_ADDR=10.168.234.73, MOCA_APPL_ID=WinMSQL}" error="510" rowCount="0" []
+2018-11-07 10:51:47,714 DEBUG [1183 8320] CommandDispatcher [0] Executing Activity Hook: com.redprairie.mcs.hooks.AuditCommandDispatchHook []
+2018-11-07 10:51:47,714 DEBUG [1183 8320] CommandDispatcher [0] Releasing Session context.  []
+2018-11-07 10:51:47,714 DEBUG [1183 8320] DefaultServerContext [0] Server Context Closed []
+2018-11-07 10:51:47,714 DEBUG [1183 8320] MocaTransactionManager [0] Rollback []
+2018-11-07 10:51:47,714 DEBUG [1183 8320] CommandDispatcher [0] Dispatched command []
+2018-11-07 10:51:50,605 DEBUG [1259 8320] CommandDispatcher [0] Dispatching command... []
+2018-11-07 10:51:50,605 DEBUG [1259 8320] CommandDispatcher [0] Server got: set trace where activate = 0  []
+2018-11-07 10:51:50,605 DEBUG [1259 8320] DefaultServerContext [0] Parsing command...  []
+2018-11-07 10:51:50,605 DEBUG [1259 8320] DefaultServerContext [0] Parsed command []
+2018-11-07 10:51:50,605 DEBUG [1259 8320] DefaultServerContext [0] Executing... []
+2018-11-07 10:51:50,605 DEBUG [1259 8320] DefaultServerContext [1] Looking up command: set trace []
+2018-11-07 10:51:50,605 DEBUG [1259 8320] Argument [1] Argument  activate=0  (INTEGER) []
+2018-11-07
