@@ -1,0 +1,20 @@
+/* Below query get voice events logged to user 8820*/
+[select to_char(h.cre_dt, 'HH24:MI:SS') hh24,
+        (h2.cre_ts - h.cre_ts) tottime,
+        h.ifd_id,
+        d.ifd_seg_data,
+        h.evt_data_seq,
+        h.dwnld_seq,
+        d2.ifd_seg_data
+   from sl_ifd_data_hdr h,
+        sl_ifd_data_hdr h2,
+        sl_ifd_data_dtl d,
+        sl_ifd_data_dtl d2
+  where to_char(h.cre_dt, 'yyyy-mm-dd') = '2019-04-17'
+    and h.ifd_id not like '%RESP'
+    and (h.evt_data_seq = h2.evt_data_seq and h2.ifd_id like '%RESP')
+    and h.ifd_data_seq = d.ifd_data_seq
+    and h2.ifd_data_seq = d2.ifd_data_seq
+    and h.sys_id = 'VOICE'
+    and d.ifd_seg_data like '%8820%'
+  order by h.ifd_data_seq]
