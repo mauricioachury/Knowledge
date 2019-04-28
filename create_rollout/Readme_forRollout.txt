@@ -40,4 +40,4 @@ Procedure:
         
 
 Use below command to build rollout as example:
-java -jar BuildRollout.jar -d https://ascensionlogistics.svn.cloudforge.com/alxsuite/ -u sni -w cloudforge,16 -m services/JMS/2017.2/LES -t artf153999,artf152302 -r JMS-RF-SMART-PICK-03
+java -jar BuildRollout.jar -d https://ascensionlogistics.svn.cloudforge.com/alxsuite/ -u sni -w cloudforge,16 -m services/JMS/2017.2/LES -t artf156700,artf153999,artf152302 -r JMS-RF-SMART-PICK-04

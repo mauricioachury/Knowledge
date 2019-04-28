@@ -81,3 +81,20 @@ where s1.sid = l1.sid
  and l2.request > 0
  and l1.id1 = l2.id1
  and l1.id2 = l2.id2]
+ 
+/* List top 10 expensive query */
+[select *
+   from (select buffer_gets,
+                physical_read_bytes/(1024*1024) physical_read_mb,
+                disk_reads,
+                sorts,
+                user_io_wait_time / 1000000 user_io_wait_time_sec,
+                elapsed_time / 1000000 elapsed_time_sec,
+                cpu_time/1000000 cpu_sec,
+                executions,
+                rows_processed,
+                sql_id,
+                sql_text
+           from v$sqlstats
+           order by cpu_time desc)
+     where rownum <10]
