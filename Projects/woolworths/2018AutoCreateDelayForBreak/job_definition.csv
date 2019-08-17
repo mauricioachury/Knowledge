@@ -1,0 +1,2 @@
+job_id,role_id,name,enabled,type,command,log_file,trace_level,overlap,schedule,start_delay,timer,grp_nam
+USR-CREATE-DELAY-FOR-BREAK,JOBS,"process usr auto create delay for break",1,timer,"[select wh_id from wh] | process usr auto create delay for break where wh_id = @wh_id",$LESDIR/log/usr_create_delay_for_break.log,,0,,0,1800,USR

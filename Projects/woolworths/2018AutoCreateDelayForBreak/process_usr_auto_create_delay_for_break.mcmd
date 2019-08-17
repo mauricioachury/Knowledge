@@ -1,0 +1,144 @@
+<command>
+  <name>process usr auto create delay for break</name>
+  <description>process usr auto create delay for break</description>
+  <type>Local Syntax</type>
+  <local-syntax>
+<![CDATA[
+validate stack variable not null
+   where name = 'wh_id'
+|
+/* Note for below policy:
+ * rtnum1 means enable/disable.
+ */
+[select 'x'
+   from poldat_view
+ where polcod = 'USR'
+   and polvar = 'AUTO-CREATE-DELAY-FOR-BREAK'
+   and polval = 'ENABLED'
+   and rtnum1 = 1
+   and wh_id = @wh_id] catch(-1403)
+|
+if (@? = 0 )
+{
+    /* Get all assignments that completed today and with break taken, but
+     * without policy defined adjustment created yet.
+     * The job_code_mapping exists check will make sure the assignment
+     * is only for measured assginment.
+     */
+    [select j.jobcodeid break_type,
+            k.adj_start_time break_start_time,
+            k.kvisummaryintid
+       from kvi_adjustments k,
+            kvi_summary a,
+            jobcode j
+      where a.kvisummaryintid = k.kvisummaryintid
+        and j.jobcodeintid = k.jobcodeintid
+        and a.status = 'C'
+        and to_char(a.stop_time, 'yyyy-mm-dd') = to_char(sysdate, 'yyyy-mm-dd')
+        and j.jobcodeid in (select trim(rtstr1)
+                              from poldat_view
+                             where polcod = 'USR'
+                               and polvar = 'WALK-TIME'
+                               and polval = 'TIME-FOR-BREAK'
+                               and wh_id = @wh_id)
+        and not exists (select 'x'
+                          from kvi_adjustments k2
+                          join jobcode j2
+                            on k2.jobcodeintid = j2.jobcodeintid
+                           and j2.jobcodeid in (select trim(rtstr2)
+                                                  from poldat_view
+                                                 where polcod = 'USR'
+                                                   and polvar = 'WALK-TIME'
+                                                   and polval = 'TIME-FOR-BREAK'
+                                                   and wh_id = @wh_id)
+                           and k2.kvisummaryintid = k.kvisummaryintid
+                           and k2.adj_start_time = k.adj_start_time
+                           and j2.wh_id = @wh_id)
+         and exists (select 'x' from job_code_mapping jcm where jcm.jobcodeintid = a.jobcodeintid)
+         and j.wh_id = @wh_id
+        order by kvisummaryintid,
+                 break_start_time] catch(-1403)
+    |
+    if (@? = 0)
+    {
+        /* We need to get actual_seconds here as same assignment there
+         * maybe multiple breaks and we are keeping deduct 'WALK TIME'
+         * from the assignment.
+         */
+        [select actual_seconds actual_seconds_for_assignment
+           from kvi_summary
+          where kvisummaryintid = @kvisummaryintid]
+        |
+        [select nvl(rtnum1, 0) minutes_walk_for_break,
+                nvl(rtnum2, 0) seconds_walk_for_break,
+                trim(rtstr2) jobcodeid_for_walk
+           from poldat_view
+          where polcod = 'USR'
+            and polvar = 'WALK-TIME'
+            and polval = 'TIME-FOR-BREAK'
+            and trim(rtstr1) = @break_type
+            and wh_id = @wh_id] catch(-1403)
+        |
+        if (@? = 0
+             and (@minutes_walk_for_break * 60 + @seconds_walk_for_break) > 0
+             and (@minutes_walk_for_break * 60 + @seconds_walk_for_break) < @actual_seconds_for_assignment)
+        {
+            [select jobcodeintid delay_jobcodeintid
+               from jobcode
+              where jobcodeid = @jobcodeid_for_walk
+                and wh_id = @wh_id] catch(-1403)
+            |
+            if (@? = 0)
+            {
+                /* 'creaet adjustment' will create kvi_adjustment, and take
+                 * care of kvi_summary update as well.
+                 */
+                create adjustment
+                 where adj_jobcodeintid = @delay_jobcodeintid
+                   and isbreak = 0
+                   and ispaid = 1
+                   and adj_start_time = @break_start_time
+                   and adj_duration_min = @minutes_walk_for_break
+                   and adj_duration_sec = @seconds_walk_for_break
+                   and crncy_code = 'AUD'
+                   and adj_blended_cost_crncy = 'AUD'
+                   and adj_blended_cost = 0.0
+                   and adj_payroll_cost_crncy = 'AUD'
+                   and adj_payroll_cost = 0.0
+                   and pending_flg = 0
+                   and kvisummaryintid = @kvisummaryintid
+                   and log_adjustment_history_flag = 1
+                   and bypass_approval = 1
+                   and set_pending_date = 1
+            }
+        }
+    }
+}
+]]>
+</local-syntax>
+<documentation>
+
+<remarks>
+<![CDATA[
+  <p>
+   This command is developped for job 'USR-CREATE-DELAY-FOR-BREAK'
+   to auto 'DELAY' in kvi_adjustment as 'WALK TIME' after each type of break:
+       A. Check policy 'AUTO-CREATE-DELAY-FOR-BREAK', if the policy is disabled
+          then skip rest of steps, otherwise go to step B.
+       B. Get all breaks taken without corresponding 'WALKTIME' adjustment created
+          for assignments which are completed today.
+       C. With break type, check the policy 'WALK-TIME' get 'TIME-FOR-BREAK',
+          if the number of seconds is more than the actual seconds spent
+          on the assignment, then skip doing anything, otherwise do:
+       D. Create one adjustment with policy defined job code for 'Walk Time',
+          start adjustment time as system time, and insert date as system date.
+       E. Continue next break and go to step B.
+
+                                                   Consulting team: Sam Ni.
+  </p>
+]]>
+</remarks>
+<argument name="wh_id" required="yes" datatype="">Warehouse id</argument>
+
+</documentation>
+</command>

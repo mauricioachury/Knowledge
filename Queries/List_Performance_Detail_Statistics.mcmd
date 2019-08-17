@@ -1,0 +1,67 @@
+<command>
+
+<name>list performance detail statistics</name>
+
+<description>list performance detail statistics</description>
+
+<type>Local Syntax</type>
+
+<local-syntax>
+
+<![CDATA[
+
+     ^list performance detail statistics >> perf_res
+     |
+     [[
+       import com.redprairie.moca.*
+       import com.redprairie.moca.MocaException
+       import com.redprairie.moca.util.*
+       
+       EditableResults returnRS = new SimpleResults();
+       MocaUtils.copyColumns(returnRS, perf_res);
+       
+       if (perf_res.hasNext()) {
+           RowIterator iterator = perf_res.getRows();
+           while (iterator.next()) {
+               String jobcodeid = iterator.getString("jobcodeid");
+               String usr_id = iterator.getString("usr_id");
+               String assign_num = iterator.getString("assign_num");
+               boolean skip_flg = false;
+
+               /* For INEXT, if there is newer assignment for the same user, skip displaying the INEXT record*/
+               if (jobcodeid.equals("INEXT")) {
+                   MocaResults rs = moca.executeInline(
+                                    "[select 'x' from dual " +
+                                    " where exists (select 'x' " +
+                                    "                 from ct_Statistics_Performance csp " +
+                                    "                where csp.usr_id = '" + usr_id + "'" +
+                                    "                  and csp.assign_num > '" + assign_num + "')] catch(-1403)");
+                   if (rs.next()) {
+                       skip_flg = true;
+                   }
+               }
+               
+               if (!skip_flg) {
+                   MocaUtils.copyCurrentRowByIndex(returnRS, iterator);
+               }
+           }
+           return returnRS;
+       }
+     ]]
+]]>
+</local-syntax>
+
+<documentation>
+<remarks>
+<![CDATA[
+  <p>
+  This command is used to provide a temp fix for issue of 'INEXT' is not deleted correctly after new assignment created.
+  After LM-19249 fixed and delivered, this temp fix should be removed.
+  </p>
+
+]]>
+</remarks>
+
+
+</documentation>
+</command>

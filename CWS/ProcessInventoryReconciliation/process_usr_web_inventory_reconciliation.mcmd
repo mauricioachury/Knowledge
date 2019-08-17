@@ -1,0 +1,12 @@
+<command>
+  <name>process usr web inventory reconciliation</name>
+  <description>Generate Usr Inventory Reconciliation for Department</description>
+  <type>Local Syntax</type>
+  <local-syntax>
+<![CDATA[
+noop
+]]>
+</local-syntax>
+  <argument name="wh_id" datatype="string">Warehouse Id</argument>
+  <argument name="dept_cod" datatype="string">SAP Cost Center</argument>
+</command>

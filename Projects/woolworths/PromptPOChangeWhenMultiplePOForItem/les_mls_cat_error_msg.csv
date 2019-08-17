@@ -1,0 +1,2 @@
+mls_id,locale_id,prod_id,appl_id,frm_id,vartn,srt_seq,cust_lvl,mls_text,grp_nam
+err99991,US_ENGLISH,LES,LES,LES,LES,0,10,"Multiple POs found for item, correct PO if needed, current PO is ^cur_po_num^.",rdt_data

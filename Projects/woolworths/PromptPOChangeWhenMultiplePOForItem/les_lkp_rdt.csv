@@ -1,0 +1,2 @@
+lkp_id,cust_lvl,lkp_cmd,lkp_comp,ret_fld,grp_nam,static_cmd_flg
+r_usr_rcv_id,10,"list usr rf receive id available for receipt where devcod = '@global.devcod' and wh_id = '@global.wh_id'",,,dcs_rdt,0

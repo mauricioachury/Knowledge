@@ -1,0 +1,36 @@
+/* This script will find shipping pick, if we cancel it, it will trigger cancelling demand replenishment pick*/
+[select pv.srcloc,
+        pv.wh_id,
+        pv.pckqty,
+        lm.maxqvl,
+        lm.curqvl,
+        lm.pndqvl,
+        q.pndqvl q_pndqvl,
+        q.reccnt
+   from pckwrk_view pv
+   join locmst lm
+     on pv.srcloc = lm.stoloc
+    and pv.wh_id = lm.wh_id
+   left join (select sum(pndqvl) pndqvl,
+                     count(*) reccnt,
+                     stoloc,
+                     wh_id
+                from qvlwrk
+               group by stoloc, wh_id) q
+     on lm.stoloc = q.stoloc
+    and lm.wh_id = q.wh_id
+  where pv.ship_line_id is not null
+    and pv.list_id is not null
+    and pv.pckqty > pv.appqty
+    and lm.loccod = 'P'
+    and exists (select 'x'
+                  from pckwrk_view pv2 
+                 where pv2.ship_line_id is null 
+                   and pv2.pckqty > pv2.appqty 
+                   and pv2.dstloc = pv.srcloc)
+    and exists (select 'x'
+                  from invsum
+                 where stoloc = pv.srcloc
+                   and untqty > (comqty - pv.pckqty)
+                   and wh_id = @wh_id)
+    order by srcloc, pckqty desc]

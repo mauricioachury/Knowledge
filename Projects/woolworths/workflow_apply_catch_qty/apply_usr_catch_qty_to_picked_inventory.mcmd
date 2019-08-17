@@ -1,0 +1,46 @@
+
+if (@src_catch_qty > 0 and @wrkref <> '')
+{
+    [select sum(catch_qty) inv_catch_qty
+       from invdtl
+      where wrkref = @wrkref]
+    |
+    if (@src_catch_qty <> @inv_catch_qty)
+    {
+        [select sum(untqty) totqty 
+           from invdtl
+          where wrkref = @wrkref]
+        |
+        if (@totqty > 0)
+        {
+             publish data
+               where avg_catch_qty = @src_catch_qty / @totqty
+             |
+             [select dtlnum, untqty
+                from invdtl
+               where wrkref = @wrkref
+                order by dtlnum]
+             |
+             [update invdtl
+                 set catch_qty = @avg_catch_qty * @untqty
+               where dtlnum = @dtlnum]
+             ;
+             [update pckwrk_hdr
+                set pck_catch_qty = @src_catch_qty,
+                    app_catch_qty = @src_catch_qty
+              where wrkref = @wrkref]
+             ;
+             [select ship_line_id,
+                     sum(catch_qty) line_catch_qty
+               from invdtl
+              where wrkref = @wrkref
+              group by ship_line_id]
+             |
+             [update pckwrk_dtl
+                 set pck_catch_qty = @line_catch_qty,
+                     app_catch_qty = @line_catch_qty
+               where wrkref = @wrkref
+                 and ship_line_id = @ship_line_id]
+        }
+    }
+}

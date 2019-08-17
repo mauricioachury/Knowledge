@@ -1,0 +1,18 @@
+<command>
+  <name>list usr web inventory reconciliation</name>
+  <description>list usr web inventory reconciliation</description>
+  <type>Local Syntax</type>
+  <local-syntax>
+<![CDATA[
+[select distinct dscmst.colval dept_cod,
+        nvl(dscmst.lngdsc , dscmst.short_dsc) lngdsc,
+        prtmst.prt_client_id uc_client,
+        prtmst.wh_id_tmpl wh_id
+   from dscmst 
+   join prtmst on prtmst.dept_cod = dscmst.colval
+    and dscmst.colnam = 'dept_cod'
+    and dscmst.locale_id = nvl (@locale_id,@@locale_id)
+    and prtmst.wh_id_tmpl = nvl(@wh_id,@@wh_id)] catch(-1403)
+]]>
+</local-syntax>
+</command>

@@ -1,0 +1,21 @@
+<action>
+
+<id>listusrinvreconopr</id>
+<name>Usr Inventory Reconciliation</name>
+<description>Inventory Reconciliation Operations.</description>
+<type>LIST</type>
+
+<ws>
+<method>GET</method>
+<href>/listusrinvreconopr</href>
+</ws>
+
+<impl>
+<command>list usr web inventory reconciliation</command>
+</impl>
+
+<auth>
+<opt>optOpen</opt>
+</auth>
+<primary>true</primary>
+</action>

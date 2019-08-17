@@ -1,0 +1,3 @@
+polcod,polvar,polval,srtseq,rtstr1,rtstr2,rtnum1,rtnum2,rtflt1,rtflt2,moddte,mod_usr_id,grp_nam,wh_id_tmpl
+USR,PROMPT_PO_CHANGE,ENABLED,0,,,0,0,0,0,,SUPER,WOWTSD004,----
+USR,PROMPT_PO_CHANGE,ENABLED,0,,,1,0,0,0,,SUPER,WOWTSD004,PRDC

@@ -1,0 +1,9 @@
+[analyze table prtftp compute statistics]
+|
+[analyze table prtftp_dtl compute statistics]
+|
+[analyze table prtmst compute statistics]
+|
+[analyze table rimhdr compute statistics]
+|
+[analyze table rimlin compute statistics]

@@ -1,0 +1,20 @@
+<action>
+<id>processInventoryReconciliation</id>
+<name>Process Reconciliation</name>
+<description>To trigger Inventory Reconciliation interface</description>
+<type>ACTION</type>
+<ws>
+<method>POST</method>
+<href>/processInventoryReconciliation</href>
+</ws>
+<impl>
+<command>generate usr inventory reconciliation for department</command>
+<arguments>
+<argument name="dept_cod" type="string" required="true" description="SAP Cost Centre Code"/>
+</arguments>
+</impl>
+<auth>
+<opt>optOpen</opt>
+</auth>
+<primary>true</primary>
+</action>

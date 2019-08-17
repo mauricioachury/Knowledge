@@ -1,0 +1,2 @@
+var_nam,appl_id,frm_id,addon_id,srt_seq,cust_lvl,lkp_id,ret_fld,inp_fld,grp_nam,ena_flg,mult_flg
+rcv_id,dcsrdt,UNDIR_IDENTIFY,LES,0,10,r_usr_rcv_id,,,dcs_rdt,1,1

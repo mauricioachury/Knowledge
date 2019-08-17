@@ -1,0 +1,111 @@
+<command>
+
+<name>list usr rf receive id available for receipt</name>
+
+<description>list usr rf receive id available for receipt</description>
+
+<type>Local Syntax</type>
+
+<local-syntax>
+<![CDATA[
+    /* The dev_varnam has value with format:
+     * USR_ITM_MULTI_PO_CHK|PRTNUM|TRKNUM.
+     * we need to get prtnum for list correct POs.
+     */
+    [select dev_varnam strval
+       from device_context dc
+      where dc.devcod = @devcod
+        and dc.dev_varnam like 'USR_ITM_MULTI_PO_CHK|%'
+        and dc.wh_id = @wh_id
+        and rownum <2] catch(-1403) 
+    |
+    if (@? = 0)
+    {
+        [select instr(@strval, '|') idx, length(@strval) len
+           from dual]
+        |
+        [select substr(@strval, @idx + 1, @len) prtnum_trknum
+           from dual]
+        |
+        [select instr(@prtnum_trknum, '|') idx, length(@prtnum_trknum) len
+           from dual]
+        |
+        [select substr(@prtnum_trknum, 1, @idx - 1) prtnum,
+                substr(@prtnum_trknum, @idx + 1, @len) trknum
+           from dual]
+        |
+        [select distinct r.invnum, r.po_num
+           from rcvlin l
+           join rcvinv r
+             on l.invnum = r.invnum
+            and l.trknum = r.trknum
+            and l.client_id = r.client_id
+            and l.supnum = r.supnum
+            and l.wh_id = r.wh_id
+          where r.trknum = @trknum
+            and r.wh_id = @wh_id
+            and l.prtnum = @prtnum
+            and exists (select sum(expqty) expqty,
+                                           sum(idnqty) idnqty,
+                                           trknum,
+                                           client_id,
+                                           invnum,
+                                           prtnum
+                                      from rcvlin
+                                     where trknum = @trknum
+                                       and prtnum = @prtnum
+                                     group by trknum,
+                                              client_id,
+                                              invnum,
+                                              prtnum
+                                       having(sum(expqty) > sum(idnqty)))
+          order by po_num] catch(-1403)
+          |
+          if (@? = -1403)
+          {
+              /* If completely received, then clean device_context record, 
+               * as it is most like residue record
+               */
+              [delete
+               from device_context dc 
+              where dc.devcod = @devcod
+                and dc.dev_varnam like 'USR_ITM_MULTI_PO_CHK|%'
+                and dc.wh_id = @wh_id]
+          }
+          else
+          {
+               publish data
+                where rcv_id = @po_num
+          }
+    }
+    else
+    {
+        /* Call standard code for lookup */
+        list rf receive id available for receipt
+          where wh_id = @wh_id
+    }
+]]>
+</local-syntax>
+
+<documentation>
+<remarks>
+<![CDATA[
+  <p>
+  This lookup command return recieve ID, when there is record in device_context
+  then it means this is a scenario of user receiving an item from multiple POs,
+  for which we need to return record based on item and trknum stored,
+  otherwise call standard lookup.
+  </p>
+]]>
+</remarks>
+
+<retcol name="trknum" type="COMTYP_CHAR">Truck Number</retcol>
+<retcol name="client_id" type="COMTYP_CHAR">Client ID</retcol>
+<retcol name="invum" type="COMTYP_CHAR">Invoice Number</retcol>
+<retcol name="wh_id" type="COMTYP_CHAR">Warehouse ID</retcol>
+<retcol name="devcod" type="COMTYP_CHAR">Device Code</retcol>
+
+<exception value="eOK">Normal successful completion</exception>
+
+</documentation>
+</command>

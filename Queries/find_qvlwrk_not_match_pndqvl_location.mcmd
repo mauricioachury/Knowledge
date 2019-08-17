@@ -1,0 +1,86 @@
+[select stoloc, wh_id, 'PF' cat
+   from rplcfg r
+  where r.stoloc is not null
+ union all
+ select stg.stoloc, stg.wh_id, 'STG' cat
+   from locmst stg
+   join loc_typ lt
+     on stg.loc_typ_id = lt.loc_typ_id
+    and lt.stgflg = 1
+   order by stoloc]
+|
+[select loccod, maxqvl, curqvl, nvl(pndqvl, 0) pndqvl
+   from locmst
+  where stoloc = @stoloc
+    and wh_id = @wh_id]
+|
+[select nvl(sum(pndqvl), 0) q_pndqvl
+   from qvlwrk q
+  where q.stoloc = @stoloc
+    and q.wh_id = @wh_id]
+|
+if (@pndqvl <> @q_pndqvl)
+{
+    publish data
+      where find_dis = 1
+}
+else
+{
+    /* Now qvlwrk matches with locmst.pndqvl, let's check if it real match by looking at acutal pending inventory*/
+   if (@loccod = 'P')
+   {
+       [select nvl(count(lodnum), 0) lodcnt from
+        (select iv.lodnum
+          from inventory_view iv
+          join invmov im
+            on iv.lodnum = im.lodnum
+           and im.lodlvl = 'L'
+         where im.stoloc = @stoloc
+           and im.wh_id = @wh_id
+      union 
+        select iv.lodnum
+          from inventory_view iv
+          join invmov im
+            on iv.subnum = im.lodnum
+           and im.lodlvl = 'S'
+         where im.stoloc = @stoloc
+           and im.wh_id = @wh_id
+      union
+        select iv.lodnum
+          from inventory_view iv
+          join invmov im
+            on iv.dtlnum = im.lodnum
+           and im.lodlvl = 'D'
+         where im.stoloc = @stoloc
+           and im.wh_id = @wh_id) pndlod]
+       |
+       [select nvl(count(wrkref), 0) wrkcnt
+          from pckwrk_view pv
+         where pv.dstloc = @stoloc
+           and pv.wh_id = @wh_id
+           and pv.pckqty > pv.appqty
+           --and pv.pcksts = 'R'
+           ]
+       |
+       if (@lodcnt + @wrkcnt <> @pndqvl)
+       {
+           publish data
+             where find_dis = 1
+               and lodcnt = @lodcnt
+               and wrkcnt = @wrkcnt
+       }
+   }
+}
+|
+if (@find_dis = 1)
+{
+    publish data
+      where stoloc = @stoloc
+        and cat = @cat
+        and maxqvl = @maxqvl
+        and curqvl = @curqvl
+        and pndqvl = @pndqvl
+        and qvlwrk_qvl = @q_pndqvl
+        and pndlod = nvl(@lodcnt, 0)
+        and pndwrk = nvl(@wrkcnt, 0)
+}

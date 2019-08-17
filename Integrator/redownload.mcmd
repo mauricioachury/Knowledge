@@ -1,0 +1,31 @@
+[select dwnld_seq
+   from sl_ifd_data_hdr
+  where evt_data_seq in ('437950185','','')
+  order by 1]
+|
+publish data
+  where dwnld_seq = @dwnld_seq
+|
+{
+    sl_list dwnld_ifd_hdr ver_2 where dwnld_seq = @dwnld_seq and max_rows = 100
+    |
+    publish data where ifd_data_seq = @data_seq
+    |
+    sl_mark in_ifd_for_reprocess  where ifd_data_seq = @ifd_data_seq 
+    ;
+    sl_process dwnld
+     where dwnld_seq = @dwnld_seq
+       and user_id = '99982' 
+}
+
+//Use below query to check download status:
+//ID: means Waiting download(not processed)
+[select count (*) cnt,
+ to_char(ins_dt, 'yyyy-mm-dd') dt,
+ dwnld_stat_cd,
+ sys_id
+from sl_dwnld
+group by dwnld_stat_cd,
+ to_char(ins_dt, 'yyyy-mm-dd'),
+ sys_id
+order by sys_id, dt desc]

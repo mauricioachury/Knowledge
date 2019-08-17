@@ -1,0 +1,189 @@
+diff --git a/config/mtf_server_config.properties b/config/mtf_server_config.properties
+index bc82928..139de8a 100644
+--- a/config/mtf_server_config.properties
++++ b/config/mtf_server_config.properties
+@@ -87,7 +87,7 @@ terminal.floodprotection=100
+ # server that will be allowed before turning away
+ # requests to connect - these rejected connections
+ # then go into the maxqueued list until that is full
+-terminal.maxcon=200
++terminal.maxcon= 3
+ # Number of accepted connections that will be queued 
+ # for further execution when the maxcon value has been 
+ # fulfilled against the server
+@@ -145,8 +145,8 @@ terminal.ssl-tls=false
+ #                       will only get written to the log file.
+ #
+ # NOTE: 3600000 milliseconds = 3600 seconds = 60 minutes = 1 hour
+-terminal.time_to_timedout=6300000
+-terminal.time_to_warning=900000
++terminal.time_to_timedout=300000
++terminal.time_to_warning=60000
+ 
+ # Debug set 20 secs, 10 secs
+ #sample.time_to_warning=20000
+diff --git a/data/mtf_logging.xml b/data/mtf_logging.xml
+index d7716f2..35c19f1 100644
+--- a/data/mtf_logging.xml
++++ b/data/mtf_logging.xml
+@@ -31,6 +31,16 @@
+             <param name="ConversionPattern" value="%d{ISO8601} %n%m%n"/>
+         </layout>
+     </appender>
++    <appender name="MtfSrvLogs" class="org.apache.log4j.RollingFileAppender">
++        <param name="Threshold" value="ALL"/>
++        <param name="File" value="${LESDIR}/log/mtf_srv_logs_${MTF_WAREHOUSE}_${VENDOR}_${PORT}.log"/>
++        <param name="Append" value="true"/>
++        <param name="MaxBackupIndex" value="20"/>
++        <param name="MaxFileSize" value="100MB"/>
++        <layout class="org.apache.log4j.PatternLayout">
++            <param name="ConversionPattern" value="%-5p: %d{ISO8601}  %-28t  %-41.41c{3}  %m%n"/>
++        </layout>
++    </appender>
+     
+     <appender name="SessionTraceAppender" class="com.redprairie.mtf.logging.SessionTraceAppender">
+         <param name="Threshold" value="ALL"/>
+@@ -44,7 +54,26 @@
+         <level value="INFO"/>
+         <appender-ref ref="MtfEventLogs"/>
+     </logger>
+-    
++    <logger name="com.redprairie.mtf.terminal.sessions">
++        <level value="ALL"/>
++        <appender-ref ref="MtfSrvLogs"/>
++    </logger>
++    <logger name="com.redprairie.mtf.terminal.shells">
++        <level value="ALL"/>
++        <appender-ref ref="MtfSrvLogs"/>
++    </logger>
++    <logger name="com.redprairie.mtf.terminal.executive">
++        <level value="ALL"/>
++        <appender-ref ref="MtfSrvLogs"/>
++    </logger>
++    <logger name="com.redprairie.mtf.daemon">
++        <level value="ALL"/>
++        <appender-ref ref="MtfSrvLogs"/>
++    </logger>
++    <logger name="net.wimpi.telnetd">
++    	<level value="ALL"/>
++        <appender-ref ref="MtfSrvLogs"/>
++    </logger>
+     <logger name="org.hibernate">
+     	<level value="WARN"/> 
+     </logger>
+diff --git a/src/java/net/wimpi/telnetd/io/TelnetIO.java b/src/java/net/wimpi/telnetd/io/TelnetIO.java
+index b8d8aa7..a7be93d 100644
+--- a/src/java/net/wimpi/telnetd/io/TelnetIO.java
++++ b/src/java/net/wimpi/telnetd/io/TelnetIO.java
+@@ -44,8 +44,10 @@ import net.wimpi.telnetd.net.Connection;
+ import net.wimpi.telnetd.net.ConnectionData;
+ import net.wimpi.telnetd.net.ConnectionEvent;
+ 
+-import org.apache.commons.logging.Log;
+-import org.apache.commons.logging.LogFactory;
++//import org.apache.commons.logging.Log;
++//import org.apache.commons.logging.LogFactory;
++
++import org.apache.log4j.Logger;
+ 
+ /**
+  * Class that represents the TelnetIO implementation. It contains an inner
+@@ -97,8 +99,10 @@ public class TelnetIO {
+     private boolean m_Initializing;
+     private boolean closing;
+     private boolean cr;
+-    private static final Log log = LogFactory.getLog(TelnetIO.class);
++//    private static final Log log = LogFactory.getLog(TelnetIO.class);
+     
++    private static final Logger log = Logger.getLogger(TelnetIO.class);
++
+     private static final int BYTE_READ_MODE = 0;
+     private static final int CHAR_READ_MODE = 1;
+ 
+@@ -520,6 +524,7 @@ public class TelnetIO {
+ 
+         try {
+             b = m_In.readUnsignedByte();
++            log.debug("1 Reading byte:" + b);
+             m_ConnectionData.activity();
+             return b;
+         }
+@@ -575,6 +580,7 @@ public class TelnetIO {
+ 
+         try {
+             b = m_Reader.read();
++            log.debug("2 Reading byte:" + b);
+             m_ConnectionData.activity();
+             return b;
+         }
+diff --git a/src/java/net/wimpi/telnetd/net/ConnectionManager.java b/src/java/net/wimpi/telnetd/net/ConnectionManager.java
+index 07859c8..14eff02 100644
+--- a/src/java/net/wimpi/telnetd/net/ConnectionManager.java
++++ b/src/java/net/wimpi/telnetd/net/ConnectionManager.java
+@@ -49,9 +49,10 @@ import java.util.Vector;
+ 
+ import net.wimpi.telnetd.BootException;
+ 
+-import org.apache.commons.logging.Log;
+-import org.apache.commons.logging.LogFactory;
++//import org.apache.commons.logging.Log;
++//import org.apache.commons.logging.LogFactory;
+ 
++import org.apache.log4j.Logger;
+ /**
+  * Class that takes care for active and queued connection. Housekeeping is done
+  * also for connections that were just broken off, or exceeded their timeout.
+@@ -83,7 +84,8 @@ public final class ConnectionManager extends Thread {
+     private int m_HousekeepingInterval; // interval for managing cleanups
+     private String m_LoginShell;
+     private boolean m_LineMode = false;
+-    private static final Log log = LogFactory.getLog(ConnectionManager.class);
++    //private static final Log log = LogFactory.getLog(ConnectionManager.class);
++    private static final Logger log = Logger.getLogger(ConnectionManager.class);
+ 
+     private ConnectionManager(int con, int queue, int timew, int timedis,
+             int hoke, ConnectionFilter filter, String lsh, boolean lm) {
+@@ -246,6 +248,11 @@ public final class ConnectionManager extends Thread {
+             // first we calculate the inactivity time
+             long inactivity = System.currentTimeMillis() - cd.getLastActivity();
+             // now we check for warning and disconnection
++            log.debug("getLastActivity:" + cd.getLastActivity());
++            log.debug("m_WarningTimeout:" + m_WarningTimeout);
++            log.debug("m_DisconnectTimeout:" + m_DisconnectTimeout);
++            log.debug("m_WarningTimeout + m_DisconnectTimeout:" + (m_WarningTimeout + m_DisconnectTimeout));
++            log.debug("inactivity:" + inactivity);
+             if (inactivity > m_WarningTimeout) {
+                 // ..and for disconnect
+                 if (inactivity > (m_DisconnectTimeout + m_WarningTimeout)) {
+@@ -339,6 +346,7 @@ public final class ConnectionManager extends Thread {
+             newCD.setLoginShell(m_LoginShell);
+             newCD.setLineMode(m_LineMode);
+             log.debug("Linemode=" + m_LineMode);
++            log.debug("SAM get host:" + newCD.getHostName() + ", get host address:" + newCD.getHostAddress() + ", on port:" + newCD.getPort());
+ 
+             if (m_Connections.size() < m_MaxConnections) {
+                 connect(newCD);
+diff --git a/src/java/net/wimpi/telnetd/net/PortListener.java b/src/java/net/wimpi/telnetd/net/PortListener.java
+index 40784cc..2d751f3 100644
+--- a/src/java/net/wimpi/telnetd/net/PortListener.java
++++ b/src/java/net/wimpi/telnetd/net/PortListener.java
+@@ -63,8 +63,9 @@ import net.wimpi.telnetd.net.ssh.SSHServerSocket;
+ import net.wimpi.telnetd.net.ssh.SSHSocket;
+ 
+ import org.apache.commons.lang3.StringUtils;
+-import org.apache.commons.logging.Log;
+-import org.apache.commons.logging.LogFactory;
++//import org.apache.commons.logging.Log;
++//import org.apache.commons.logging.LogFactory;
++import org.apache.log4j.Logger;
+ 
+ /**
+  * Class that implements a PortListener.<br>
+@@ -626,5 +627,6 @@ public final class PortListener extends Thread {
+     }
+     
+     // Constants
+-    private static final Log log = LogFactory.getLog(PortListener.class);
++    //private static final Log log = LogFactory.getLog(PortListener.class);
++    private static final Logger log = Logger.getLogger(PortListener.class);
+ }

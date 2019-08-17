@@ -1,0 +1,16 @@
+[select dstloc,
+        count(*) wq_cnt
+   from wrkque
+  where oprcod = 'PIARPL'
+    and exists(select 'x'
+                 from wrkque q2
+                where q2.dstloc = wrkque.dstloc
+                  and q2.oprcod = wrkque.oprcod
+                  and q2.wrksts = 'LOCK')
+  group by dstloc
+ having count(*) > 1]
+|
+[select *
+   from wrkque
+  where dstloc = @dstloc
+    and oprcod = 'PIARPL']

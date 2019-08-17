@@ -1,0 +1,7 @@
+/* Below query find users assgined with work queue page 'Cancel Work' menu*/
+[select uv.usr_dsp, lur.role_id
+   from les_usr_role lur join users_view uv on lur.usr_id = uv.usr_id
+join les_usr_ath lua on uv.usr_id = lua.usr_id
+  where role_id in (select ath_id
+                      from les_refs_opt_ath
+                     where opt_nam = 'system_work_cancel')]

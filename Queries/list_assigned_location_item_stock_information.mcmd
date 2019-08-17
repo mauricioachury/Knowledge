@@ -1,0 +1,69 @@
+[select r.stoloc,
+        r.prtnum,
+        pd.lngdsc,
+        pf.ftpcod,
+        l.maxqvl loc_maxqvl,
+        pf.grswgt carton_grswgt,
+        r.minunt / pf.untcas min_case_qty,
+        r.maxunt / pf.untcas max_case_qty,
+        nvl(im.untqty, 0) / pf.untcas case_in_hand,
+        nvl(ih.untqty, 0) / pf.untcas case_shipped_7days,
+        nvl(short_cnt, 0) short_count_7days
+   from rplcfg r
+   join locmst l
+     on r.stoloc = l.stoloc
+    and r.wh_id = l.wh_id
+   join prtmst_view pv
+     on r.prtnum = pv.prtnum
+    and r.prt_client_id = pv.prt_client_id
+    and r.wh_id = pv.wh_id
+   join prtftp_view pf
+     on pv.prtnum = pf.prtnum
+    and pv.prt_client_id = pf.prt_client_id
+    and pv.wh_id = pf.wh_id
+    and pf.defftp_flg = 1
+   join prtdsc pd
+     on pd.colnam = 'prtnum|prt_client_id|wh_id_tmpl'
+    and pd.colval = pv.prtnum || '|' || pv.prt_client_id || '|' || pv.wh_id
+   left
+   join (select sum(untqty) untqty,
+                prtnum,
+                prt_client_id,
+                wh_id
+           from invsum
+          group by prtnum,
+                prt_client_id,
+                wh_id) im
+     on pv.prtnum = im.prtnum
+    and pv.prt_client_id = im.prt_client_id
+    and pv.wh_id = im.wh_id
+   left
+   join (select sum(appqty) untqty,
+                pv.prtnum,
+                pv.prt_client_id,
+                pv.wh_id
+           from ship_struct_view ssv
+           join pckwrk_view pv
+             on ssv.ship_id = pv.ship_id
+            and ssv.wh_id = pv.wh_id
+          where ssv.dispatch_dte >= sysdate - 7
+          group by pv.prtnum,
+                pv.prt_client_id,
+                pv.wh_id) ih
+     on pv.prtnum = ih.prtnum
+    and pv.prt_client_id = ih.prt_client_id
+    and pv.wh_id = ih.wh_id
+   left
+   join (select count(*) short_cnt,
+                prtnum,
+                prt_client_id,
+                wh_id
+           from canshort
+          where canshort.candte >= sysdate - 7
+          group by prtnum,
+                prt_client_id,
+                wh_id) st
+     on pv.prtnum = st.prtnum
+    and pv.prt_client_id = st.prt_client_id
+    and pv.wh_id = st.wh_id
+  order by stoloc]

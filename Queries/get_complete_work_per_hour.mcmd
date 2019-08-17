@@ -1,0 +1,14 @@
+[select wh.oprcod,
+        dm.lngdsc,
+        count(distinct wh.reqnum) work_count,
+        to_char(wh.cmpdte, 'yyyy-mm-dd hh24') complete_hour
+   from wrkhst wh
+   join dscmst dm
+     on dm.colnam = 'oprcod|wh_id_tmpl'
+    and dm.colval = wh.oprcod || '|' || wh.wh_id
+  where wh.wrksts = 'CMPL'
+  group by wh.oprcod,
+        dm.lngdsc,
+        to_char(wh.cmpdte, 'yyyy-mm-dd hh24')
+  order by complete_hour,
+        oprcod];

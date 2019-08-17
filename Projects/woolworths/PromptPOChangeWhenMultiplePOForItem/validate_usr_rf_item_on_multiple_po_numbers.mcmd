@@ -1,0 +1,135 @@
+<command>
+
+<name>validate usr rf item on multiple po numbers</name>
+
+<description>validate usr rf item on multiple po numbers</description>
+
+<type>Local Syntax</type>
+
+<local-syntax>
+
+<![CDATA[
+    /* 
+     * PROMPT_PO_CHANGE needs to be enabed.
+     */
+    [select 'x'
+       from poldat_view
+      where wh_id = @wh_id
+        and polcod = 'USR'
+        and polvar = 'PROMPT_PO_CHANGE'
+        and polval = 'ENABLED'
+        and rtnum1 = 1] catch(-1403)
+    |  
+    if (@? = 0 and @invnum!= '' and @prtnum != '' and @trknum != '' and @devcod != '')
+    {
+        /* Check if the device already has LPN being checked*/
+        [select 'x'
+          from device_context dc
+         where dc.devcod = @devcod
+           and dc.dev_varnam = 'USR_ITM_MULTI_PO_CHK|' || @prtnum || '|' ||@trknum
+           and dc.wh_id = @wh_id
+           and rownum < 2] catch(-1403)
+        |
+        if (@? = 0)
+        {
+            /* This item as already prompted with multiple POs message,
+             * leave it for skip checking again.
+             */
+            noop;
+        }
+        else
+        {
+            /* Just clearnup if any record may associated with the devcod,
+             * e.g user scanned a different item.
+             */
+            execute server command with new transaction
+              where cmd = "[delete from device_context dc where dc.devcod = '" || @devcod
+                          || "' and dc.dev_varnam like 'USR_ITM_MULTI_PO_CHK|%' and dc.wh_id = '" || @wh_id
+                          || "'] catch(-1403)"
+            |
+            [select po_num cur_po_num
+               from rcvinv
+              where invnum = @invnum
+                and wh_id = @wh_id]
+            |
+            [select 'x'
+               from rcvlin r1
+              where exists (select 'x'
+                              from (select sum(expqty) expqty,
+                                           sum(idnqty) idnqty,
+                                           trknum,
+                                           client_id,
+                                           invnum,
+                                           prtnum
+                                      from rcvlin
+                                     group by trknum,
+                                              client_id,
+                                              invnum,
+                                              prtnum
+                                       having(sum(expqty) > sum(idnqty))) r2
+                          join rcvinv v2
+                            on r2.trknum = v2.trknum
+                           and r2.client_id = v2.client_id
+                           and r2.invnum = v2.invnum
+                           and v2.po_num <> @cur_po_num
+                         where r1.trknum = r2.trknum
+                           and r1.client_id = r2.client_id
+                           and r1.prtnum = r2.prtnum
+                           and r1.prtnum = @prtnum)
+            and invnum = @invnum
+            and wh_id = @wh_id
+            and rownum < 2] catch(-1403)
+            |
+            if (@? = 0)
+            {
+                /*Need to set dev_varnam with LPN becuase that is in PK */   
+                execute server command with new transaction
+                    where cmd = "[insert into device_context values('" || @devcod|| "','"
+                                 || @wh_id ||"','USR_ITM_MULTI_PO_CHK|" || @prtnum || '|' || @trknum
+                                 || "',0,'" || @invnum || "', sysdate, sysdate,'"
+                                 ||@@USR_ID ||"','"
+                                 ||@@USR_ID ||"')]"
+                ;
+                set return status
+                  where status = 99991
+                    and cur_po_num = @cur_po_num
+            }
+        }
+    }
+]]>
+
+</local-syntax>
+
+<argument name="wh_id" datatype="string">Warehouse ID</argument>
+<argument name="devcod" datatype="string">Device Code</argument>
+<argument name="trknum" datatype="string">Truck Number</argument>
+<argument name="invnum" datatype="string">Invocie Number</argument>
+<argument name="prtnum" datatype="string">Item Number</argument>
+
+<documentation> 
+
+<remarks>
+
+<![CDATA[
+    <p>
+    This command is used to validate if there multiple POs for the item on the
+    truck:
+    1. Check if policy 'PROMPT_PO_CHANGE' is on,if so do below.
+    2. Check if there is any uncompleted receiving invoice for the same item,
+       but from different PO number. if so:
+    3. Prompt the message togethe with the PO number user current is receiving
+       against.
+    4. For each item, we prompt only once the message, so if user want to continue
+       user just need to Enter again after seeing the message.
+    </p>
+                                                      Consulting Team: Sam Ni.
+]]>
+
+</remarks>
+
+<exception value="eOK">Normal successful completion</exception>
+<exception value="err99991">Multiple POs found for item, correct PO if needed, current PO is ^cur_po_num^.</exception>
+
+</documentation>
+
+</command>
