@@ -1,0 +1,981 @@
+<command>
+    <name>process voice pick</name>
+    <description>Process Voice Pick</description>
+    <type>Local Syntax</type>
+
+    <argument name="terminal" datatype="string"> </argument>
+    <argument name="operator" datatype="string"> </argument>
+    <argument name="assign_id" datatype="string"> </argument>
+    <argument name="work_id" datatype="string"> </argument>
+    <argument name="location_id" datatype="string"> </argument>
+    <argument name="qty_picked" datatype="integer"> </argument>
+    <argument name="picked_status" datatype="integer"> </argument>
+    <argument name="put_lpn" datatype="string"> </argument>
+    <argument name="work_req_id" datatype="integer"> </argument>
+    <argument name="lot_num" datatype="string"> </argument>
+    <argument name="catch_qty" datatype="string"> </argument>
+    <argument name="serial_num" datatype="string"> </argument>
+    <argument name="lpn" datatype="string"> </argument>
+    <argument name="revision_cd" datatype="string"> </argument>
+    <argument name="origin_cd" datatype="string"> </argument>
+    <argument name="supplier_cd" datatype="string"> </argument>
+    <argument name="discrepancy_type" datatype="string"> </argument>
+    <argument name="ending_serial_num" datatype="string"> </argument>
+    <argument name="asset_type" datatype="string"> </argument>
+    <argument name="wrkref" datatype="string"> </argument>
+    <argument name="sup_lotnum_cd" datatype="string"> </argument>
+    <argument name="mandte_cd" datatype="string"> </argument>
+    <argument name="expire_dte_cd" datatype="string"> </argument>
+    <argument name="rttn_id_cd" datatype="string"> </argument>
+    <argument name="captured_invtid" datatype="string"> </argument>
+    <argument name="cancelled_capture_flg" datatype="integer"> </argument>
+    <argument name="odrflg" datatype="string"> </argument>
+    <argument name="inv_attr_str1_cd" datatype="string"> </argument>
+    <argument name="inv_attr_str2_cd" datatype="string"> </argument>
+    <argument name="inv_attr_str3_cd" datatype="string"> </argument>
+    <argument name="inv_attr_str4_cd" datatype="string"> </argument>
+    <argument name="inv_attr_str5_cd" datatype="string"> </argument>
+    <argument name="inv_attr_str6_cd" datatype="string"> </argument>
+    <argument name="inv_attr_str7_cd" datatype="string"> </argument>
+    <argument name="inv_attr_str8_cd" datatype="string"> </argument>
+    <argument name="inv_attr_str9_cd" datatype="string"> </argument>
+    <argument name="inv_attr_str10_cd" datatype="string"> </argument>
+    <argument name="inv_attr_str11_cd" datatype="string"> </argument>
+    <argument name="inv_attr_str12_cd" datatype="string"> </argument>
+    <argument name="inv_attr_str13_cd" datatype="string"> </argument>
+    <argument name="inv_attr_str14_cd" datatype="string"> </argument>
+    <argument name="inv_attr_str15_cd" datatype="string"> </argument>
+    <argument name="inv_attr_str16_cd" datatype="string"> </argument>
+    <argument name="inv_attr_str17_cd" datatype="string"> </argument>
+    <argument name="inv_attr_str18_cd" datatype="string"> </argument>
+    <argument name="inv_attr_int1_cd" datatype="string"> </argument>
+    <argument name="inv_attr_int2_cd" datatype="string"> </argument>
+    <argument name="inv_attr_int3_cd" datatype="string"> </argument>
+    <argument name="inv_attr_int4_cd" datatype="string"> </argument>
+    <argument name="inv_attr_int5_cd" datatype="string"> </argument>
+    <argument name="inv_attr_flt1_cd" datatype="string"> </argument>
+    <argument name="inv_attr_flt2_cd" datatype="string"> </argument>
+    <argument name="inv_attr_flt3_cd" datatype="string"> </argument>
+    <argument name="inv_attr_dte1_cd" datatype="string"> </argument>
+    <argument name="inv_attr_dte2_cd" datatype="string"> </argument>
+
+    <local-syntax>
+        <![CDATA[
+
+/* This is the 2-way equivalent to the pick ODR so we will lock the context while it processes */
+lock voice device context
+    where terminal = @terminal
+      and odrflg = nvl(@odrflg, 0)
+|
+/* Get the Device Information (Locale, Warehouse, ...) */
+get voice device information
+|
+{
+    list device context values
+      where devcod = @terminal
+        and wh_id = @wh_id
+        and dev_varnam = @wrkref || '_orgWrkref'
+        and rownum < 2 catch(-1403)
+    |
+    if (@? = 0)
+    {
+        publish data where wrkref = @value
+    }
+}
+|
+{
+    /* Checking if the pick is still in the pick buffer. */
+    list pick buffer entries
+      where devcod = @terminal
+        and wh_id = @wh_id
+        and wrkref = @wrkref
+      catch (-1403)
+    |
+    /* If it isn't, then it has already been processed
+     * and we should exit with an appropriate error code. */
+    if (@? = -1403)
+    {
+        /* If we are using LUTs, we need to check if we have pending updates
+         * on the pick buffer. */
+        if (@use_lut = 2)
+        {
+            /* Checking if there are pending updates on the pick buffer. */
+            list pick buffer entries
+              where devcod = @terminal
+                and fetch_updates = 1
+              catch (-1403) >> res
+            |
+            /* If there are any pending updates we will send an error code
+             * of 13 back to the device to trigger another 'get picks' call.
+             * Otherwise, we will return an error code of 6 so the device
+             * knows to ignore it. */
+            publish data
+              where error_code = decode(rowcount(@res),
+                                        0, 6,
+                                        13)
+        }
+        |
+        if (@error_code = 6)
+        {
+            [select 'x'
+               from pckwrk_hdr ph
+              where ph.wrkref = @wrkref
+                and ph.pckqty > ph.appqty] catch(-1403)
+             |
+             if (@? = 0)
+             {
+                 /* If we return error 6 which is a continue picking scenario,
+                  * then it will end up with ghost picking: voice tells user
+                  * to pick, but WMS does not apply any pick.
+                  * Here we need to error out, so user should sign off deposit
+                  * the pallet to PnD and then later continue signon and resume
+                  * list picking.
+                  */
+                 set return status 
+                    where status = 99989
+             }
+             else
+             {
+                 publish data
+                   where error_code = @error_code
+             }
+        }
+        |
+        publish data
+          where error_code = nvl(@error_code, 0)
+            and error_descr = ""
+            and picked_status = 0
+    }
+}
+|
+/*
+ * If the picked status passed in is 0
+ * we will save both the quantity and catch quantity in the device context
+ * If the picked status is 1, which means this is the last message
+ * of the transaction
+ * We will add up all the quantities and catch quantities
+ * So that we will only have to call 'move inventory' once for all the
+ * inventory we picked in this session
+ */
+if (@catch_qty and @catch_qty != 0)
+{
+    /*
+     * We have to take care when we both have to capture serial number
+     * and catch quantity.
+     * As they may not capture at the same level.
+     */
+    if (@serial_num != '')
+    {
+        list device context values
+        where devcod = @terminal
+          and wh_id = @wh_id
+          and dev_varnam = @wrkref || '_sernum_mult'
+        |
+        publish data
+          where sernum_mult = @value
+        |
+        /*
+         * catch weight is captured at the picking level
+         * we have to divided it by the serial number multiplier so that
+         * it will be captured at the same level as serial number
+         * It would be easy to assign the catch quantity
+         * in move inventory when CONFIRM serial number or
+         * in process voice post pick when CAPTURE serial number
+         */
+        push device context value
+        where devcod = @terminal
+          and wh_id = @wh_id
+          and dev_varnam = @wrkref || '_catch_qty'
+          and value = trim((@catch_qty / @sernum_mult) || decode(@captured_invtid, '', '', '|' || @captured_invtid))
+        |
+        push device context value
+        where devcod = @terminal
+          and wh_id = @wh_id
+          and dev_varnam = @wrkref || '_ser_num'
+          and value = @serial_num
+        ;
+        /*
+         * The push device context will publish the value
+         * added to the moca context, which may affect the
+         * following command which depends on the same
+         * variable in the moca context.
+         * Using noop so that this value only exist inside
+         * this block
+         */
+        noop
+    }
+    else
+    {
+        push device context value
+        where devcod = @terminal
+          and wh_id = @wh_id
+          and dev_varnam = @wrkref || '_catch_qty'
+          and value = trim(@catch_qty || decode(@captured_invtid, '', '', '|' || @captured_invtid))
+        ;
+        /*
+         * The push device context will publish the value
+         * added to the moca context, which may affect the
+         * following command which depends on the same
+         * variable in the moca context.
+         * Using noop so that this value only exist inside
+         * this block
+         */
+        noop
+    }
+}
+else
+{
+    /*
+     * The operator is allowed to speak the serial number
+     * in range only if it is not catch weight captured.
+     */
+    if (@ending_serial_num != '')
+    {
+        /*
+         * If we pass in a ending_serial_num
+         * we will capture all the serial number in the
+         * range and save them into the device context
+         */
+        list voice serial number in range
+        where start_serial_number = @serial_num
+          and end_serial_number = @ending_serial_num
+        |
+        push device context value
+        where devcod = @terminal
+          and wh_id = @wh_id
+          and dev_varnam = @wrkref || '_ser_num'
+          and value = @ser_num
+        ;
+        noop
+    }
+    else if (@serial_num != '')
+    {
+        push device context value
+        where devcod = @terminal
+          and wh_id = @wh_id
+          and dev_varnam = @wrkref || '_ser_num'
+          and value = @serial_num
+        ;
+        /*
+         * The push device context will publish the value
+         * added to the moca context, which may affect the
+         * following command which depends on the same
+         * variable in the moca context.
+         * Using noop so that this value only exist inside
+         * this block
+         */
+        noop
+    }
+}
+|
+/* picked_status determines whether we are processing a pick
+ * discrepancy_type determines whether we are skipping or canceling
+ */
+if (@picked_status != 0 or @discrepancy_type != '')
+{
+    /* Set a save point before we do any of the pick processing. If any error
+     * occurs in the next block, it will be caught and any completed
+     * transactions before the error will not be rolled back like they normally
+     * would be. A customer found that since this rollback did not occur, they
+     * could complete a pick and still have an error occur on the pick leading to
+     * other issues in their system.
+     */
+    set savepoint
+    where savepoint = 'VOICE_PICK_SAVEPOINT'
+    |
+    /*
+     * if this is the last picked message in the transaction
+     * we will get the untqty and catch quantity from the device context
+     * and do the picking logic
+     */
+    {
+        if (@picked_status = 0
+            and @discrepancy_type = 0
+            and @wrkref)
+        {
+            /* This is a manual skip by the voice operator */
+            process skip pick
+              where wrkref = @wrkref
+                and devcod = @terminal
+                and wh_id = @wh_id
+                and snd_travel_time_flg = 1
+                and reacod = 'MANUAL_SKIP'
+            |
+            update location for voice list pick
+                where devcod = @terminal
+                  and process_pick = 1 catch(-1403)
+            |
+            /* We finished processing the wrkref so remove it from the pick buffer. */
+            remove pick buffer entries
+                where wh_id = @wh_id
+                  and devcod = @terminal
+                  and wrkref = @wrkref
+                catch (-1403)
+            ;
+        }
+        else if ((@discrepancy_type > 0 or (@discrepancy_type = -1 and @qty_picked = 0))
+                 and @wrkref)
+        {
+            update location for voice list pick
+                where devcod = @terminal
+                  and process_pick = 1 catch(-1403)
+            |
+            process voice cancel pick
+            |
+            /* We finished processing the wrkref so remove it from the pick buffer. */
+            remove pick buffer entries
+                where wh_id = @wh_id
+                  and devcod = @terminal
+                  and wrkref = @wrkref
+                catch (-1403)
+            ;
+        }
+        else if (@qty_picked
+                 and @wrkref)
+        {
+            get voice pick information where wrkref = @wrkref
+            |
+            publish data where qty_per_uom = @pckinfo_qty_per_uom
+            |
+            [select thresh_pck_flg, lodlvl
+               from pckwrk_hdr
+              where wrkref = @wrkref]
+            |
+            if(@thresh_pck_flg = 1)
+            {
+                if(@lodlvl = 'L')
+                {
+                    /* for threshold load picking, we should pick the whole
+                     * load to somewhere for splitting, so we calculate
+                     * qty_picked as the whole quantity of the load.
+                     */
+                    [select sum(untqty) qty_picked
+                       from invdtl, invsub
+                      where invdtl.subnum = invsub.subnum
+                        and invsub.lodnum = @lodnum]
+                }
+            }
+            else
+            {
+                /* Convert qty_picked by the UOM it was picked for. */
+                publish data
+                  where qty_picked = @qty_picked * @qty_per_uom
+            }
+            |
+            /* Set operator's new current location */
+            if (@location_id != '' and @curstoloc != @location_id)
+            {
+                change rf device
+                  where curstoloc = @location_id
+                    and devcod = @terminal
+                    and wh_id = @wh_id
+                |
+                publish data
+                  where curstoloc = @location_id
+            }
+            |
+            update location for voice list pick
+                where devcod = @terminal
+                  and process_pick = 1 catch(-1403)
+            |
+            /* If we were given a put-to LPN make sure it exists */
+            /*
+             * For cluster picking and bulk cluster picking
+             * we will pass the carton id as put_lpn.
+             * Since we want to put all the carton into the same
+             * pallet we will ignore the put_lpn for those
+             * two kind of picking and put all the cartons in the
+             * same assignment to the same load.
+             */
+            {
+                if (@put_lpn and @put_lpn != ''
+                   and @rftmod != 'C' and @rftmod != 'B')
+                {
+                    [select count(1) put_lpn_count
+                       from invlod
+                      where lodnum = @put_lpn
+                        and @+wh_id]
+                    |
+                    if (@rftmod = 'L' and @ctnpos = 1 and @put_lpn_count = 0)
+                    {
+                        /* Get the current load number for list pick with carton
+                        * when policy "" turned on.
+                        */
+                        [select distinct list_id
+                           from pckwrk_view
+                          where subnum = @work_id]
+                        |
+                        list device context values
+                          where devcod = @terminal
+                            and wh_id = @wh_id
+                            and dev_varnam = 'assignment_lodnum'
+                            and value like @list_id || '|%'
+                            and rownum < 2 catch (-1403)
+                        |
+                        publish data
+                          where put_lpn = substr(@value, instr(@value,'|')+1, len(@value)- len(substr(@value, 0, instr(@value,'|')-1)))
+                    }
+                    else if (@put_lpn_count = 0)
+                    {
+                        create consolidated load where lodnum = @put_lpn
+                            and stoloc = @terminal
+                        ;
+                        publish data where put_lpn = @put_lpn
+                    }
+                    else
+                    {
+                        publish data where put_lpn = @put_lpn
+                    }
+                }
+                else
+                {
+                    /* If we were not given one see if we need to find one */
+                    [select count(1) put_lpn_count
+                       from invlod
+                      where stoloc = @terminal
+                        and wh_id  = @wh_id]
+                    |
+                    get voice pick identifier where inpval = @wrkref
+                    |
+                    [select count(1) load_pick
+                       from pckwrk_hdr
+                      where pckwrk_hdr.wrkref = @actref
+                        and pckwrk_hdr.lodlvl = 'L' ]
+                    |
+                    if(@put_lpn_count > 0 and @load_pick = 0)
+                    {
+                        /* Non load pick and an LPN exists on the device */
+                        [select lodnum put_lpn
+                           from invlod
+                          where stoloc = @terminal
+                            and wh_id  = @wh_id
+                            and rownum = 1]
+                    }
+                    else if(@put_lpn_count = 0 and @load_pick = 0)
+                    {
+                        /* Non load pick and an LPN does not exist on the
+                         * device */
+                        generate next number where numcod = 'lodnum'
+                        |
+                        create consolidated load
+                          where stoloc = @terminal
+                            and wh_id  = @wh_id
+                            and lodnum = @nxtnum
+                        ;
+                        [select lodnum put_lpn
+                           from invlod
+                          where stoloc = @terminal
+                            and wh_id  = @wh_id
+                            and rownum = 1]
+                    }
+                    /* Load pick so we don't have to worry about maintaining
+                     * identifiers since that is all done by move inventory
+                     */
+                }
+            }
+            |
+            /* Verify Quantity Picked does not exceed remaining pick
+             * quantity */
+
+            [select (pckwrk_hdr.pckqty - pckwrk_hdr.appqty) remqty
+               from pckwrk_hdr
+              where pckwrk_hdr.wrkref = @wrkref
+                and @+pckwrk_hdr.wh_id]
+            |
+            if (@qty_picked > @remqty and @rftmod != 'C' and
+                @rftmod != 'T' and @rftmod != 'B' and
+                @thresh_pck_flg != 1)
+            {
+                /* Return ERROR: Operator specified more then Pick Quantity */
+
+                get mls text
+                  where mls_id = 'err10236'
+                    and locale_id = nvl(@locale_id,@@locale_id)
+                |
+                set return status
+                  where status = 10236
+                    and message = @mls_text
+            }
+            |
+             /*
+              * Compare the picked quantity from the device to the quantity the
+              * picker was asked to pick.  If we determine this was a partial
+              * pick, skip the pick after applying it.
+              */
+            if (@pckinfo_qty_to_pick != ''
+               and @qty_picked < @pckinfo_qty_to_pick)
+            {
+                publish data where under_picked = 1
+            }
+            |
+            /*
+             * If we pass in a LPN
+             * Push the load number value onto the device context
+             * with the dev_varnam of 'lodnum_' || @wrkref
+             * so lodnum will prefix the work reference that the load was picked for
+             * It will be used by the count near zero command
+             * to determine if the LPN needs to be counted.
+             */
+            get voice inventory identifier
+              where inpval = @lpn
+                and wh_id = @wh_id catch(@?)
+            |
+            if(@? = 0)
+            {
+                list inventory
+                where lodnum = @lodnum
+                  and stoloc = @terminal catch(@?)
+                |
+                if (@? = -1403)
+                {
+                    push device context value
+                    where devcod = @terminal
+                      and wh_id = @wh_id
+                      and dev_varnam = 'lodnum_' || @wrkref
+                      and value = @lodnum
+                }
+            }
+            |
+            /*
+             * As the operator can either input the serial number
+             * one by one, or input an range of serial numbers, or even
+             * user both of them in one CAPTURE/CONFIRM.
+             * we have to invoke 'process voice validate serial number'
+             * for all the serial number in the context.
+             */
+             {
+                list device context values
+                where devcod = @terminal
+                  and wh_id = @wh_id
+                  and dev_varnam = @wrkref || '_ser_num' catch(-1403)
+                |
+                if(@? = 0)
+                {
+                    process voice validate serial number
+                      where serial_number = @value
+                }
+                ;
+                noop
+            }
+            |
+            if (@pckinfo_process_typ != 'CONFIRM')
+            {
+               /* List device context values, but with getting the sum of values
+                * Without this query, inventory can be moved without the correct
+                * catch_qty.  For example, if a pick for two cases is made with
+                * catch_qty, but the cases are load level tracked, we will move
+                * the inventory with the most recent catch_qty entered as it is
+                * on the stack.  This query prevents a stray catch_qty from
+                * being passed into process inventory move.
+                *
+                * This query is placed here as it is needed for the
+                * voice picking scenarios below.
+                */
+                [select sum(cast(decode(instr(value,'|'), 0, value, substr(value, 0, instr(value,'|')-1))as float)) catch_qty
+                   from device_context
+                  where devcod = @terminal
+                    and wh_id = @wh_id
+                    and dev_varnam = @wrkref || '_catch_qty'] catch(-1403)
+                |
+                /* If no catch quantity was captured, pull the existing
+                 * catch quantity from the source location */
+                if (@catch_qty = '')
+                {
+                    if (@lpn)
+                    {
+                        [select sum(invdtl.catch_qty) catch_qty
+                          from invlod
+                          join invsub
+                            on invsub.lodnum = invlod.lodnum
+                          join invdtl
+                            on invdtl.subnum = invsub.subnum
+                         where invlod.lodnum = @lpn
+                           and invlod.wh_id = @wh_id]
+                    }
+                    else if (!@full_verify)
+                    {
+                        list available inventory for pick in location
+                          where wrkref = @wrkref
+                            and wh_id = @wh_id
+                    }
+                }
+                |
+                /* If we have a catch weight, let's apply it to the pick record. */
+                if (@catch_qty)
+                {
+                    [update pckwrk_hdr
+                        set pck_catch_qty = pck_catch_qty + @catch_qty
+                      where wrkref = @wrkref
+                        and pck_catch_qty = app_catch_qty] catch(-1403)
+                }
+                |
+                publish data
+                  where catch_qty = @catch_qty
+            }
+            |
+            {
+                get cat quantity config
+                  where client_id = @pckinfo_prt_client_id
+                    and wh_id_tmpl = @wh_id
+                |
+                publish data
+                  where delay_capture_flg = @delay_capture_flg
+            }
+            |
+            /* Directed Picking */
+            if (@rftmod = 'D')
+            {
+                process voice directed pick
+            }
+            /* Un-Directed Picking */
+            else if (@rftmod = 'U')
+            {
+                process voice undirected pick
+            }
+            /* List Picking */
+            else if (@rftmod = 'L')
+            {
+                process voice list pick
+            }
+            /* Load Transfer */
+            else if(@rftmod = 'T')
+            {
+                process voice transfer pick
+            }
+            /* Cluster Picking */
+            else if (@rftmod = 'C' or @rftmod = 'B')
+            {
+                /** Check if Labor is installed **/
+                get installed configuration
+                  where config = "LABOR-MANAGEMENT-SYSTEM"
+                    and wh_id = @wh_id
+                |
+                if(@rftmod = 'C' and @installed = 1)
+                {
+                    /*Check if it already started a carton pick*/
+                    [select count(*) num
+                       from pckwrk_hdr
+                      where ackdevcod = @devcod
+                        and wh_id = @wh_id
+                        and wrktyp = 'P'
+                        and appqty > 0
+                        and schbat = (select schbat
+                                        from pckwrk_hdr
+                                       where wrkref = @wrkref)]
+                    |
+                    if (@num = 0)
+                    {
+                        [select count(*) totctn
+                           from pckwrk_hdr
+                          where ackdevcod = @devcod
+                            and wh_id = @wh_id
+                            and wrktyp = 'K'
+                            and appqty = 0]
+                        |
+                        [select arecod
+                           from locmst
+                          where stoloc = @devcod
+                            and wh_id  = nvl(@wh_id, @@wh_id)]
+                        |
+                        if (@totctn > 0)
+                        {
+                            write lms actuals event
+                            where actcod = 'KITPCK'
+                              and lmstyp = 'A'
+                              and lmscod = 'D'
+                              and begdte = sysdate
+                              and enddte = sysdate
+                              and casqty = @totctn
+                              and usr_id = nvl(@usr_id, @@usr_id)
+                              and wh_id  = nvl(@wh_id, @@wh_id)
+                              and devcod = @devcod
+                              and srcare = @arecod
+                              and srcloc = @devcod
+                              and dstare = @arecod
+                              and dstloc = @devcod
+                              and disc_proc_id = 'KITPCK'
+                         }
+                    }
+                }
+                |
+                process voice cluster pick
+            }
+            |
+            /* If we picked less than the expected quantity on the pckwrk,
+             * we need to check if this is a short or a partial. */
+            if (@under_picked = 1)
+            {
+                /* Get the quantity that the device prompted to pick. This may
+                 * differ from the pckwrk quantity due to the sndavl policy. */
+                [select validated_quantity
+                   from pick_buffer
+                  where devcod = @terminal 
+                    and wh_id = @wh_id 
+                    and wrkref = @wrkref] catch (-1403)
+                |
+                /* If we are shorting, cancel the remaining pick and remove
+                 * it from the pick buffer. */
+                if (@discrepancy_type = -1)
+                {
+                    update location for voice list pick
+                        where devcod = @terminal
+                          and process_pick = 1 catch(-1403)
+                    |
+                    process voice cancel pick
+                    |
+                    remove pick buffer entries
+                        where wh_id = @wh_id
+                          and devcod = @terminal
+                          and wrkref = @wrkref
+                        catch (-1403)
+                }
+                /* If we picked all of what was available, skip the pick */
+                else if (@? = 0 and @qty_picked = @validated_quantity)
+                {
+                    process skip pick
+                      where wrkref = @wrkref
+                        and devcod = @terminal
+                        and wh_id = @wh_id
+                        and snd_travel_time_flg = 0
+                        and reacod = 'AUTO_SKIP'
+                    |
+                    remove pick buffer entries
+                        where devcod = @terminal
+                          and wh_id = @wh_id
+                          and wrkref = @wrkref
+                    |
+                    update location for voice list pick
+                        where devcod = @terminal
+                          and process_pick = 1 catch(-1403)
+                }
+                /* If this is a split pick on less than the expected quantity,
+                 * update the device context to reflect the new quantity. */
+                else if (@? = 0 and @qty_picked < @validated_quantity)
+                {
+                    [update pick_buffer 
+                        set validated_quantity = validated_quantity - @qty_picked 
+                      where devcod = @terminal 
+                        and wh_id = @wh_id 
+                        and wrkref = @wrkref] catch (-1403)
+                }
+                ;
+            }
+            else
+            {
+                /* We finished processing the wrkref so remove it from the pick buffer. */
+                remove pick buffer entries
+                    where wh_id = @wh_id
+                      and devcod = @terminal
+                      and wrkref = @wrkref
+                    catch (-1403)
+                ;
+            }
+            |
+            /* If the operator canceled capturing catch
+             * quantities during picking, we need to log it */
+            if (@cancelled_capture_flg)
+            {
+                {
+                    [select invdtl.dtlnum
+                       from invdtl
+                       join invsub
+                         on invdtl.subnum = invsub.subnum
+                       join invlod
+                         on invsub.lodnum = invlod.lodnum
+                      where invlod.lodnum = @lodnum
+                        and invlod.wh_id = @wh_id] catch (-1403)
+                    |
+                    generate next number where numcod= 'cat_qty_cap_id'
+                    |
+                    create catchquantity capture
+                      where cat_qty_cap_id = @nxtnum
+                        and invtid = @dtlnum
+                        and cancelled_flg = 1
+                        and cancelled_usr_id = @operator
+                        and cancelled_dt = sysdate
+                }
+                ;
+                noop
+            }
+            |
+            /* Perform some post pick logic to handle the
+             * assignment of the catch quantities to the
+             * inventory details. Any splitting of inventory
+             * that is needed will be performed by the post
+             * pick processing.
+             */
+             [select reqnum from wrkque
+               where ackdevcod = @terminal
+                 and wh_id = @wh_id
+                 and wrkref = @wrkref] catch (-1403)
+             |
+             process voice post picking
+               where devcod = @terminal
+                 and wh_id = @wh_id
+                 and pckqty = @qty_picked
+                 and wrkref = @wrkref
+                 and process_typ =  @pckinfo_process_typ
+                 and reqnum = @reqnum
+        }
+        ;
+        noop
+    } catch(@?)
+    |
+    if (@? != 0)
+    {
+        if(@? = 10051) {
+            get translated quantity on inventory move error where error_code = @? and error_descr = @!
+            |
+            publish data where error_code = @error_code and error_descr = @error_descr
+        }
+        else
+        {
+            /* An error occurred so log it. */
+            publish data where error_code = @? and error_descr = @!
+        }
+        |
+        /* Rollback to the save point now. This is needed in the scenario that the
+         * pick succeeds but the post picking function fails, they can get a pick
+         * in a limbo state where it is picked, but it has not been split up and
+         * had catch quantities applied. */
+        rollback to savepoint
+          where savepoint = 'VOICE_PICK_SAVEPOINT'
+        |
+        process voice pick error
+          where error_code = @error_code
+            and error_descr = @error_descr
+            and wrkref = @wrkref
+            and wh_id = @wh_id
+            and terminal = @terminal
+            and operator = @operator
+        |
+        /* Clear the wrkref for ODR picks so we don't get an error code 4
+         * and some extra looping. If this is a LUT, we will redo this pick,
+         * so we need it to stay in the pick buffer.
+         */
+        if (@use_lut = 0)
+        {
+            remove pick buffer entries
+                where wh_id = @wh_id
+                  and devcod = @terminal
+                  and wrkref = @wrkref
+                catch (-1403)
+        }
+        |
+        publish data
+          where error_code = @error_code
+            and error_descr = @error_descr
+    }
+    |
+    if (@refresh_picks != 1)
+    {
+        /* Clear any catch quantities for the wrkref that we just finished
+         * processing. If an error occurred while processing the pick, these values
+         * would not be removed otherwise.
+         */
+        clear device context
+          where devcod = @terminal
+            and wh_id = @wh_id
+            and dev_varnam = @wrkref||'_catch_qty'
+            catch (-1403)
+        ;
+        clear device context
+          where devcod = @terminal
+            and wh_id = @wh_id
+            and dev_varnam = @wrkref||'_ser_num'
+            catch (-1403)
+        ;
+        clear device context
+          where devcod = @terminal
+            and wh_id = @wh_id
+            and dev_varnam = @wrkref||'_sernum_mult'
+            catch (-1403)
+        ;
+        clear device context
+          where devcod = @terminal
+            and wh_id = @wh_id
+            and dev_varnam = @wrkref||'_qty_per_uom'
+            catch (-1403)
+        ;
+        noop
+    }
+    |
+    if (!@error_code)
+    {
+        if (@use_lut)
+        {
+            /*
+             * If the pick was successful and there are no adds, updates or deletes
+             * on the pick buffer table we need to start validating the next
+             * non-validated pick, otherwise we will return error code 13 to
+             * trigger the device into calling get picks.
+             */
+            count validated picks
+                where terminal = @terminal
+                  and wh_id = @wh_id
+            |
+            if (@update_count = 0) {
+                validate next pick asynchronously
+                   where devcod = @terminal
+            }
+            |
+            if (@valid_count = 0 or @update_count > 0 or @unpicked_count = 0) {
+                publish data
+                  where error_code = 13
+                    and error_descr = ""
+            }
+        }
+        else
+        {
+            /* When using ODR picking, we can't inform the device of changes
+             * so we can just start validation right away.
+             */
+            validate next pick asynchronously
+                where devcod = @terminal
+        }
+    }
+    |
+    filter data
+      where error_code = @error_code
+        and error_descr = @error_descr
+}
+|
+publish data
+  where error_code = @error_code
+    and error_descr = @error_descr
+
+]]>
+    </local-syntax>
+
+    <documentation>
+        <remarks>
+            <![CDATA[
+<p>
+This command is used by voice picking to send pick information
+in to process for a individual work request.
+A wrkref is required in order to process a pick.  When the command
+enters, the discrepancy_type is checked.A discrepancy_type of '0'
+will skip the pick in list, cluster, and bulk cluster picking modes.
+All other discrepancy types represent cancel options.
+</p>
+<p>
+If the wrkref and qty_picked are provided, processing of the pick
+is performed. The operator's location is changed, the put_lpn is
+checked or created if necessary, and the picked quantity is verified.
+If we pick a list of catch quantities, they are processed separately.
+The pick is then processed based on the picking mode that is being used
+and finally the pick information of the next pick is returned to the
+device.
+</p>
+            ]]>
+        </remarks>
+
+        <retcol name="error_code">Error Code</retcol>
+        <retcol name="error_descr">Error Description</retcol>
+
+        <exception value="eOK">Normal successful completion</exception>
+        <exception value="err10236">
+            Operator specified more than pick quantity</exception>
+
+    </documentation>
+</command>

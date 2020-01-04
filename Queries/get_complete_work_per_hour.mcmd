@@ -12,3 +12,12 @@
         to_char(wh.cmpdte, 'yyyy-mm-dd hh24')
   order by complete_hour,
         oprcod];
+
+
+[select count(distinct ordnum||'|'||ordlin) ord_line_count,
+ to_char(pckdte, 'yyyy-mm-dd') picked_date
+
+from pckwrk_view pv 
+where pckdte is not null
+group by to_char(pckdte, 'yyyy-mm-dd')
+order by 2 desc]

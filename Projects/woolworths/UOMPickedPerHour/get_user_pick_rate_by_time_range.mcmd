@@ -1,0 +1,201 @@
+/*
+ * usr_id: pass this id to get picking cartons per hour for user.
+ * dtl_flg: return each detail picking record with uoms picked and seconds spent.
+ * uom_per_hr_by_usr_flg: return cartons per hours for users(usr_id not passed).
+ * use_stg_time_for_lstpck_flg: use LPN stage timestamp - last pick's picking time
+ * as time spent on last pick, otherwise use picking time gap
+ * with pervoius picking time as picking time spent for last pick.
+ */
+publish data
+ where usr_id = '1025'
+   and dtl_flg = 0
+   and uom_per_hr_by_usr_flg = 0
+   and use_stg_time_for_lstpck_flg = 1
+   and from_time = '20191206000000'
+   and to_time = '20191206235959'
+|
+if (@usr_id is null and @dtl_flg = 1 and @uom_per_hr_by_usr_flg = 1)
+{
+    set return status
+     where status = 999
+       and message = 'Performance concerning, provide proper parameters!'
+}
+else if (@dtl_flg = 1)
+{
+    [select ph.list_id,
+            ph.list_seqnum,
+            php.pckdte prev_pckdte,
+            ph.pckdte,
+            pha.pckdte nxt_pckdte,
+            (decode(@use_stg_time_for_lstpck_flg, 1, decode(pha.pckdte, null, s.trndte, ph.pckdte), ph.pckdte) - php.pckdte) * 24*60*60 gap_seconds,
+            ph.prtnum,
+            ph.pckqty / decode(ph.pck_uom, 'LA', ph.untcas, 'CS', ph.untcas, ph.untpak) uom_picked,
+            ph.last_pck_usr_id,
+            iv.lodnum,
+            s.trndte lpn_stgdte
+       from pckwrk_hdr ph
+       join all_inventory_view iv
+         on ph.wrkref = iv.wrkref
+        and ph.wh_id = iv.wh_id
+       left
+       join pckwrk_hdr php
+         on ph.list_id = php.list_id
+        and ph.list_seqnum = php.list_seqnum + 1
+        and ph.last_pck_usr_id = php.last_pck_usr_id
+       left
+       join pckwrk_hdr pha
+         on ph.list_id = pha.list_id
+        and ph.list_seqnum = pha.list_seqnum - 1
+        and ph.last_pck_usr_id = pha.last_pck_usr_id
+       left
+       join (select d.lodnum,
+                    d.usr_id,
+                    min(d.trndte) trndte
+               from dlytrn d
+               join locmst lm
+                 on d.tostol = lm.stoloc
+                and d.wh_id = lm.wh_id
+               join loc_typ lt
+                 on lm.loc_typ_id = lt.loc_typ_id
+                and lm.wh_id = lt.wh_id
+                and lt.stgflg = 1
+              where @+d.usr_id
+              group by d.lodnum,
+                    d.usr_id) s
+         on iv.lodnum = s.lodnum
+        and ph.last_pck_usr_id = s.usr_id
+      where ph.pckdte >= to_date(@from_time)
+        and ph.pckdte <= to_date(@to_time)
+        and @+ph.last_pck_usr_id^usr_id
+        and ph.list_id is not null
+      order by last_pck_usr_id,
+            list_id,
+            list_seqnum]
+}
+else
+{
+    if (@uom_per_hr_by_usr_flg = 1)
+    {
+        [select 'x'
+           from dual
+          where to_date(@to_time) - to_date(@from_time) > 2.0 / 24] catch(-1403)
+        |
+        if (@? = 0 and @usr_id is null)
+        {
+            set return status
+             where status = 999
+               and message = 'Performance concerning, time rang bigger than 2 hours!'
+        }
+        |
+        [select round(sum(uom_picked) / (sum(gap_seconds) / 60 / 60), 2) uoms_per_hour,
+                tmp.last_pck_usr_id
+           from (select ph.list_id,
+                        ph.list_seqnum,
+                        php.pckdte prev_pckdte,
+                        ph.pckdte,
+                        pha.pckdte nxt_pckdte,
+                        (decode(@use_stg_time_for_lstpck_flg, 1, decode(pha.pckdte, null, s.trndte, ph.pckdte), ph.pckdte) - php.pckdte) * 24*60*60 gap_seconds,
+                        ph.prtnum,
+                        ph.pckqty / decode(ph.pck_uom, 'LA', ph.untcas, 'CS', ph.untcas, ph.untpak) uom_picked,
+                        ph.last_pck_usr_id,
+                        iv.lodnum,
+                        s.trndte lpn_stgdte
+                   from pckwrk_hdr ph
+                   join all_inventory_view iv
+                     on ph.wrkref = iv.wrkref
+                    and ph.wh_id = iv.wh_id
+                   left
+                   join pckwrk_hdr php
+                     on ph.list_id = php.list_id
+                    and ph.list_seqnum = php.list_seqnum + 1
+                    and ph.last_pck_usr_id = php.last_pck_usr_id
+                   left
+                   join pckwrk_hdr pha
+                     on ph.list_id = pha.list_id
+                    and ph.list_seqnum = pha.list_seqnum - 1
+                    and ph.last_pck_usr_id = pha.last_pck_usr_id
+                   left
+                   join (select d.lodnum,
+                                d.usr_id,
+                                min(d.trndte) trndte
+                           from dlytrn d
+                           join locmst lm
+                             on d.tostol = lm.stoloc
+                            and d.wh_id = lm.wh_id
+                           join loc_typ lt
+                             on lm.loc_typ_id = lt.loc_typ_id
+                            and lm.wh_id = lt.wh_id
+                            and lt.stgflg = 1
+                          where @+d.usr_id
+                          group by d.lodnum,
+                                d.usr_id) s
+                     on iv.lodnum = s.lodnum
+                    and ph.last_pck_usr_id = s.usr_id
+                  where ph.pckdte >= to_date(@from_time)
+                    and ph.pckdte <= to_date(@to_time)
+                    and @+ph.last_pck_usr_id^usr_id
+                    and ph.list_id is not null
+                  order by list_id,
+                        list_seqnum) tmp
+          where tmp.prev_pckdte is not null
+            and tmp.gap_seconds is not null
+          group by tmp.last_pck_usr_id]
+    }
+    else
+    {
+        [select round(sum(uom_picked) / (sum(gap_seconds) / 60 / 60), 2) uoms_per_hour,
+                area_prefix
+           from (select ph.list_id,
+                        ph.list_seqnum,
+                        php.pckdte prev_pckdte,
+                        ph.pckdte,
+                        pha.pckdte nxt_pckdte,
+                        (decode(@use_stg_time_for_lstpck_flg, 1, decode(pha.pckdte, null, s.trndte, ph.pckdte), ph.pckdte) - php.pckdte) * 24*60*60 gap_seconds,
+                        ph.prtnum,
+                        ph.pckqty / decode(ph.pck_uom, 'LA', ph.untcas, 'CS', ph.untcas, ph.untpak) uom_picked,
+                        ph.last_pck_usr_id,
+                        iv.lodnum,
+                        s.trndte lpn_stgdte,
+                        substr(ph.srcare, 1, 1) area_prefix
+                   from pckwrk_hdr ph
+                   join all_inventory_view iv
+                     on ph.wrkref = iv.wrkref
+                    and ph.wh_id = iv.wh_id
+                   left
+                   join pckwrk_hdr php
+                     on ph.list_id = php.list_id
+                    and ph.list_seqnum = php.list_seqnum + 1
+                    and ph.last_pck_usr_id = php.last_pck_usr_id
+                   left
+                   join pckwrk_hdr pha
+                     on ph.list_id = pha.list_id
+                    and ph.list_seqnum = pha.list_seqnum - 1
+                    and ph.last_pck_usr_id = pha.last_pck_usr_id
+                   left
+                   join (select d.lodnum,
+                                d.usr_id,
+                                min(d.trndte) trndte
+                           from dlytrn d
+                           join locmst lm
+                             on d.tostol = lm.stoloc
+                            and d.wh_id = lm.wh_id
+                           join loc_typ lt
+                             on lm.loc_typ_id = lt.loc_typ_id
+                            and lm.wh_id = lt.wh_id
+                            and lt.stgflg = 1
+                          where @+d.usr_id
+                          group by d.lodnum,
+                                d.usr_id) s
+                     on iv.lodnum = s.lodnum
+                    and ph.last_pck_usr_id = s.usr_id
+                  where ph.pckdte >= to_date(@from_time)
+                    and ph.pckdte <= to_date(@to_time)
+                    and @+ph.last_pck_usr_id^usr_id
+                    and ph.list_id is not null
+                  order by list_id,
+                        list_seqnum) tmp
+          where tmp.prev_pckdte is not null
+            and tmp.gap_seconds is not null
+           group by area_prefix]
+    }
+}

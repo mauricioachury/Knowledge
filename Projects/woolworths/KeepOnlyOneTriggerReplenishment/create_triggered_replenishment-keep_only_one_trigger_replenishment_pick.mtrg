@@ -1,0 +1,46 @@
+<trigger>
+  <name>keep only one trigger replenishment pick</name>
+  <on-command>create triggered replenishment</on-command>
+  <description />
+  <fire-sequence>900</fire-sequence>
+  <local-syntax>
+<![CDATA[
+   [select distinct wrkref wrkref_trigger
+      from pckwrk_view
+     where wrktyp = 'G'
+       and pckqty > appqty
+       and dstloc = @stoloc
+       and wh_id  = @wh_id
+       and prtnum = @prtnum
+       and prt_client_id = @prt_client_id
+     order by wrkref_trigger desc] catch(-1403) >> res
+   |
+   if (rowcount(@res) > 1)
+   {
+       publish top rows
+         where count = rowcount(@res) - 1
+       |
+       cancel pick
+        where wrkref = @wrkref_trigger
+          and wh_id  = @wh_id
+          and cancod = 'SYS-CANCEL-NO-REALLOC'
+          and wrkref_dtl = '' catch(@?)
+   }
+]]>
+</local-syntax>
+
+<documentation>
+
+<remarks>
+<![CDATA[
+  <p>
+     This trigger is aimed to make sure there is only one trigger replenishment
+     pick left for the location since the allocation is volume based based on
+     which multiple partial/small pallets could be allocated. but this will
+     causing location override as forklift driver need restack all cartons.
+  </p>
+]]>
+</remarks>
+
+</documentation>
+</trigger>

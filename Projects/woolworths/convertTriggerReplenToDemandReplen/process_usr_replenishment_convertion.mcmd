@@ -1,0 +1,118 @@
+<command>
+
+<name>process usr replenishment convertion</name>
+
+<description>process usr replenishment convertion</description>
+
+<type>Local Syntax</type>
+
+<argument name="wh_id" datatype="string">Warehouse ID</argument>
+
+<local-syntax>
+
+<![CDATA[
+[select wrkque.reqnum,
+        wrkque.effpri,
+        wrkque.oprcod,
+        wrkque.srcloc,
+        wrkque.dstloc,
+        pckwrk_view.wrktyp,
+        pckwrk_view.wrkref,
+        pckwrk_view.prtnum,
+        pckwrk_view.pckqty
+   from pckwrk_view
+   join wrkque
+     on pckwrk_view.wrkref = wrkque.wrkref
+    and wrkque.wrksts in ('PEND', 'LOCK', 'SUSP')
+    and pckwrk_view.wh_id = wrkque.wh_id
+   join invsum
+     on pckwrk_view.prtnum = invsum.prtnum
+    and pckwrk_view.dstloc = invsum.stoloc
+    and pckwrk_view.prt_client_id = invsum.prt_client_id
+    and pckwrk_view.wh_id = invsum.wh_id
+  where pckwrk_view.wrktyp in ('G', 'T', 'M', 'R', 'E')
+    and pckwrk_view.pckqty > pckwrk_view.appqty
+    and invsum.comqty > invsum.untqty
+    and pckwrk_view.wh_id = nvl(@wh_id, @@wh_id)
+  order by dstloc,
+           decode(wrkque.wrksts, 'PEND', 1, 'SUSP', 2, 3),
+           effpri,
+           reqnum] catch(@?)
+|
+if (@? = 0)
+{
+    [select nvl(sum(pv.pckqty - pv.appqty), 0) dmd_replen_qty
+       from wrkque q
+       join pckwrk_hdr pv
+         on q.wrkref = pv.wrkref
+        and q.wh_id = pv.wh_id
+        and q.oprcod = 'PIARPL'
+      where q.dstloc = @dstloc
+        and q.wh_id = @wh_id]
+    |
+    [select nvl(sum(untqty), 0) ava_invqty
+       from invsum im
+      where im.stoloc = @dstloc
+        and im.wh_id = @wh_id]
+    |
+    [select nvl(sum(iv.untqty), 0) on_the_way_invqty
+       from inventory_view iv
+       join invmov im
+         on iv.lodnum = im.lodnum
+        and iv.wh_id = im.wh_id
+        and im.invmov_typ = 'PICK'
+        and im.lodlvl = 'L'
+        and im.stoloc = @dstloc
+        and im.wh_id = @wh_id]
+    |
+    [select nvl(sum(pv.pckqty - pv.appqty), 0) pck_needed_qty
+       from pckwrk_hdr pv
+       where pv.srcloc = @dstloc
+        and pv.wh_id = @wh_id
+        and pv.pckqty > pv.appqty
+        and pv.list_id is not null]
+    |
+    if (@pck_needed_qty > @dmd_replen_qty + @ava_invqty + @on_the_way_invqty)
+    {
+        [update wrkque
+            set oprcod = 'PIARPL'
+          where reqnum = @reqnum] catch(-1403)
+        |
+        [update pckwrk_hdr
+            set wrktyp = 'D',
+                oprcod = 'PIARPL'
+          where wrkref = @wrkref]
+        ;
+        write daily transaction log
+          where actcod = 'TRTODR'
+            and fr_value = 'reqnum: ' || @reqnum || ', wrkref:' || @wrkref || ', wrktyp:' || @wrktyp || ', effpri:' || @effpri
+            and to_value = 'converted to demand replenishment work'
+            and frstol = @srcloc
+            and tostol = @dstloc
+            and prtnum = @prtnum
+            and trnqty = @pckqty
+            and usr_id = 'USR_REPLEN_CONVERTION_JOB'
+            and wh_id = @wh_id
+    }
+}
+]]>
+</local-syntax>
+
+<documentation>
+
+<remarks>
+<![CDATA[
+    <p>
+    This is for job 'USR-PROCESS-REPLEN-CONVERTION' which will do a convertion
+    for non-demand replenishment to a demand replenishment. mainly for trigger
+    replenishment to demand, but if other replenishment work exists, the same
+    convertion will apply if it is needed for outbound picking.
+    </p>
+]]>
+</remarks>
+
+<exception value="eOK">Normal Successful Completion</exception>
+
+</documentation>
+
+</command>

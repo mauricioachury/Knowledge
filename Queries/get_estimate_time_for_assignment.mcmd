@@ -1,3 +1,7 @@
+/*Standard code call below command:
+ * process invalid list estimates where list_id = @list_id and wh_id = @wh_id
+ * See:create_lm_assignment.mcmd.
+ */
 publish data where list_id = 'LST000000340521'
 and plan_date = '12212018'
 |

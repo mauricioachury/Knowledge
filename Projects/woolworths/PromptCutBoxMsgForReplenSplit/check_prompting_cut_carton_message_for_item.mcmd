@@ -1,0 +1,60 @@
+<command>
+<name>check prompting cut carton message for item</name>
+<description>check prompting cut carton message for item</description>
+<type>Local Syntax</type>
+<local-syntax>
+<![CDATA[
+     if (@devcod <> '' and @prtnum <> '' and @prt_client_id <> '' and @lodnum <> '' and @wh_id <> '') 
+     {
+         /* If the item has 'IP', then would need to prompt the message */
+         [select 'x'
+            from inventory_view iv
+            join prtftp_dtl pd
+              on iv.prtnum = pd.prtnum
+             and iv.prt_client_id = pd.prt_client_id
+             and iv.wh_id = pd.wh_id
+             and iv.ftpcod = pd.ftpcod
+             and pd.uomcod = 'IP'
+           where iv.lodnum = @lodnum
+             and rownum <2] catch(-1403)
+         |
+         if (@? = 0)
+         {
+             [select 'x'
+                from device_context dc
+               where dc.devcod = @devcod
+                 and dc.dev_varnam = 'dsp_cut_box_msg_for_replen_split'] catch(-1403)
+             |
+             if (@? = -1403)
+             {
+                 execute server command with new transaction
+                   where cmd = "[insert into device_context (devcod, wh_id, dev_varnam, srtseq, value, ins_dt, last_upd_dt, ins_user_id, last_upd_user_id) " ||
+                           "values ('" || @devcod || "', '" || @wh_id || "', " ||
+                           "        'dsp_cut_box_msg_for_replen_split', 0, " ||
+                           "        '" || @prtnum || "'||'|'||'" || @prt_client_id || "', sysdate, sysdate, " ||
+                           "        '" ||@@usr_id || "', '" || @@usr_id || "')] "
+                 ;
+                 set return status
+                   where status = '99990' /*Please Cut Open Box.*/
+             }
+             else
+             {
+                 /* Message prompted already, remove the record */
+                 [delete
+                    from device_context
+                   where devcod = @devcod
+                     and dev_varnam = 'dsp_cut_box_msg_for_replen_split']
+             }
+         }
+     }
+]]>
+</local-syntax>
+<documentation>
+<remarks>
+<![CDATA[
+   This command is for prompting 'Please cut open box' message when forklift
+   driver doing 'Replenishment Split' for item that contains 'IP' as uomcod.
+]]>
+</remarks>
+</documentation>
+</command>

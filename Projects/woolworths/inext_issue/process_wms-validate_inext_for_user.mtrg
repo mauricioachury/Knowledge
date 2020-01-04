@@ -1,0 +1,23 @@
+<trigger>
+<name>validate inext for user</name>
+<on-command>process wms</on-command>
+<description />
+<fire-sequence>1000</fire-sequence>
+<local-syntax>
+<![CDATA[
+    validate inext for user
+      where usr_id = @usr_id
+]]>
+</local-syntax>
+<documentation>
+
+<remarks>
+<![CDATA[
+  <p>
+  Ref the comment for 'validate inext for user' command.
+  </p>
+]]>
+</remarks>
+
+</documentation>
+</trigger>

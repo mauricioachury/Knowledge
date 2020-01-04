@@ -1,0 +1,2 @@
+job_id,role_id,name,enabled,type,command,log_file,trace_level,overlap,schedule,start_delay,timer,grp_nam
+USR-UNLOCK-RPL-FOR-MIN-QTY,JOBS,"process usr replenishment pick unlock based on min quantity",1,timer,"[select wh_id from wh] | process usr replenishment pick unlock based on min quantity where wh_id = @wh_id",$LESDIR/log/usr_unlock_repwrk_for_minqty.log,,0,,60,120,USR

@@ -1,0 +1,145 @@
+<command>
+  <name>log replenishment split quantity gap</name>
+  <description>log replenishment split quantity gap</description>
+  <type>Local Syntax</type>
+  <local-syntax>
+<![CDATA[
+   [select untqty * @user_scan_qty user_qty
+      from prtftp_dtl pd
+     where prtnum = @prtnum
+       and prt_client_id = @prt_client_id
+       and ftpcod = @ftpcod
+       and wh_id = @wh_id
+       and uomcod = @user_scan_uom] catch(-1403)
+   |
+   if (@? = 0 or (@? = -1403 and @user_scan_qty = 0))
+   {
+       if (@user_scan_qty = 0)
+       {
+           publish data
+             where user_qty = 0
+       }
+       |
+       [select 'x'
+          from invlod
+         where lodnum = @existing_lpn] catch(-1403)
+       |
+       if (@? = 0)
+       {
+           publish data
+             where existing_lpn_flg = 1
+       }
+       else
+       {
+           publish data
+             where existing_lpn_flg = 0
+       }
+       |
+       [select sum(untqty) srclod_untqty
+          from inventory_view iv
+         where iv.lodnum = @lodnum]
+       |
+        /* As the les_dyn_cfg fires twice, we remove duplicate,
+         * and always log latest one.
+         * If user, srclod and srclod qty are same, we determine
+         * it is duplicate.
+         */
+        [delete
+           from dlytrn
+          where actcod = 'RPLSPLTQTYGAP'
+            and ins_user_id = nvl(@usr_id, @@usr_id)
+            and lodnum = @lodnum
+            and trnqty = @srclod_untqty] catch(-1403)
+       |
+       get rf replen split info
+         where devcod = @devcod
+           and wh_id = @wh_id
+           and recalculate_flg = 1
+           and dst_asset_typ = @dst_asset_typ
+           and splt_dstloc = @splt_dstloc
+           and lodnum = @lodnum
+           and existing_lpn_flg = @existing_lpn_flg
+           and existing_lpn = @existing_lpn
+        |
+        publish data
+          where replenqty = @replenqty
+        |
+        [select 'x'
+         from locmst
+         join mov_zone
+         on mov_zone.mov_zone_id = locmst.mov_zone_id
+         where stoloc = @splt_dstloc
+           and locmst.wh_id = @wh_id
+           and mov_zone.rpl_split_disp_cas_flg = 1] catch(-1403)
+        |
+        if (@? = 0)
+        {
+            [select prtftp_dtl.uomcod,
+                    prtftp_dtl.untqty qty_per_uom
+               from prtftp_dtl
+              where prtftp_dtl.prtnum = @prtnum
+                and prtftp_dtl.prt_client_id = @prt_client_id
+                and prtftp_dtl.wh_id = @wh_id
+                and prtftp_dtl.ftpcod = @ftpcod
+                and prtftp_dtl.cas_flg = 1
+                and @replenqty/prtftp_dtl.untqty >= 1] catch(-1403)
+            |
+            if (@? = 0)
+            {
+                publish data
+                  where replenqty = int(@replenqty /@qty_per_uom)
+                    and user_qty = int(@user_qty /@qty_per_uom)
+                    and mov_uom = @uomcod
+            }
+            else
+            {
+                publish data
+                  where replenqty = 0
+                    and user_qty = @user_scan_qty
+                    and mov_uom = @user_scan_uom
+            }
+        }
+        |
+        if (@replenqty <> @user_qty)
+        {
+            write daily transaction log
+              where actcod = 'RPLSPLTQTYGAP'
+                and oprcod = 'RPLSPLT'
+                and tostol = @splt_dstloc
+                and prtnum = @prtnum
+                and lodnum = @lodnum
+                and to_lodnum = @existing_lpn
+                and prt_client_id = @prt_client_id
+                and trnqty = @srclod_untqty
+                and expqty = @replenqty
+                and rptqty = @user_qty
+                and uomcod = nvl(@mov_uom, 'EA')
+                and wh_id = @wh_id
+                and usr_id = nvl(@usr_id, @@usr_id)
+        }
+   }
+]]>
+</local-syntax>
+<documentation>
+
+<remarks>
+<![CDATA[
+  <p>
+   This code is for DVC config on 'Replenishment Split' RF form, when user
+   scans a quantity which is different with system calculated quantity, then
+   log a daily transaction with actcod = 'RPLSPLTQTYGAP'.
+  </p>
+]]>
+</remarks>
+<argument name="devcod" required="yes" datatype="">Device Code</argument>
+<argument name="wh_id" required="yes" datatype="">Warehouse id</argument>
+<argument name="dst_asset_typ" required="yes" datatype="">Dest Asset Type</argument>
+<argument name="splt_dstloc" required="yes" datatype="">Split Dest Loc</argument>
+<argument name="existing_lpn" required="yes" datatype="">Existing LPN</argument>
+<argument name="lodnum" required="yes" datatype="">Load Number</argument>
+<argument name="user_scan_qty" required="yes" datatype="">User Scanned Quantity</argument>
+<argument name="user_scan_uom" required="yes" datatype="">User Scanned UOM</argument>
+<argument name="usr_id" required="yes" datatype="">User ID</argument>
+
+</documentation>
+</command>

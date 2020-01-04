@@ -90,7 +90,7 @@ if (@? = 0 )
             |
             if (@? = 0)
             {
-                /* 'creaet adjustment' will create kvi_adjustment, and take
+                /* 'create adjustment' will create kvi_adjustment, and take
                  * care of kvi_summary update as well.
                  */
                 create adjustment

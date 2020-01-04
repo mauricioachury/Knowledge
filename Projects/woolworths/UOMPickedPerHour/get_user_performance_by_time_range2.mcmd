@@ -1,0 +1,133 @@
+publish data
+ where list_id = 'LST000000384526'
+   and usr_id = '6342'
+|
+[select pv.list_id,
+        pv.last_pck_usr_id,
+        count(distinct w.reqnum) reqcnt,
+        w.ackdte,
+        w.cmpdte,
+        (w.cmpdte - w.ackdte) * 24*60*60 work_life_time,
+        min(pv.pckdte) fst_pckdte,
+        max(p.cmpdte) + 5 / 60 / 24 lst_pckdte,
+        (max(p.cmpdte) - min(pv.pckdte)) * 24*60*60 act_time,
+        p.est_time
+   from pckwrk_view pv
+   join pcklst p
+     on pv.list_id = p.list_id
+   join wrkhst w
+     on pv.last_pck_usr_id = w.ack_usr_id
+    and pv.wh_id = w.wh_id
+    and w.ackdte < pv.pckdte
+    and w.cmpdte >= pv.pckdte
+  where pv.list_id = @list_id
+    and pv.last_pck_usr_id = @usr_id
+  group by pv.list_id,
+        p.est_time,
+        pv.last_pck_usr_id,
+        w.ackdte,
+        w.cmpdte]
+|
+publish data
+ where usr_id = @last_pck_usr_id
+   and from_time = @fst_pckdte
+   and to_time = @lst_pckdte
+|
+[SELECT subsel.usr_id AS usr_id,
+        u.first_name || ' ' || u.last_name as usr_name,
+        @list_id list_id,
+        @from_time from_time,
+        @to_time to_time,
+        @est_time est_time,
+        @act_time act_time,
+        @ackdte work_ackdte,
+        @cmpdte work_cmpdte,
+        @work_life_time work_life_time,
+        round(@est_time / @act_time * 100, 2) myperformance,
+        kvi_cnt,
+        max_kvisummaryintid,
+        Sum(hours) hours_worked,
+        Sum(hours) * 60*60 total_seconds_worked,
+        sum(measured_seconds) measured_seconds,
+        sum(goal_seconds) goal_seconds,
+        Sum(uom) + Sum(palletcases) AS totaluoms,
+        Round(Decode(Sum(hours), 0, 0, (Sum(uom) + Sum(palletcases)) / Sum(hours)), 2) AS totaluomperhour,
+        CASE WHEN Sum(performance) > 999 THEN 999
+             ELSE Sum(performance)
+        END AS performance
+   FROM
+        /*Union KVI_SUMMARY AND DISCRETE */
+        (
+         /*KVI_SUMMARY table information for Total Hours AND Performance*/
+         (SELECT usr_id,
+                 count(distinct k.kvisummaryintid) kvi_cnt,
+                 max(k.kvisummaryintid) max_kvisummaryintid,
+                 Round(Sum(k.actual_seconds) / 3600, 2) AS hours,
+                 Round(Decode(Sum(k.measured_seconds), 0, 0, (Sum(k.goal_seconds) / Sum(k.measured_seconds)) *100), 2) AS performance,
+                 Sum(k.measured_seconds) measured_seconds,
+                 Sum(k.goal_seconds) goal_seconds,
+                 0 AS uom,
+                 0 AS pallets,
+                 0 AS palletcases
+            FROM base_assignments k
+           WHERE k.stop_time >= to_date(trunc(@from_time))
+             and k.stop_time <= to_date(trunc(@to_time))
+             AND k.ismeasured = 1
+             AND k.status = 'C'
+             AND k.jobcodeid like '%SEL%'
+             AND k.wh_id = nvl('PRDC', 'PRDC')
+           GROUP BY usr_id)
+         UNION
+         /*DISCRETE table information for UOMs*/
+         (SELECT usr_id,
+                 count(distinct kvisummaryintid) kvi_cnt,
+                 max(kvisummaryintid) max_kvisummaryintid,
+                 0 AS hours,
+                 0 AS performance,
+                 0 AS measured_seconds,
+                 0 AS goal_seconds,
+                 Sum(wow_uom) AS uom,
+                 Sum(num_pallet) AS pallets,
+                 Sum(palletcases) AS palletcases
+            FROM (SELECT k.assign_num,
+                         k.kvisummaryintid,
+                         k.usr_id,
+                         d.seq_num,
+                         CASE WHEN d.num_pallet > 0
+                          AND d.user_def_1 > 0 THEN d.num_pallet
+                              ELSE 0
+                         END AS num_pallet,
+                         d.num_case,
+                         d.num_layer,
+                         d.num_each,
+                         d.num_inner,
+                         d.item_num,
+                         CASE WHEN d.num_pallet = 0 THEN cast(d.user_def_1 as int)
+                              ELSE 0
+                         END as wow_uom,
+                         CASE WHEN d.num_pallet > 0
+                          AND d.user_def_1 > 0 THEN cast(d.user_def_1 as int)
+                              ELSE 0
+                         END as palletcases
+                    FROM base_assignments k,
+                         discrete d
+                   WHERE d.kvisummaryintid = k.kvisummaryintid
+                     AND k.stop_time >= to_date(trunc(@from_time))
+                     and k.stop_time <= to_date(trunc(@to_time))
+                     AND k.ismeasured = 1
+                  /* Only Measured jobs are used for Performance tracking */
+                     AND k.status = 'C'
+                     AND k.jobcodeid like '%SEL%'
+                     AND d.activity_type not in ('A', 'P')
+                  /*Ignore all the Place records*/
+                     AND k.wh_id = nvl('PRDC', 'PRDC')) subsel1
+           GROUP BY usr_id)) subsel
+   JOIN users_view u
+     ON subsel.usr_id = u.usr_id
+  WHERE u.usr_id = @usr_id
+  GROUP BY subsel.usr_id,
+        u.first_name,
+        u.last_name,
+        subsel.kvi_cnt,
+        subsel.max_kvisummaryintid
+  ORDER BY subsel.usr_id]

@@ -1,0 +1,162 @@
+<command>
+  <name>calculate usr replen needed by x top assignments</name>
+  <description>calculate usr replen needed by x top assignments</description>
+  <type>Local Syntax</type>
+  <local-syntax>
+<![CDATA[
+        [select dstloc reploc,
+                effpri,
+                wh_id
+           from wrkque
+          where reqnum = @reqnum]
+        |
+        /* If in 3 minutes there is canpck, consider it with top priority,
+         * or it is already at priority 4.
+         */
+        [select 'x'
+           from canpck cp
+          where cp.cancod in ('C-R-U', 'C-R-R-L', 'PRE-CAN')
+            and cp.oprcod like '%LPCK%'
+            and cp.candte > (SYSDATE - (3 / 1440))
+            and cp.srcloc = @reploc
+            and rownum <2] catch(-1403)
+        |
+        if (@? = 0 or @effpri = 4)
+        {
+            publish data
+              where has_cancel_pick = 1
+                and needed_by_x_asn = 0
+        }
+        else
+        {
+             /* Score 32 is the minimum score for the x top assignment criteria,
+              * so effpri higher than this means higher replenishment priority.
+              * see priority remapping from comment of command
+              * 'process usr replenishment work priority setup',
+              * We only looking at higher priority replen works which are
+              * before current replen work in case some later replen owns
+              * higher priority which could make current replen work not needed
+              * which is not right.
+              */
+             [select nvl(sum(pv.pckqty - pv.appqty), 0) high_replen_qty
+                from wrkque q
+                join pckwrk_hdr pv
+                  on q.wrkref = pv.wrkref
+                 and q.wh_id = pv.wh_id
+                 and q.oprcod in ('PIARPL', 'PRP')
+               where q.dstloc = @reploc
+                 and q.wh_id = @wh_id
+                 and q.reqnum < @reqnum
+                 and q.effpri <= (select rtnum2
+                                    from poldat_view pd
+                                   where pd.polcod = 'USR'
+                                     and pd.polvar = 'REPLENISHMENT-PRIORITY-SETUP'
+                                     and pd.polval = 'SCORE-PRIORITY-MAPPING'
+                                     and pd.wh_id = pv.wh_id
+                                     and pd.rtnum1 = 32)]
+             |
+             [select nvl(sum(untqty), 0) ava_invqty
+                from invsum im
+               where im.stoloc = @reploc
+                 and im.wh_id = @wh_id]
+             |
+             [select nvl(sum(iv.untqty), 0) on_the_way_invqty
+                from inventory_view iv
+                join invmov im
+                  on iv.lodnum = im.lodnum
+                 and iv.wh_id = im.wh_id
+                 and im.invmov_typ = 'PICK'
+                 and im.lodlvl = 'L'
+                 and im.stoloc = @reploc
+                 and im.wh_id = @wh_id]
+             |
+             [select nvl(sum(pv.pckqty - pv.appqty), 0) ack_needed_qty,
+                     nvl(count(distinct pv.list_id), 0) list_ack_cnt,
+                     0 addi_asg_qty
+                from pckwrk_hdr pv
+               where pv.srcloc = @reploc
+                 and pv.wh_id = @wh_id
+                 and pv.pckqty > pv.appqty
+                 and pv.list_id is not null
+                 and exists (select 'x' from wrkque q where q.list_id = pv.list_id and q.wrksts = 'ACK')]
+             |
+             if (@list_ack_cnt < @next_top_asn_cnt and rowcount(@car_move_started_pick_res) > 0)
+             {
+                 /* We should be able to build below block into a single query,
+                  * however for performance consideration, we used a way with
+                  * multiple steps to make it simple and quicker.
+                  * Below logic consider rest number of assignments which are
+                  * not in 'ACK' status, but the load has started picking.
+                  */
+                  convert column results to string
+                   where resultset = @car_move_started_pick_res
+                     and colnam = 'car_move_id'
+                     and separator = ','
+                  |
+                  convert list to in clause
+                   where string = @result_string
+                     and column_name = 't.car_move_id'
+                  |
+                  publish data
+                   where car_move_in_clause = @in_clause
+                  |
+                  [select nvl(sum(pckqty), 0) addi_asg_qty
+                     from (select q.effpri,
+                                  q.reqnum,
+                                  pv.pckqty - pv.appqty pckqty,
+                                  pv.list_id
+                             from wrkque q
+                             join pckwrk_view pv
+                               on q.list_id = pv.list_id
+                              and q.wh_id = pv.wh_id
+                             join shipment s
+                               on pv.ship_id = s.ship_id
+                              and pv.wh_id = s.wh_id
+                             join stop t
+                               on s.stop_id = t.stop_id
+                            where pv.srcloc = @reploc
+                              and pv.wh_id = @wh_id
+                              and q.wrksts not in ('ACK', 'LOCK')
+                              and pv.pckqty > pv.appqty
+                              and @car_move_in_clause:raw
+                            order by q.effpri,
+                                  q.reqnum) tmp
+                    where rownum <= @next_top_asn_cnt - @list_ack_cnt]
+             }
+             |
+             publish data
+               where total_needed_qty = @ack_needed_qty + nvl(@addi_asg_qty, 0)
+             |
+             if (@total_needed_qty > 0 and @total_needed_qty > @high_replen_qty + @ava_invqty + @on_the_way_invqty)
+             {
+                 publish data
+                   where needed_by_x_asn = 1
+                     and has_cancel_pick = 0
+             }
+             else
+             {
+                  publish data
+                    where needed_by_x_asn = 0
+                      and has_cancel_pick = 0
+             }
+        }
+]]>
+</local-syntax>
+<documentation>
+
+<remarks>
+<![CDATA[
+  <p>
+   This code is a part of job command 'process usr replenishment work priority setup'.
+   At first we check if there is cancel and reallocation happened in the last 
+   3 minutes which will be considered with highest priority.
+   else it publish a flag to tell if this replenishment work is needed by
+   at least x number of next assignments including 'ACK' status or non-ACK assignment,
+   by which the priority will be set,
+  </p>
+]]>
+</remarks>
+<argument name="wh_id" required="yes" datatype="">Warehouse id</argument>
+
+</documentation>
+</command>

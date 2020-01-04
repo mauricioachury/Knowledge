@@ -1,0 +1,61 @@
+<command>
+  <name>calculate usr replen for fast move item</name>
+  <description>calculate usr replen for fast move item</description>
+  <type>Local Syntax</type>
+  <local-syntax>
+<![CDATA[
+    [select pv.prtnum,
+            pv.prt_client_id,
+            pv.wh_id
+       from wrkque q
+       join pckwrk_hdr pv
+         on q.wrkref = pv.wrkref
+        and q.wh_id = pv.wh_id
+      where q.reqnum = @reqnum] catch(-1403)
+    |
+    if (@? = 0)
+    {
+        [select decode(sign(r.minunt - 2 * pv.untpal), -1, 0, 1) fast_move_item_flg
+           from rplcfg r
+           join prtftp_view pv
+             on r.prtnum = pv.prtnum
+            and r.prt_client_id = pv.prt_client_id
+            and r.wh_id = pv.wh_id
+            and pv.defftp_flg = 1
+          where r.wh_id = @wh_id
+            and r.prtnum = @prtnum
+            and r.prt_client_id = @prt_client_id
+            and rownum <2] catch(-1403)
+        |
+        if (@? = 0)
+        {
+            publish data
+              where is_fast_move_flg = @fast_move_item_flg
+        }
+        else
+        {
+            publish data
+              where is_fast_move_flg = 0
+        }
+    }
+    else
+    {
+        publish data
+          where is_fast_move_flg = 0
+    }
+]]>
+</local-syntax>
+<documentation>
+
+<remarks>
+<![CDATA[
+  <p>
+   This code is a part of job command 'process usr replenishment work priority setup'.
+   This command returns a flag to indicate if this replen is for a fast moving item.
+  </p>
+]]>
+</remarks>
+<argument name="wh_id" required="yes" datatype="">Warehouse id</argument>
+
+</documentation>
+</command>

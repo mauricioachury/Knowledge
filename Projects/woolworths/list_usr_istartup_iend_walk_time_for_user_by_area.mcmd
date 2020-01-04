@@ -1,0 +1,272 @@
+<command>
+<name>list usr istartup iend walk time for user by area</name>
+<description>list usr istartup iend walk time for user by area</description>
+<type>Local Syntax</type>
+<local-syntax>
+<![CDATA[
+/* This command accept query parameters:
+ * wh_id: return data for the warehouse.
+ * arenam: return data for the area, this value come from first word of area description, like 'Chiller - Chiller Area', then use 'Chiller' to search.
+ * usr_id: return data for the specific users.
+ * start_dte: start date.
+ * end_dte: end date.
+ * jobcodeid: 'ISTARTUP' or 'IEND' or 'WALKTIME'.
+ * for test purpose, you can comment out below publish data:
+ *
+publish data
+ where arenam = 'Chiller'
+   and usr_id = '9026'
+   and start_dte = '2019-08-12'
+   and end_dte = '2019-08-12'
+   and jobcodeid = 'ISTARTUP'
+|*/
+if (@arenam <> '')
+{
+    publish data
+     where search_by_arenam = @arenam
+}
+|
+if (@start_dte <> '')
+{
+    publish data
+     where startDateClause = " to_char(ks.start_time, 'yyyy-mm-dd') >= '" || @start_dte || "'"
+}
+else
+{
+    publish data
+     where startDateClause = " 1 = 1 "
+}
+|
+if (@end_dte <> '')
+{
+    publish data
+     where endDateClause = " to_char(ks.start_time, 'yyyy-mm-dd') <= '" || @end_dte || "'"
+}
+else
+{
+    publish data
+     where endDateClause = " 1 = 1 "
+}
+|
+[select ks.jobcodeid,
+        ks.assign_num,
+        ks.start_time,
+        ks.stop_time,
+        round((ks.stop_time - ks.start_time) *(24*60*60)) duration_by_sec,
+        ks.usr_id,
+        uv.first_name || ',' || uv.last_name usr_dsp
+   from kvi_summary ks
+   join users_view uv
+     on ks.usr_id = uv.usr_id
+  where jobcodeid in ('ISTARTUP', 'IEND')
+    and @+ks.usr_id
+    and @+ks.jobcodeid
+    and @+ks.wh_id
+    and @startDateClause:raw
+    and @endDateClause:raw
+union all
+ select jc.jobcodeid,
+        ks.assign_num,
+        ka.adj_start_time start_time,
+        ka.adj_start_time + ka.adj_duration / (24 * 60 * 60) stop_time,
+        ka.adj_duration duration_by_sec,
+        ks.usr_id,
+        uv.first_name || ',' || uv.last_name usr_dsp
+   from kvi_summary ks
+   join users_view uv
+     on ks.usr_id = uv.usr_id
+   join kvi_adjustments ka
+     on ka.kvisummaryintid = ks.kvisummaryintid
+   join jobcode jc
+     on ka.jobcodeintid = jc.jobcodeintid
+    and jc.jobcodeid = 'WALKTIME'
+  where @+ks.usr_id
+    and @+jc.jobcodeid
+    and @+ks.wh_id
+    and @startDateClause:raw
+    and @endDateClause:raw
+  order by usr_id,
+        assign_num]
+|
+if (@jobcodeid = 'ISTARTUP')
+{
+    [select min(lmsasn) nxt_assignment
+       from lmstrn
+      where usr_id = @usr_id
+        and lmsasn > @assign_num
+        and srcare is not null
+        and lmsasn is not null]
+    |
+    if (@nxt_assignment <> '')
+    {
+        [select min(decode(sam.logic_flg, 1, dam.arecod, sam.arecod)) arecod
+           from lmstrn lm
+           join aremst sam
+             on lm.srcare = sam.arecod
+            and lm.wh_id = sam.wh_id
+           join aremst dam
+             on lm.dstare = dam.arecod
+            and lm.wh_id = dam.wh_id
+            and lm.lmsasn = @nxt_assignment]
+    }
+}
+else if (@jobcodeid = 'IEND')
+{
+    [select max(lmsasn) lst_assignment
+       from lmstrn
+      where usr_id = @usr_id
+        and lmsasn < @assign_num
+        and srcare is not null
+        and lmsasn is not null]
+    |
+    if (@lst_assignment <> '')
+    {
+        [select min(decode(sam.logic_flg, 1, dam.arecod, sam.arecod)) arecod
+           from lmstrn lm
+           join aremst sam
+             on lm.srcare = sam.arecod
+            and lm.wh_id = sam.wh_id
+           join aremst dam
+             on lm.dstare = dam.arecod
+            and lm.wh_id = dam.wh_id
+            and lm.lmsasn = @lst_assignment]
+    }
+}
+else
+{
+    [select min(decode(sam.logic_flg, 1, dam.arecod, sam.arecod)) arecod
+     from lmstrn lm
+     join aremst sam
+       on lm.srcare = sam.arecod
+      and lm.wh_id = sam.wh_id
+     join aremst dam
+       on lm.dstare = dam.arecod
+      and lm.wh_id = dam.wh_id
+      and lm.lmsasn = @assign_num]
+}
+|
+if (@arecod <> '')
+{
+    [select am.arecod,
+            am.bldg_id,
+            dm.lngdsc area_dsp,
+            substr(dm.lngdsc, 1, instr(dm.lngdsc, ' ') - 1) arenam
+       from aremst am
+       join dscmst dm
+         on dm.colnam = 'arecod|wh_id'
+        and dm.colval = am.arecod || '|' || am.wh_id
+      where am.arecod = @arecod]
+}
+else
+{
+    publish data
+      where arenam = ''
+}
+|
+if (@search_by_arenam <> '' and @search_by_arenam <> @arenam)
+{
+    if (@arenam = 'SHIP')
+    {
+        /* If the area is from 'SHIP', like RDT loading trailer,
+         * from RDT to Trailer location. we convert it by using bldg_id,
+         * there are 2 Buildings mapped to area name 'Ambient' and 'Chiller'.
+         */
+        [[
+          if(bldg_id.equals("AMBIENT") && (search_by_arenam.equals("Ambient")) ||
+              bldg_id.equals("TC") && (search_by_arenam.equals("Chiller")))
+          {
+              exclude_data = 0
+          }
+          else
+          {
+              exclude_data = 1
+          }
+          ]]
+          |
+          if (@exclude_data = 0)
+          {
+              if (@bldg_id = 'AMBIENT')
+              {
+                  publish data
+                    where bldg_id = 'Ambient'
+                      and exclude_data = @exclude_data
+              }
+              else if (@bldg_id = 'TC')
+              {
+                  publish data
+                    where bldg_id = 'Chiller'
+                      and exclude_data = @exclude_data
+              }
+              else
+              {
+                  publish data
+                    where exclude_data = @exclude_data
+              }
+          }
+    }
+    else
+    {
+        publish data
+         where exclude_data = 1
+    }
+}
+else
+{
+    if (@arenam = 'SHIP')
+    {
+        if (@bldg_id = 'AMBIENT')
+        {
+            publish data
+             where bldg_id = 'Ambient'
+        }
+        else if (@bldg_id = 'TC')
+        {
+            publish data
+             where bldg_id = 'Chiller'
+        }
+    }
+    |
+    publish data
+     where exclude_data = 0
+       and bldg_id = @bldg_id
+}
+|
+if (@duration_by_sec < 0)
+{
+    publish data
+     where duration_by_sec = 0
+}
+|
+[select round(@duration_by_sec / (60*60)) hrs,
+        round(mod(@duration_by_sec, 3600) / 60) ms,
+        mod(@duration_by_sec, 60) ss
+   from dual]
+|
+if (@exclude_data = 0)
+{
+    publish data
+     where usr_id = @usr_id
+       and usr_dsp = @usr_dsp
+       and jobcodeid = @jobcodeid
+       and bldg_id = @bldg_id
+       and arecod = decode(@arenam,'SHIP', @bldg_id, @arecod)
+       and area_dsp = decode(@arenam,'SHIP', @bldg_id, @area_dsp)
+       and arenam = decode(@arenam,'SHIP', @bldg_id, @arenam)
+       and start_time = @start_time
+       and stop_time = @stop_time
+       and duration = lpad(@hrs, 2, '0') || ':' || lpad(@ms, 2, '0') || ':' || lpad(@ss, 2, '0')
+}
+]]>
+</local-syntax>
+<documentation>
+
+<remarks>
+<![CDATA[
+  <p>
+  This list command is used for query ISTARTUP, IEND or WALKTIME time spent by each user and arecod, and this command is suppose to be wrapped
+  into a report.
+  </p>
+]]>
+</remarks>
+</documentation>
+</command>

@@ -1,0 +1,31 @@
+publish data
+  where rplref = 'RPL0201016'
+|
+[select rplref,
+        ship_line_id,
+        wh_id,
+        schbat
+   from rplwrk
+  where rplref = @rplref]
+|
+cancel replenishment
+  WHERE rplref = @rplref
+    AND canbatflg = 1
+    AND reallocateFlag = 1
+|
+generate next number
+  where numcod = 'pckgrp'
+|
+publish data
+ where pckgrp = @nxtnum
+|
+assign pick group 
+where pckgr1 = @pckgrp
+  and ship_line_id = @ship_line_id
+|
+allocate wave
+ WHERE wh_id = @wh_id
+   AND schbat = @schbat
+   AND pckgr1 = @pckgrp
+   AND ignore_threading = 1
+   AND pcktyp = 'PICK-N-REPLEN-N-SHIP'], 

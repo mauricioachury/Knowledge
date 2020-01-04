@@ -1,0 +1,2 @@
+dyn_cfg_id,appl_id,frm_id,addon_id,cust_lvl,inp_mod,var_nam_lst,les_cmd_id,moddte,mod_usr_id,grp_nam
+dyn_disable_pick_to_id,LES,ASSET_IDENTIFY,LES,10,A,pick_to_id,dyn_disable_pick_to_id,,SUPER,wow_data

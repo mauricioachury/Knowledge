@@ -1,0 +1,72 @@
+<command>
+  <name>calculate usr replen within first x number of location</name>
+  <description>calculate usr replen within first x number of location</description>
+  <type>Local Syntax</type>
+  <local-syntax>
+<![CDATA[
+        [select dstloc reploc,
+                wh_id
+           from wrkque
+          where reqnum = @reqnum]
+        |
+        /* Here x number of location, we use 25*/
+        [select nvl(sum(pckqty - appqty), 0) total_pckqty
+           from pckwrk_hdr pv
+           join wrkque q
+             on pv.list_id = q.list_id
+            and pv.wh_id = q.wh_id
+          where pv.srcloc = @reploc
+            and pv.pckqty > pv.appqty
+            and pv.wh_id = @wh_id
+            and to_number(list_seqnum) < 25] catch(-1403)
+        |
+        if (@? = 0)
+        {
+            /* If we have earlier replen work for the same location,
+             * consider that qty is also available.
+             */
+            [select nvl(sum(pv.pckqty - pv.appqty), 0) prev_rplqty
+               from pckwrk_view pv
+               join wrkque q
+                 on pv.wrkref = q.wrkref
+                and pv.wh_id = q.wh_id
+              where pv.oprcod in ('PIARPL', 'PRP')
+                and q.dstloc = @reploc
+                and q.reqnum < @reqnum]
+            |
+            /* We only return yes when there is no enough qty
+             * for these 25-loc assignments.
+             */
+            [select 'x'
+               from invsum m
+              where m.stoloc = @reploc
+                and m.untqty + @prev_rplqty < @total_pckqty
+                and m.wh_id = @wh_id
+                and rownum < 2] catch(-1403)
+            |
+            if (@? = 0)
+            {
+                publish data
+                  where replen_needed_for_sooner_pick = 1
+            }
+        }
+        |
+        publish data
+          where replen_needed_for_sooner_pick = nvl(@replen_needed_for_sooner_pick, 0)
+]]>
+</local-syntax>
+<documentation>
+
+<remarks>
+<![CDATA[
+  <p>
+   This code is a part of job command 'process usr replenishment work priority setup'.
+   This command tells if the picking face for this replen work presents in first 25th location
+   of any acknowledged assignments
+  </p>
+]]>
+</remarks>
+<argument name="wh_id" required="yes" datatype="">Warehouse id</argument>
+
+</documentation>
+</command>

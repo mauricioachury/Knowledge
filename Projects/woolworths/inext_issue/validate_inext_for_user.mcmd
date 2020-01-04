@@ -1,0 +1,64 @@
+<command>
+<name>validate inext for user</name>
+<type>Local Syntax</type>
+<local-syntax>
+<![CDATA[
+if (@usr_id is not null)
+{
+    /* When the last assignment by kvisummaryintid is 'INEXT' */
+    [select start_time lst_start_time,
+            orig_start_time lst_orig_start_time,
+            kvisummaryintid lst_kvisummaryintid
+       from kvi_summary lst
+      where lst.usr_id = @usr_id
+        and lst.jobcodeid = 'INEXT'
+        and not exists (select 'x'
+                          from kvi_summary k
+                         where k.usr_id = lst.usr_id
+                           and k.kvisummaryintid > lst.kvisummaryintid)] catch(-1403)
+    |
+    if (@? = 0)
+    {
+        /* Check if we have another closest assignment after the 'INEXT'.
+         * If so need to remove the 'INEXT' and move the start time
+         * from INEXT to last assignment.
+         */
+        [select min(kvisummaryintid) nxt_kvisummaryintid
+           from kvi_summary
+          where usr_id = @usr_id
+            and start_time >= to_date(@lst_start_time)
+            and kvisummaryintid <> @lst_kvisummaryintid]
+         |
+         if (@nxt_kvisummaryintid is not null)
+         {
+             [update kvi_summary
+                 set start_time = to_date(@lst_start_time),
+                     orig_start_time = to_date(@lst_orig_start_time)
+               where kvisummaryintid = @nxt_kvisummaryintid]
+              |
+              [delete
+                 from kvi_summary
+                where kvisummaryintid = @lst_kvisummaryintid]
+         }
+    }
+}
+]]>
+</local-syntax>
+<documentation>
+<Remarks>
+<![CDATA[
+<p>
+   This is a trigger command for 'process wms' and 'process job0100', to skip create INEXT when it is
+   out of order, as below:
+   jobcodeid    usr_id   kvisummaryintid   start_time          orig_start_time     stop_time
+   AMB REPLN    9924     34158917          19/06/2019 16:32:50 19/06/2019 16:32:50 19/06/2019 16:35:44 
+   INEXT        9924     34158920          19/06/2019 16:32:38 19/06/2019 16:32:38 19/06/2019 16:32:50
+   
+   As we can see the 'AMB REPLN' created with smaller kvisummarintid which means it is created before the INEXT, however the start_time is later
+   than the INEXT, in this case we should skip creating INEXT record and move the start time of INEXT to be the start time of 'AMB REPLN'.
+
+</p>
+]]>
+</Remarks>
+</documentation>
+</command>

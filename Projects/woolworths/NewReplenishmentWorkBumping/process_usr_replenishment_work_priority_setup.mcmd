@@ -1,0 +1,510 @@
+<command>
+  <name>process usr replenishment work priority setup</name>
+  <description>process usr replenishment work priority setup</description>
+  <type>Local Syntax</type>
+  <local-syntax>
+<![CDATA[
+
+    /* 1. Reading policies:
+     * Below 3 policies define how many different seal times by hour should be
+     * considered for certain rank, e.g given stc1, stc2, stc3 with value: 2,
+     * 4, 6, and for seal times:
+     *|----------------------------------------------------------------
+     *|seal time|diff hrs cnt|  expression | rank value | score value |
+     *|----------------------------------------------------------------
+     *|11:00    | 1          |  1 <= stc1  |   1        |  16         |
+     *|11:30    | 1          |  1 <= stc1  |   1        |  16         |
+     *|12:00    | 2          |  2 <= stc1  |   1        |  16         |
+     *|13:00    | 3          |stc1<3<=stc2 |   2        |  8          |
+     *|14:00    | 4          |stc1<4<=stc2 |   2        |  8          |
+     *|15:00    | 5          |stc2<5<=stc3 |   3        |  4          |
+     *|16:00    | 6          |stc2<6<=stc3 |   3        |  4          |
+     *|17:00    | 7          |stc3<6       |   4        |  0          |
+     *|----------------------------------------------------------------
+     * 
+     */
+    [select rtnum1 stc1
+     from poldat_view pv
+    where pv.polcod = 'USR'
+      and pv.polvar = 'REPLENISHMENT-PRIORITY-SETUP'
+      and pv.polval = 'SEAL-TIME-COUNT1'
+      and pv.wh_id = @wh_id]
+    |
+    [select rtnum1 stc2
+     from poldat_view pv
+    where pv.polcod = 'USR'
+      and pv.polvar = 'REPLENISHMENT-PRIORITY-SETUP'
+      and pv.polval = 'SEAL-TIME-COUNT2'
+      and pv.wh_id = @wh_id]
+    |
+    [select rtnum1 stc3
+     from poldat_view pv
+    where pv.polcod = 'USR'
+      and pv.polvar = 'REPLENISHMENT-PRIORITY-SETUP'
+      and pv.polval = 'SEAL-TIME-COUNT3'
+      and pv.wh_id = @wh_id]
+    |
+    /* This job can be executed by area code:
+     * C: For Chiller.
+     * P: For Produce.
+     * A: Ambient.
+     */
+    if (@area_prefix <> '')
+    {
+        publish data
+          where area_clause = " substr(im.arecod, 1, 1) = '" || @area_prefix || "'"
+    }
+    else
+    {
+        publish data
+          where area_clause = " 1 = 1"
+    }
+    |
+    if (@job_count > 0 and @job_id > 0)
+    {
+        publish data
+          where bucket_clause = " mod(lm.trvseq, " || @job_count || ") = " || (@job_id - 1)
+    }
+    else
+    {
+        publish data
+          where bucket_clause = " 1 = 1"
+    }
+    |
+    /* 
+     * 2. Get min seal time from shipment where there is replen,
+     *    We exclude shipment where there is only short assignment
+     *    with LOCK status left from calculating seal time.
+     */
+      [select DENSE_RANK() OVER(order by min_seal_hr) rk,
+              t.*
+        from (select to_char(nvl(s.early_shpdte, (sysdate + 30)), 'yyyymmddhh24') min_seal_hr,
+                     substr(im.arecod, 1, 1) area_prefix
+                from wrkque q
+                join invsum im
+                  on q.dstloc = im.stoloc
+                 and q.wh_id = im.wh_id
+                 and im.pndqty > 0
+                left
+                join pckwrk_view pv
+                  on q.dstloc = pv.srcloc
+                 and q.wh_id = pv.wh_id
+                 and pv.pckqty > pv.appqty
+                 and not exists(select 'x'
+                                  from wrkque lq
+                                 where pv.list_id = lq.list_id
+                                   and pv.wh_id = lq.wh_id
+                                   and pv.vc_short = 1
+                                   and lq.wrksts = 'LOCK')
+                left
+                join shipment s
+                  on pv.ship_id = s.ship_id
+                 and pv.wh_id = s.wh_id
+               where q.wh_id = 'PRDC'
+                 and q.oprcod in ('PIARPL', 'PRP')
+                 and @area_clause:raw
+               group by to_char(nvl(s.early_shpdte, (sysdate + 30)), 'yyyymmddhh24'),
+                     substr(im.arecod, 1, 1)
+               order by min_seal_hr) t] catch(-1403) >> min_seal_res
+    |
+    if (rowcount(@min_seal_res) > 0)
+    {
+        /* Now we get all started LOADs, we need to keep this logic outside
+         * of looping for each replenishment, as it creates performance issue,
+         * so we only calculate started LOAD once for each job run.
+         */
+        [select distinct stp.car_move_id
+           from pckwrk_view pv
+           join shipment s
+             on pv.ship_id = s.ship_id
+            and pv.wh_id = s.wh_id
+           join stop stp
+             on s.stop_id = stp.stop_id
+          where pv.wh_id = @wh_id
+            and pv.pckqty > pv.appqty] catch(-1403) >> car_move_res
+       |
+       if (rowcount(@car_move_res) > 0)
+       {
+           convert column results to string
+            where resultset = @car_move_res
+              and colnam = 'car_move_id'
+              and separator = ','
+           |
+           convert list to in clause
+            where string = @result_string
+              and column_name = 'car_move_id'
+           |
+           publish data
+            where car_move_in_clause = @in_clause
+          /*
+           * We tell load started picking either:
+           * 1. Has pick picked.
+           * 2. Has assignment acknowledged.
+           * 3. Has pallet pick acknowledged.
+           * keep 'distinct' here even 'union' will remove duplicate
+           * since it seems 'distinct' is little faster.
+           */
+           |
+           [select distinct stp.car_move_id
+              from pckwrk_view pv
+              join shipment s
+                on pv.ship_id = s.ship_id
+               and pv.wh_id = s.wh_id
+              join stop stp
+                on s.stop_id = stp.stop_id
+             where @car_move_in_clause:raw
+               and pv.appqty > 0
+           union
+            select distinct stp.car_move_id
+              from pckwrk_view pv
+              join shipment s
+                on pv.ship_id = s.ship_id
+               and pv.wh_id = s.wh_id
+              join stop stp
+                on s.stop_id = stp.stop_id
+             where @car_move_in_clause:raw
+               and exists (select 'x'
+                                 from wrkque q
+                                where q.list_id = pv.list_id
+                                  and q.wh_id = pv.wh_id
+                                  and q.wrksts = 'ACK')
+           union
+            select distinct stp.car_move_id
+              from pckwrk_view pv
+              join shipment s
+                on pv.ship_id = s.ship_id
+               and pv.wh_id = s.wh_id
+              join stop stp
+                on s.stop_id = stp.stop_id
+             where @car_move_in_clause:raw
+               and exists (select 'x'
+                                 from wrkque q
+                                where q.wrkref = pv.wrkref
+                                  and q.wh_id = pv.wh_id
+                                  and q.wrksts = 'ACK')] catch(-1403) >> car_move_started_pick_res
+       }
+       |
+    /* Below policy defines how many number of assignments we need to consider
+     * to make sure enough qty avaialbe for them:
+     * a.) First including assignment in 'ACK' status.
+     * b.) If 'ACK' status assignment is less than this policy defined number.
+     *     We continue looking for next few number of assignment until reached
+     *     this number, please note we only looking at assignment for which
+     *     the load has started picking.
+     */
+      [select rtnum1 next_top_asn_cnt
+         from poldat_view pv
+        where pv.polcod = 'USR'
+          and pv.polvar = 'REPLENISHMENT-PRIORITY-SETUP'
+          and pv.polval = 'NEXT-TOP-ASSIGNMENT-COUNT'
+          and pv.rtstr1 = decode(@area_prefix, 'P', 'PRODUCE', 'C', 'CHILLER', 'AMBIENT')
+          and pv.wh_id = @wh_id]
+        |
+        [select 'x'
+           from poldat_view pv
+          where pv.polcod = 'USR'
+            and pv.polvar = 'REPLENISHMENT-PRIORITY-SETUP'
+            and pv.polval = 'ALLOW-MANUAL-PRIORITY-CHANGE'
+            and pv.wh_id = @wh_id
+            and pv.rtnum1 = 1] catch(-1403)
+        |
+        if (@? = 0)
+        {
+            /* As we need to give user the ability to manually assign a priority which
+             * won't be overriden by this job, so if user give a work priority
+             * which is not defined in the policy, nor the initial priority, then this
+             * job will exclude it, this is achieved by the 'exsits' clause.
+             */
+            [select q.reqnum,
+                    q.effpri old_effpri,
+                    pv.pckqty,
+                    q.dstloc,
+                    q.wrksts
+               from wrkque q
+               join pckwrk_view pv
+                 on q.wrkref = pv.wrkref
+                and q.wh_id = pv.wh_id
+                and q.oprcod in ('PIARPL', 'PRP')
+                and q.wrksts in ('PEND', 'LOCK', 'SUSP')
+                and exists (select 'x'
+                              from poldat_view pd
+                             where pd.polcod = 'USR'
+                               and pd.polvar = 'REPLENISHMENT-PRIORITY-SETUP'
+                               and pd.polval = 'SCORE-PRIORITY-MAPPING'
+                               and pd.wh_id = q.wh_id
+                               and pd.rtnum2 = q.effpri
+                             union all
+                            select 'x'
+                              from wrkopr_view ov
+                             where ov.oprcod = q.oprcod
+                               and ov.wh_id = q.wh_id
+                               and ov.baspri = q.effpri)
+                join locmst lm
+                  on q.dstloc = lm.stoloc
+                 and q.wh_id = lm.wh_id
+                 and @bucket_clause:raw
+              where q.wh_id = @wh_id
+                and substr(pv.srcare, 1, 1) = @area_prefix
+               order by decode(q.wrksts, 'PEND', 1, 'SUSP', 2, 3),
+                        q.dstloc,
+                        q.reqnum] catch(-1403)
+        }
+        else
+        {
+            /* Now get all replenishment works and calcuate their priority,
+             * We make sure 'PEND' is on top so they can be processed and become
+             * visible to operator faster as we do inline commit, we don't allow
+             * user to change priority, so return all replenishment works to be
+             * calculated.
+             */
+            [select q.reqnum,
+                    q.effpri old_effpri,
+                    pv.pckqty,
+                    q.dstloc,
+                    q.wrksts
+               from wrkque q
+               join pckwrk_view pv
+                 on q.wrkref = pv.wrkref
+                and q.wh_id = pv.wh_id
+                and q.oprcod in ('PIARPL', 'PRP')
+                and q.wrksts in ('PEND', 'LOCK', 'SUSP')
+               join locmst lm
+                 on q.dstloc = lm.stoloc
+                and q.wh_id = lm.wh_id
+                and @bucket_clause:raw
+              where q.wh_id = @wh_id
+                and substr(pv.srcare, 1, 1) = @area_prefix
+               order by decode(q.wrksts, 'PEND', 1, 'SUSP', 2, 3),
+                        q.dstloc,
+                        q.reqnum] catch(-1403)
+         }
+         |
+         if (@? = 0)
+         {
+             /*
+              * If we have a fresh canpck, immediately give highest priority
+              * which is 4. else by below logic:
+              * 1. Is needed by top 5 assignment ?
+              * 2. Is within 1 hours by seal time?
+              * 3. Is within 2 hours by seal time?
+              * 4. Is within 4 hours by seal time?
+              * 5. Is fast move item?
+              * 6. Is within 25 loc?
+              * 111111 = 2^5+2^4+2^3+2^2+2^1+2^0 = 32 + 16 + 8 + 4 + 2 + 1 = 63.
+              * however, for seal time, if it is in 2 hours, then 4 and 6 hours will be
+              * 0, so max value is 110011 which is 51, the score range could be
+              * from 0 to 51.
+              */
+             calculate usr replen needed by x top assignments
+                where reqnum = @reqnum
+                  and next_top_asn_cnt = @next_top_asn_cnt
+                  and car_move_started_pick_res = @car_move_started_pick_res
+              |
+              publish data
+                where has_cancel_pick = @has_cancel_pick
+                  and needed_by_x_asn = @needed_by_x_asn
+              |
+              if (@has_cancel_pick = 0)
+              {
+                  publish data
+                    where score1 = decode(@needed_by_x_asn, 1, 1, 0) * 32
+                  |
+                  /* This command publish two vars:
+                   * rank_value_to_first_seal_time: value can be 1,2,3,4 means
+                   * The replen is needed for first seal time trailer, 2nd seal
+                   * time trailer etc...
+                   */
+                  calculate usr replen close to first seal time
+                    where reqnum = @reqnum
+                      and min_seal_res = @min_seal_res
+                      and stc1 = @stc1
+                      and stc2 = @stc2
+                      and stc3 = @stc3
+                      and area_prefix = @area_prefix
+                  |
+                  publish data
+                    where score2 = decode(@rank_value_to_first_seal_time, 1, 16, 2, 8, 3, 4, 0) 
+                  |
+                  calculate usr replen for fast move item
+                    where reqnum = @reqnum
+                  |
+                  publish data
+                    where score3 = decode(@is_fast_move_flg, 1, 2, 0)
+                  |
+                  calculate usr replen within first x number of location
+                    where reqnum = @reqnum
+                  |
+                  publish data
+                    where score4 = decode(@replen_needed_for_sooner_pick, 1, 1, 0)
+                      and score1 = @score1
+                      and score2 = @score2
+                      and score3 = @score3
+                      and needed_by_x_asn = @needed_by_x_asn
+                      and rank_value_to_first_seal_time = @rank_value_to_first_seal_time
+                      and is_fast_move_flg = @is_fast_move_flg
+                      and replen_needed_for_sooner_pick = @replen_needed_for_sooner_pick
+                      
+              }
+              |
+              if (@has_cancel_pick = 1)
+              {
+                  /* For canpck scenario, we give priority 4 to differentiate.*/
+                  publish data
+                    where new_priority = 4
+                      and total_score = 64
+              }
+              else
+              {
+                  publish data
+                    where total_score = @score1 + @score2 + @score3 + @score4
+                  |
+                  /* Total score-priority mapping would be below:
+                   * 51 50 49 48 43 42 41 40 39 38 37 36 35 34 33 32 19 18 17 16 11 10 9   8  7  6  5  4  3  2  1 0
+                   * 5  5  5  5  5  5  5  5  5  5  5  5  5  5  5  5  10 15 20 25 30 35 40 45 50 55 60 65 70 75 80 85
+                   * We use a policy data to store the mapping so it can be adjusted based on actual result.
+                   */
+                  [select rtnum2 new_priority
+                     from poldat_view pv
+                    where pv.polcod = 'USR'
+                      and pv.polvar = 'REPLENISHMENT-PRIORITY-SETUP'
+                      and pv.polval = 'SCORE-PRIORITY-MAPPING'
+                      and pv.rtnum1 = @total_score
+                      and pv.wh_id = @wh_id] catch(-1403)
+                  |
+                  if (@? = -1403) 
+                  {
+                      /*This should not happen, in case some
+                       * mapping missed, we give value 84 for indication.
+                       */
+                      publish data
+                        where new_priority = 84
+                  }
+                  |
+                  publish data
+                    where new_priority = @new_priority
+                      and total_score = @total_score
+              }
+              |
+              publish data
+               where new_priority = @new_priority
+                 and bitVal = decode(@has_cancel_pick, 1, 1, 0) * 1000000 + 
+                              decode(@needed_by_x_asn, 1, 1, 0) * 100000 + 
+                              decode(@rank_value_to_first_seal_time, 1, 1, 0) * 10000 +
+                              decode(@rank_value_to_first_seal_time, 2, 1, 0) * 1000 +
+                              decode(@rank_value_to_first_seal_time, 3, 1, 0) * 100 +
+                              decode(@is_fast_move_flg, 1, 1, 0) * 10 +
+                              decode(@replen_needed_for_sooner_pick, 1, 1, 0) * 1
+              |
+              /* If calculated priority is not same as priority on the work,
+               * then update it with calculated priority,this gives each
+               * replenishment work a real time importance indication, as
+               * the pick work data from the location could be changing, like
+               * wave cancel and reallocate, if this job runs at the same time
+               * the priority may not reflect the final expected status.
+               * Two special scenarios:
+               * 1. When new priority is 4 which means cancel pick happened, we only
+               *    bump the priority if the replen is 'PNED' status.
+               * 2. If total_score is 0 let the work stays at initial priority
+               *    This is because demand replan has 85 as initial priority,
+               *    and trigger replen has 95, so demand work can be done
+               *    before trigger replen.
+               */
+              if (@old_effpri <> @new_priority
+                  and (@new_priority <> 4 or (@new_priority = 4 and @wrksts = 'PEND'))
+                  and (@total_score > 0 or (@total_score = 0 and @old_effpri < @new_priority)))
+              {
+                  /* It is possible that at this step the work is acked by someone,
+                   * so here again make sure work status is still expected.
+                   */
+                  [update wrkque
+                      set effpri = @new_priority
+                    where reqnum = @reqnum
+                      and wrksts in ('PEND', 'LOCK', 'SUSP')] catch(-1403)
+                  |
+                  if (@? = 0)
+                  {
+                      [select ph.prtnum,
+                              ph.pckqty,
+                              ph.wrkref,
+                              q.effpri new_effpri,
+                              q.oprcod,
+                              q.srcloc frstol,
+                              q.dstloc tostol
+                         from pckwrk_hdr ph
+                         join wrkque q
+                           on ph.wrkref = q.wrkref
+                          and ph.wh_id = q.wh_id
+                          and q.reqnum = @reqnum]
+                      |
+                      write daily transaction log
+                        where actcod = 'RPLPRISETUP'
+                          and fr_value = @reqnum || ' for ' || @wrkref || ' with ' || @oprcod || ' setup old effpri:' || @old_effpri || ' bitVal:' || @bitVal
+                          and to_value = @reqnum || ' for ' || @wrkref || ' with ' || @oprcod || ' to effpri:' || @new_effpri
+                          and frstol = @frstol
+                          and tostol = @tostol
+                          and prtnum = @prtnum
+                          and trnqty = @pckqty
+                          and expqty = @old_effpri
+                          and rptqty = @new_effpri
+                          and wh_id = @wh_id
+                  }
+                  ;
+                  commit
+             }
+        }
+    }
+]]>
+</local-syntax>
+<documentation>
+
+<remarks>
+<![CDATA[
+  <p>
+   This code is for job command 'USR_PROCESS_REPLENISHMENT_WORK_PRIORITY_SETUP':
+   In this command, it will calculate priority for all demand or trigger replenishment pick, based on
+   a binary value with 6 digits: 111111 represents 6 different criterias, each '1' represent certain criteria is meet,
+   e.g first '1' means this replen work is needed for top x assignment, based on which we calculate score, the logic is based on bleow,
+   take first row as example, score 51 is coming from 1*2^5 + 1*2^4 + 0*2^3 + 0*2^2 + 1*2^1 + 1*2^0 = 32 + 16 + 2 + 1 = 51:
+   ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+   |Scenario                                               | TOP asn needed| seal time 1hr| seal time 2hr|seal time 4hr|fast move item |fst 25 loc |score | new priority| 
+   |-------------------------------------------------------|---------------|--------------|--------------|-------------|---------------|-----------|------|-------------|
+   |FAST MOVING + WITHIN 25 locations+ WITHIN 1 hour + TOP |         1     |    1         | 0            |  0          | 1             | 1         | 51   |  5          |
+   |FAST MOVING + ABOVE 25+WITHIN 1 + TOP                  |         1     |    1         | 0            |  0          | 1             | 0         | 50   |  5          |
+   |NON FAST MOVING  + WITHIN 25+ WITHIN 1 + TOP           |         1     |    1         | 0            |  0          | 0             | 1         | 49   |  5          |
+   |NON FAST MOVING  + ABOVE 25+WITHIN 1 + TOP             |         1     |    1         | 0            |  0          | 0             | 0         | 48   |  5          |
+   |FAST MOVING + WITHIN 25+ WITHIN 2 + TOP                |         1     |    0         | 1            |  0          | 1             | 1         | 43   |  5          |
+   |FAST MOVING + ABOVE 25+WITHIN 2 + TOP                  |         1     |    0         | 1            |  0          | 1             | 0         | 42   |  5          |
+   |NON FAST MOVING  + WITHIN 25+ WITHIN 2 + TOP           |         1     |    0         | 1            |  0          | 0             | 1         | 41   |  5          |
+   |NON FAST MOVING  + ABOVE 25+WITHIN 2 + TOP             |         1     |    0         | 1            |  0          | 0             | 0         | 40   |  5          |
+   |FAST MOVING + WITHIN 25+ WITHIN 4 + TOP                |         1     |    0         | 0            |  1          | 1             | 1         | 39   |  5          |
+   |FAST MOVING + ABOVE 25+WITHIN 4 + TOP                  |         1     |    0         | 0            |  1          | 1             | 0         | 38   |  5          |
+   |NON FAST MOVING  + WITHIN 25+ WITHIN 4 + TOP           |         1     |    0         | 0            |  1          | 0             | 1         | 37   |  5          |
+   |NON FAST MOVING  + ABOVE 25+WITHIN 4 + TOP             |         1     |    0         | 0            |  1          | 0             | 0         | 36   |  5          |
+   |FAST MOVING + WITHIN 25+ WITHIN 6 + TOP                |         1     |    0         | 0            |  0          | 1             | 1         | 35   |  5          |
+   |FAST MOVING + ABOVE 25+WITHIN 6 + TOP                  |         1     |    0         | 0            |  0          | 1             | 0         | 34   |  5          |
+   |NON FAST MOVING + WITHIN 25+ WITHIN 6 + TOP            |         1     |    0         | 0            |  0          | 0             | 1         | 33   |  5          |
+   |NON FAST MOVING + ABOVE 25+WITHIN 6 + TOP              |         1     |    0         | 0            |  0          | 0             | 0         | 32   |  5          |
+   |FAST MOVING + WITHIN 25+WITHIN1 + NOT TOP              |         0     |    1         | 0            |  0          | 1             | 1         | 19   |  10         |
+   |FAST MOVING + ABOVE 25+WITHIN 1 + NOT TOP              |         0     |    1         | 0            |  0          | 1             | 0         | 18   |  15         |
+   |NON FAST MOVING  + WITHIN 25+WITHIN1 + NOT TOP         |         0     |    1         | 0            |  0          | 0             | 1         | 17   |  20         |
+   |NON FAST MOVING  + ABOVE 25+WITHIN 1 + NOT TOP         |         0     |    1         | 0            |  0          | 0             | 0         | 16   |  25         |
+   |FAST MOVING + WITHIN 25+WITHIN2 + NOT TOP              |         0     |    0         | 1            |  0          | 1             | 1         | 11   |  30         |
+   |FAST MOVING + ABOVE 25+WITHIN 2 + NOT TOP              |         0     |    0         | 1            |  0          | 1             | 0         | 10   |  35         |
+   |NON FAST MOVING  + WITHIN 25+WITHIN2 + NOT TOP         |         0     |    0         | 1            |  0          | 0             | 1         | 9    |  40         |
+   |NON FAST MOVING  + ABOVE 25+WITHIN 2 + NOT TOP         |         0     |    0         | 1            |  0          | 0             | 0         | 8    |  45         |
+   |FAST MOVING + WITHIN 25+WITHIN 4 + NOT TOP             |         0     |    0         | 0            |  1          | 1             | 1         | 7    |  50         |
+   |FAST MOVING + ABOVE 25+WITHIN 4 + NOT TOP              |         0     |    0         | 0            |  1          | 1             | 0         | 6    |  55         |
+   |NON FAST MOVING  + WITHIN 25+WITHIN 4 + NOT TOP        |         0     |    0         | 0            |  1          | 0             | 1         | 5    |  60         |
+   |NON FAST MOVING  + ABOVE 25+WITHIN 4 + NOT TOP         |         0     |    0         | 0            |  1          | 0             | 0         | 4    |  65         |
+   |FAST MOVING + WITHIN 25+Above 4 hrs+ NOT TOP           |         0     |    0         | 0            |  0          | 1             | 1         | 3    |  70         |
+   |FAST MOVING + ABOVE 25+Above 4 hrs+ NOT TOP            |         0     |    0         | 0            |  0          | 1             | 0         | 2    |  75         |
+   |NON FAST MOVING + WITHIN 25+Above 4 hrs + NOT TOP      |         0     |    0         | 0            |  0          | 0             | 1         | 1    |  80         |
+   |NON FAST MOVING + ABOVE 25+Above 4 hrs + NOT TOP       |         0     |    0         | 0            |  0          | 0             | 0         | 0    |  85         |
+   |---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  </p>
+]]>
+</remarks>
+<argument name="wh_id" required="yes" datatype="">Warehouse id</argument>
+
+</documentation>
+</command>

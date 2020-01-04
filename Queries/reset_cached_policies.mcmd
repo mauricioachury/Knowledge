@@ -1,0 +1,15 @@
+/* Below script is able to reset all java cached policies, but for C code cached policy it may not work*/
+[[
+
+    import com.redprairie.wmd.policies.PolicyUtils;
+    import com.redprairie.mcs.Policy;
+    import com.redprairie.wmd.WMDConstants;
+
+    PolicyUtils.getInstance().resetCache();
+
+    Policy policy = PolicyUtils.getInstance().getPolicy(
+            WMDConstants.POLCOD_LMS,
+            WMDConstants.POLVAR_CONFIGURATION,
+            WMDConstants.POLVAL_ACCEPTABLE_DELAY, 'PRDC');
+        int acceptableDelay = policy.getRtNum1();
+]]

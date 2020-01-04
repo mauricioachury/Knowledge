@@ -1,0 +1,77 @@
+publish data
+ where report_dte = '20191030'
+   and wh_id = 'PRDC'
+|
+[SELECT subsel.usr_id,
+        u.first_name || ' ' || u.last_name as usr_name,
+        Sum(uom) + Sum(palletcases) AS totaluoms,
+        CASE WHEN Sum(performance) > 999 THEN 999
+             ELSE Sum(performance)
+        END AS performance
+   FROM
+        /*Union KVI_SUMMARY AND DISCRETE */
+        (
+         /*KVI_SUMMARY table information for Total Hours AND Performance*/
+         (SELECT usr_id,
+                 Round(Sum(k.actual_seconds) / 3600, 2) AS hours,
+                 Round(Decode(Sum(k.measured_seconds), 0, 0, (Sum(k.goal_seconds) / Sum(k.measured_seconds)) *100), 2) AS performance,
+                 Sum(k.measured_seconds) measured_seconds,
+                 Sum(k.goal_seconds) goal_seconds,
+                 0 AS uom,
+                 0 AS pallets,
+                 0 AS palletcases
+            FROM base_assignments k
+           WHERE k.report_date >= to_date(@report_dte)
+             and k.report_date <= to_date(@report_dte)
+             AND k.ismeasured = 1
+             AND k.status = 'C'
+             AND k.wh_id = @wh_id
+           GROUP BY usr_id)
+         UNION
+         /*DISCRETE table information for UOMs*/
+         (SELECT usr_id,
+                 0 AS hours,
+                 0 AS performance,
+                 0 AS measured_seconds,
+                 0 AS goal_seconds,
+                 Sum(wow_uom) AS uom,
+                 Sum(num_pallet) AS pallets,
+                 Sum(palletcases) AS palletcases
+            FROM (SELECT k.assign_num,
+                         k.usr_id,
+                         d.seq_num,
+                         CASE WHEN d.num_pallet > 0
+                          AND d.user_def_1 > 0 THEN d.num_pallet
+                              ELSE 0
+                         END AS num_pallet,
+                         d.num_case,
+                         d.num_layer,
+                         d.num_each,
+                         d.num_inner,
+                         d.item_num,
+                         CASE WHEN d.num_pallet = 0 THEN cast(d.user_def_1 as int)
+                              ELSE 0
+                         END as wow_uom,
+                         CASE WHEN d.num_pallet > 0
+                          AND d.user_def_1 > 0 THEN cast(d.user_def_1 as int)
+                              ELSE 0
+                         END as palletcases
+                    FROM base_assignments k,
+                         discrete d
+                   WHERE d.kvisummaryintid = k.kvisummaryintid
+                     AND k.report_date >= to_date(@report_dte)
+                     and k.report_date <= to_date(@report_dte)
+                     AND k.ismeasured = 1
+                  /* Only Measured jobs are used for Performance tracking */
+                     AND k.status = 'C'
+                     AND d.activity_type not in ('A', 'P')
+                  /*Ignore all the Place records*/
+                     AND k.wh_id = @wh_id) subsel1
+           GROUP BY usr_id)) subsel
+   JOIN users_view u
+     ON subsel.usr_id = u.usr_id
+  WHERE 1 = 1
+  GROUP BY subsel.usr_id,
+        u.first_name,
+        u.last_name
+  ORDER BY subsel.usr_id]

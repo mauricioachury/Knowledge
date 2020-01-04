@@ -1,0 +1,128 @@
+<command>
+
+<name>process usr pallet pick ready for picking</name>
+
+<description>process usr pallet pick ready for picking</description>
+
+<type>Local Syntax</type>
+
+<local-syntax>
+
+<![CDATA[
+/*Check if there is any pallet pick not booked with lane, if so book them.*/
+process usr lane assignment for pallet pick
+  where wh_id = @wh_id;
+
+/* This job to unlock pallet picks only if they reserved staging lane*/
+[select distinct pv.wrkref,
+        pv.oprcod,
+        pm.cmbcod,
+        pm.stoloc,
+        wq.reqnum,
+        wq.srcloc,
+        wq.src_bldg_id,
+        wq.srcwrkare,
+        wq.src_wrk_zone_id,
+        wq.wh_id
+   from wrkque wq,
+        pckwrk_view pv,
+        pckmov pm
+  where wq.wrkref = pv.wrkref
+    and wq.oprcod = pv.oprcod
+    and wq.oprcod = 'PCK'
+    and wq.wrksts = 'LOCK'
+    and pv.cmbcod = pm.cmbcod
+    and pv.appqty = 0
+    and pm.stoloc is not null
+    and pv.wh_id = @wh_id] catch(@?)
+|
+if (@? = 0)
+{
+    [update wrkque
+        set wrksts = 'PEND'
+      where reqnum = @reqnum
+        and wrksts = 'LOCK'] catch(@?)
+    |
+    if (@? = 0)
+    {
+        write daily transaction log
+         where actcod = 'PCKUNLCK'
+           and fr_value = @reqnum || ' for ' || @wrkref || ' with ' || @oprcod || ' from status' || 'LOCK' || ' Lane reserved:' || @stoloc
+           and to_value = @reqnum || ' for ' || @wrkref || ' with ' || @oprcod || ' to status: PEND'
+           and frstol = @srcloc
+           and tostol = @stoloc
+           and trnqty = @pckqty
+           and wh_id = @wh_id
+    }
+};
+
+/* Check if policy is enabled for bumpping pallet pick*/
+/* PRDC Issue 207 : Voice device not passing wh_id cause the trigger to fail, hard coding PRDC */
+[select 'x'
+   from poldat_view pv
+  where polcod = 'USR'
+    and polvar = 'BUMP-PALLET-PICK'
+    and polval = 'ENABLED'
+    and rtnum1 = 1
+    and wh_id = nvl(@wh_id, nvl(@@wh_id, 'PRDC'))] catch(-1403)
+|
+if (@? = 0)
+{
+    /* Exclude List Pick Short from the selection logic introduce in Perth 04 Sep 2019.*/
+    [select distinct pv.wh_id,
+            pv.wrkref
+       from pckwrk_view pv,
+            shipment s,
+            stop t
+      where pv.ship_id = s.ship_id
+        and pv.wh_id = s.wh_id
+        and s.stop_id = t.stop_id
+        and pv.wrkref in (select wrkref
+                            from wrkque q
+                           where q.wrksts in ('PEND', 'LOCK', 'SUSP')
+                             and q.oprcod = 'PCK'
+                             and q.effpri > 5)
+        and not exists(select 'x'
+                         from pckwrk_view pv2,
+                              shipment s2,
+                              stop t2
+                        where pv2.ship_id = s2.ship_id
+                          and pv2.wh_id = s2.wh_id
+                          and s2.stop_id = t2.stop_id
+                          and pv2.pckqty > pv2.appqty
+                          and pv2.list_id is not null
+                          and pv2.oprcod <> 'LPCKSHRT'
+                          and t2.car_move_id = t.car_move_id)
+        and pv.wh_id = @wh_id] catch(-1403)
+    |
+    if (@? = 0)
+    {
+        [update wrkque
+            set effpri = 5
+          where wrkref = @wrkref
+            and wh_id = @wh_id] catch(-1403)
+    }
+};
+
+]]>
+</local-syntax>
+
+<argument name="wh_id" required="yes" datatype="string">Warehouse ID</argument>
+
+<documentation>
+<remarks>
+This command is for job USR-PALLET-PICK-UNLOCK:
+1. This job initially only take care of unlock pallet pick when it is booked
+   with stage lane.
+2. Now It added ability to handle later comer pallet pick:
+   When all assignment picks are completed, a rush order or crossdock order
+   may come and planned into same shipment, in this case, it will not able
+   to book lane, and not able to bump priority, which is now supported.
+
+</remarks>
+
+<exception value="eOK">Normal successful completion</exception>
+
+</documentation>
+
+</command>

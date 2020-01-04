@@ -12,3 +12,33 @@ publish data where new_ordnum = @nxtnum
     |
     create order line where ordnum = @new_ordnum and @*
 }
+
+
+/*Copy Single Order for single item*/
+publish data
+where ordnum = '8777918'
+|
+[select *
+  from ord
+ where ordnum = @ordnum]
+|
+generate next number
+where numcod = 'ordnum'
+|
+publish data
+where new_ordnum = @nxtnum
+|
+{
+   create order
+    where requir_tms_flg = 0
+      and ordnum = @new_ordnum
+      and @*;
+   [select *
+      from ord_line
+     where ordnum = @ordnum
+       and prtnum = '332140']
+   |
+   create order line
+    where ordnum = @new_ordnum
+      and @*
+}

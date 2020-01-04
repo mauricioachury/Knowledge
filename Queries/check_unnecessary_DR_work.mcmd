@@ -1,0 +1,186 @@
+/* Get all location has multiple DRs newly added which is enoug for order pick */
+[select lm.stoloc,
+        iv.prtnum,
+        iv.prt_client_id,
+        iv.invsts,
+        pv1.ord_pckqty,
+        iv.untqty,
+        pv1.ord_pckqty - nvl(iv.untqty, 0) need_qty,
+        pv2.dmd_pckqty,
+        pv2.min_dmd_pckqty,
+        pv2.max_dmd_pckqty,
+        pv2.dmd_wrkcnt
+   from locmst lm join (select sum (pckqty) ord_pckqty,
+                               srcloc,
+                               wh_id
+                          from pckwrk_view where pckqty > appqty and ship_line_id is not null
+                         group by srcloc,
+                               wh_id) pv1
+     on lm.stoloc = pv1.srcloc and lm.wh_id = pv1.wh_id
+  join (select sum (pckqty) dmd_pckqty,
+               min(pckqty) min_dmd_pckqty,
+               max(pckqty) max_dmd_pckqty,
+               count(distinct wrkref) dmd_wrkcnt,
+               min(adddte) min_lstdte, 
+               max(adddte) max_lstdte, 
+               dstloc,
+               wh_id
+          from pckwrk_view
+         where pckqty > appqty
+           and wrktyp = 'D'
+         group by dstloc, wh_id
+  having(count(distinct wrkref) > 1)
+) pv2
+    on lm.stoloc = pv2.dstloc
+   and lm.wh_id = pv2.wh_id 
+   and pv2.max_lstdte > sysdate - 0.1
+left join
+  (select sum(untqty) untqty,
+          prtnum,
+          prt_client_id,
+          invsts,
+          stoloc,
+          wh_id
+     from inventory_view 
+    group by prtnum, prt_client_id, invsts, stoloc, wh_id) iv
+  on lm.stoloc = iv.stoloc
+ and lm.wh_id = iv.wh_id
+where pv2.dmd_pckqty > pv1.ord_pckqty and rownum <5]
+
+/* Below give us both 'D' and 'G' replen but with 0 stock in location*/
+        [select lm.stoloc,
+         lm.prtnum,
+         lm.prt_client_id,
+         pv1.ord_pckqty,
+         nvl(iv.untqty, 0) invqty,
+         pv1.ord_pckqty - nvl(iv.untqty, 0) need_qty,
+         pv2.rpl_pckqty,
+         pv2.rpl_wrkcnt,
+         pv2.max_wrktyp,
+         pv2.min_wrktyp
+    from rplcfg lm
+    join (select sum(pckqty) ord_pckqty,
+                 srcloc,
+                 wh_id
+            from pckwrk_view
+           where pckqty > appqty
+             and ship_line_id is not null
+           group by srcloc,
+                 wh_id) pv1
+      on lm.stoloc = pv1.srcloc
+     and lm.wh_id = pv1.wh_id
+    join (select sum(pckqty) rpl_pckqty,
+                 min(pckqty) min_rpl_pckqty,
+                 max(pckqty) max_rpl_pckqty,
+                 count(distinct wrkref) rpl_wrkcnt,
+                 min(adddte) min_lstdte,
+                 max(adddte) max_lstdte,
+                 min(wrktyp) max_wrktyp,
+                 min(wrktyp) min_wrktyp,
+                 dstloc,
+                 wh_id
+            from pckwrk_view
+           where pckqty > appqty
+             and wrktyp in ('G', 'D')
+           group by dstloc,
+                 wh_id
+          having (count(distinct wrkref) > 1)) pv2
+      on lm.stoloc = pv2.dstloc
+     and lm.wh_id = pv2.wh_id
+    left
+    join (select sum(untqty) untqty,
+                 prtnum,
+                 prt_client_id,
+                 invsts,
+                 stoloc,
+                 wh_id
+            from inventory_view
+           group by prtnum,
+                 prt_client_id,
+                 invsts,
+                 stoloc,
+                 wh_id) iv
+      on lm.stoloc = iv.stoloc
+     and lm.wh_id = iv.wh_id
+   where pv2.rpl_pckqty > pv1.ord_pckqty
+     and iv.untqty is null
+   order by stoloc]
+
+/* Get all order picks */
+[select adddte, list_id, pv.* from pckwrk_view pv where pv.srcloc = 'CR1191' and pckqty > appqty order by 2, 1 desc]
+
+/* get all DRs */
+[select to_char(adddte, 'yyyy-mm-dd hh24:mi:ss') adddate, pv.* from pckwrk_view pv where pv.dstloc = 'CR1191' and pckqty > appqty]
+/* Get all Inv*/
+[select prtnum, untqty, invsts, expire_dte from inventory_view iv where iv.stoloc = 'CR1191']
+/* Make sure DR unlocked only when reached minunt*/
+        [select lm.stoloc,
+         lm.prtnum,
+         lm.prt_client_id,
+         lm.minunt,
+         iv.invsts,
+         pv1.ord_pckqty,
+         iv.untqty,
+         pv1.ord_pckqty - nvl(iv.untqty, 0) need_qty,
+         pv2.dmd_pckqty,
+         pv2.min_dmd_pckqty,
+         pv2.max_dmd_pckqty,
+         pv2.dmd_wrkcnt
+    from rplcfg lm
+    join (select sum(pckqty) ord_pckqty,
+                 srcloc,
+                 wh_id
+            from pckwrk_view
+           where pckqty > appqty
+             and ship_line_id is not null
+           group by srcloc,
+                 wh_id) pv1
+      on lm.stoloc = pv1.srcloc
+     and lm.wh_id = pv1.wh_id
+    join (select sum(pckqty) dmd_pckqty,
+                 min(pckqty) min_dmd_pckqty,
+                 max(pckqty) max_dmd_pckqty,
+                 count(distinct wrkref) dmd_wrkcnt,
+                 min(adddte) min_lstdte,
+                 max(adddte) max_lstdte,
+                 dstloc,
+                 wh_id
+            from pckwrk_view
+           where pckqty > appqty
+             and wrktyp = 'D'
+           group by dstloc,
+                 wh_id) pv2
+      on lm.stoloc = pv2.dstloc
+     and lm.wh_id = pv2.wh_id
+    join (select sum(untqty) untqty,
+                 prtnum,
+                 prt_client_id,
+                 invsts,
+                 stoloc,
+                 wh_id
+            from inventory_view
+           group by prtnum,
+                 prt_client_id,
+                 invsts,
+                 stoloc,
+                 wh_id) iv
+      on lm.stoloc = iv.stoloc
+     and lm.wh_id = iv.wh_id
+   where iv.untqty > lm.minunt
+     and exists(select 'x'
+                  from wrkque
+                 where dstloc = lm.stoloc
+                   and wrksts = 'PEND')]
+
+/* Find item with multiple ftpcod but same untcas/untpak */
+                           [select iv.prtnum,
+                            count(distinct iv.ftpcod) ftpcnt,
+                            max(iv.untcas) max_untcas,
+                            min(iv.untcas) min_untcas,
+                            max(iv.untpak) max_untpak,
+                            min(iv.untpak) min_untpak
+                       from inventory_view iv
+                      where iv.ship_line_id is null
+                      group by iv.prtnum
+                     having (count(distinct iv.ftpcod) > 1)
+                        and not(max(iv.untcas) = min(iv.untcas) and max(iv.untpak) = min(iv.untpak))];

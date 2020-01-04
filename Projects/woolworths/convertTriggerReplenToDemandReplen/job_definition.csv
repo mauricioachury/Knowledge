@@ -1,0 +1,2 @@
+job_id,role_id,name,enabled,type,command,log_file,trace_level,overlap,schedule,start_delay,timer,grp_nam
+USR-PROCESS-REPLEN-CONVERTION,JOBS,"process usr replenishment convertion",1,timer,"[select wh_id from wh] | process usr replenishment convertion where wh_id = @wh_id",$LESDIR/log/usr_replen_convert.log,,0,,0,30,USR

@@ -1,0 +1,18 @@
+<action>
+    <id>listActiveWaveDetail</id>
+    <name>Lists active wave detail</name>
+    <description>Lists the active wave detail</description>
+
+    <type>LIST</type>
+    <ws>
+        <method>GET</method>
+        <href>/listActiveWaveDetail</href>
+    </ws>
+    <impl>
+        <command>list active wave detail</command>
+    </impl>
+
+    <auth>
+        <opt>optOpen</opt>
+    </auth>
+</action>

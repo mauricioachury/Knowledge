@@ -1,0 +1,63 @@
+/*repcnt_threshold defines how many replen you want to generate,
+ *days_to_look_replen defines how many days back you want to check the count of replen generated for loc
+ */
+publish data
+ where repcnt_needed = 5
+   and days_to_look_replen = 7
+|
+[select count(distinct reqnum) repcnt,
+        dstloc stoloc,
+        r.prtnum,
+        r.prt_client_id,
+        im.untqty,
+        im.pndqty,
+        r.minunt,
+        r.maxunt,
+        r.wh_id
+   from wrkhst ws
+   join rplcfg r
+     on ws.dstloc = r.stoloc
+    and ws.wh_id = r.wh_id
+   left
+   join invsum im
+     on r.stoloc = im.stoloc
+    and r.wh_id = im.wh_id
+  where oprcod in ('PRP', 'PIARPL')
+    and r.minunt > nvl(im.untqty, 0) + nvl(im.pndqty, 0)
+    and ws.cmpdte > sysdate - @days_to_look_replen
+  group by dstloc,
+        r.prtnum,
+        r.prt_client_id,
+        im.untqty,
+        im.pndqty,
+        r.minunt,
+        r.maxunt,
+        r.wh_id
+  order by repcnt desc]
+|
+get session variable
+ where name = 'replen_count_generated' catch(-1403)
+|
+if (nvl(@value, 0) < @repcnt_needed)
+{
+    execute server command with new transaction
+     where command = "
+generate replenishment
+ where prtnum = '" || @prtnum || "'
+   and prt_client_id = '" || @prt_client_id || "'
+   and wh_id = '" || @wh_id || "'
+   and invsts = 'A'
+   and srcqty = '" || @maxunt || "'
+   and pcktyp = 'TOPOFF-REPLEN'
+   and dstloc = '" || @stoloc || "'
+   and wrktyp = 'G'" catch(@?);
+}
+|
+[select count(*) triger_replen_cnt
+   from pckwrk_hdr
+  where ins_user_id = @@usr_id
+    and wrktyp = 'G'] catch(-1403)
+|
+save session variable
+ where name = 'replen_count_generated'
+   and value = @triger_replen_cnt

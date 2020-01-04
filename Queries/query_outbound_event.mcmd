@@ -8,3 +8,12 @@
     and to_char(evt_dt,'yyyy-mm-dd') = '2017-02-13'
     and evt_arg_val in (select trlr_id from ship_struct_view ssv where ship_id in (select ship_id from ship_struct_view ssv2 where ssv.car_move_id = ssv2.car_move_id and not exists (select 'x' from pckwrk_view pv where pv.ship_id = ssv.ship_id)))]
 
+/* EO data for event logged,
+ * evt_data_seq: get from above query.
+ */
+[select d.*
+ from sl_eo_data_hdr h
+ join sl_eo_data_dtl d
+   on h.eo_data_seq = d.eo_data_seq
+where h.evt_data_seq = 186201638
+order by d.eo_data_dtl_seq]

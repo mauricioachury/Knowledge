@@ -1,0 +1,139 @@
+<command>
+
+<name>process usr lane assignment for pallet pick</name>
+
+<description>process usr lane assignment for pallet pick</description>
+
+<type>Local Syntax</type>
+
+<local-syntax>
+
+<![CDATA[
+    /* Get any shipment which has lane booked for some pick, but has pallet
+     * pick not booked with lane.
+     */
+    [select distinct
+            pv.ship_id
+       from wrkque wq,
+            pckwrk_view pv,
+            pckmov pm
+      where wq.wrkref = pv.wrkref
+        and wq.oprcod = pv.oprcod
+        and wq.oprcod = 'PCK'
+        and pv.cmbcod = pm.cmbcod
+        and pv.appqty = 0
+        and pm.stoloc is null
+        and pm.alcflg = 0
+        and pv.wh_id = @wh_id
+        and exists (select 'x'
+                      from pckwrk_view p1
+                      join pckmov p2
+                        on p2.cmbcod = p1.cmbcod
+                       and p2.stoloc is not null
+                     where p1.ship_id = pv.ship_id)] catch(@?)
+    |
+    if (@? = 0)
+    {
+        /* Get all pallet picks which are not booked with lane, and book
+         * then one by one.
+         */
+        [select distinct pv.wrkref,
+                wq.reqnum,
+                wq.effpri,
+                pv.schbat,
+                pv.pcksts
+           from wrkque wq,
+                pckwrk_view pv,
+                pckmov pm
+          where wq.wrkref = pv.wrkref
+            and wq.oprcod = pv.oprcod
+            and wq.oprcod = 'PCK'
+            and pv.cmbcod = pm.cmbcod
+            and pv.appqty = 0
+            and pm.stoloc is null
+            and pm.alcflg = 0
+            and pv.ship_id = @ship_id
+            and pv.wh_id = @wh_id
+            order by wq.effpri,
+                     wq.reqnum]
+        |
+        /*If we can not book lane success, need to rollback to this point*/
+        set savepoint 
+          where savepoint = 'BOOK_LANE_FOR_PICK_' || @wrkref
+        |
+        /*Put other possible pallet pick into 'alcflg = 1', so only book lane
+         * for current pick.
+         */
+        [update pckmov
+            set alcflg = 1
+          where cmbcod in (select cmbcod
+                             from pckwrk_view pv
+                            where pv.ship_id = @ship_id
+                              and pv.wh_id = @wh_id
+                              and pv.oprcod = 'PCK'
+                              and pv.lodlvl = 'L'
+                              and pv.pckqty > pv.appqty
+                              and pv.wrkref <> @wrkref)
+             and stoloc is null
+             and alcflg = 0] catch(-1403)
+         |
+         process var pick release allocation
+           where ship_id = @ship_id
+             and schbat = @schbat
+             and pcksts = @pcksts
+             and pickconfirm = 0
+             and skip_cache_flg=1
+             and wh_id = @wh_id catch(@?)
+         |
+         if (@? <> 0)
+         {
+             rollback to savepoint 
+               where savepoint = 'BOOK_LANE_FOR_PICK_' || @wrkref
+         }
+         else
+         {
+             /* Successfully booked lane for current pallet pick, now reset back
+              * other pallet picks to alcflg = 0, so they can be booked as well.
+              */
+             [update pckmov
+                 set alcflg = 0
+               where cmbcod in (select cmbcod
+                                  from pckwrk_view pv
+                                 where pv.ship_id = @ship_id
+                                   and pv.wh_id = @wh_id
+                                   and pv.oprcod = 'PCK'
+                                   and pv.lodlvl = 'L'
+                                   and pv.pckqty > pv.appqty
+                                   and pv.wrkref <> @wrkref)
+                  and stoloc is null
+                  and alcflg = 1] catch(-1403)
+        }
+        ;
+        process var pick release allocation  
+          where cache_locs = 0
+            and pickconfirm = 0
+            and schbat = ''
+            and wh_id = @wh_id catch(@?);
+    }
+]]>
+</local-syntax>
+
+<argument name="wh_id" required="yes" datatype="string">Warehouse ID</argument>
+
+<documentation>
+<remarks>
+This command do a lane reservation for current single pallet pick, it put other pallet
+picks into pckmov.alcflg = 1, so it only book lane for current pallet pick which
+should success with better chance, other than try to book lane for all pallets
+for which could end up with no lane availble.
+
+NOTE: this command is designed only for scenario that all assignment picks are
+finished, only few later comer pallet picks needs to book with lane but could
+end up with no lane avaialble.
+</remarks>
+
+<exception value="eOK">Normal successful completion</exception>
+
+</documentation>
+
+</command>

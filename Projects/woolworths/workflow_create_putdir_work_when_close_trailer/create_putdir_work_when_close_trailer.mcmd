@@ -1,0 +1,65 @@
+if (@trlr_id <> '' and @wh_id <> '')
+{
+    /* If this is inbound trailer */
+    [select 'x' 
+       from rcvtrk
+      where trlr_id = @trlr_id
+        and wh_id = @wh_id] catch(-1403)
+    |
+    if (@? = 0)
+    {
+         create deferred execution
+          where deferred_cmd = "publish data where trlr_id = '" || @trlr_id || "' and wh_id = '" || @wh_id || "'
+         |
+         /* If this trailer has ASN pallet sits in receive stage */
+         [select distinct iv.stoloc srcloc
+            from inventory_view iv
+            join locmst lm
+              on iv.stoloc = lm.stoloc
+             and iv.wh_id = lm.wh_id
+            join loc_typ lt
+              on lm.loc_typ_id = lt.loc_typ_id
+             and lm.wh_id = lt.wh_id
+             and lt.rcv_stgflg = 1
+             and lt.xdaflg = 0
+            join rcvlin rl
+              on iv.rcvkey = rl.rcvkey
+             and iv.wh_id = rl.wh_id
+             and iv.asnflg = 1
+            join rcvtrk rk
+              on rk.wh_id = rl.wh_id
+             and rk.trknum = rl.trknum
+           where rk.wh_id = @wh_id
+             and rk.trlr_id = @trlr_id] catch(-1403)
+         |
+         if (@? = 0)
+         {
+             [select count(lodnum) tot_lod_cnt
+                from invlod
+               where stoloc = @srcloc
+                 and wh_id = @wh_id]
+             |
+             /* Check if there is sufficient PUTDIR work for these pallets, if not
+              * we create PUTDIR work as needed.
+              */
+             [select count(reqnum) exist_wrk_cnt,
+                     @srcloc srcloc
+                from wrkque
+               where srcloc = @srcloc
+                 and wh_id = @wh_id
+                 and oprcod = 'PUTDIR']
+              |
+              if (@exist_wrk_cnt < @tot_lod_cnt)
+              {
+                  do loop
+                   where count = @tot_lod_cnt - @exist_wrk_cnt
+                  |
+                  create work
+                   where wh_id = @wh_id
+                     and oprcod = 'PUTDIR'
+                     and lodlvl = 'L'
+                     and srcloc = @srcloc
+              }
+         }"
+    }
+}

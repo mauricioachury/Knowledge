@@ -27,6 +27,7 @@ publish data where plan_date = to_char(sysdate, 'MMDDYYYY')
            where pcksts = 'R'
            and wrktyp not in ('B', 'E', 'D', 'T', 'G')
            and pckwrk_view.appqty = 0
+           and (pckwrk_view.est_time is null or pckwrk_view.est_time = -1)
            and pckwrk_view.list_id is null
            @schbat_in:raw
          order by pckwrk_view.wrkref ] >> picks
@@ -53,6 +54,7 @@ publish data where plan_date = to_char(sysdate, 'MMDDYYYY')
                 left join invlod
                   on invsub.lodnum = invlod.lodnum
                where invdtl.prtnum = @prtnum
+                 and pv.srcloc = invlod.stoloc
                  and pv.wrkref = @wrkref
                  and rownum =1 ] catch(-1403)
             |
@@ -75,7 +77,7 @@ publish data where plan_date = to_char(sysdate, 'MMDDYYYY')
                 * for cube and weight according to HOST MU policies
                 */
                get lms Object wt and cb quantities 
-                 where untvol = @palvol and untwgt = @estwgt 
+                 where untvol = @palvol and untwgt = @estwgt and wh_id = @wh_id 
                 catch(-1403)
                |
                publish data
@@ -123,7 +125,7 @@ publish data where plan_date = to_char(sysdate, 'MMDDYYYY')
                 * for cube and weight according to HOST MU policies
                 */
                get lms Object wt and cb quantities 
-                 where untvol = @palvol and untwgt = @estwgt 
+                 where untvol = @palvol and untwgt = @estwgt and wh_id = @wh_id 
                 catch(-1403)
                |
                

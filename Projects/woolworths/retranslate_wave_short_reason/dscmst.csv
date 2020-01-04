@@ -1,0 +1,7 @@
+colnam,colval,locale_id,lngdsc,short_dsc,grp_nam
+rsncod,ALLINVPCK,US_ENGLISH,"All available Inventory is Picked","Inventory Picked",wow_data
+rsncod,ALLINVCMT,US_ENGLISH,"All Inventory has been Committed","Inv Committed",wow_data
+rsncod,STSNOTALLOC,US_ENGLISH,"Inventory Status not Allocatable","Inv Sts not Alloc",wow_data
+rsncod,INVONHOLD,US_ENGLISH,"Inventory on Hold","Inventory on Hold",wow_data
+rsncod,LOCOOS,US_ENGLISH,"Selection Location Out of Service","Location OOS",wow_data
+rsncod,NOLOCFORITM,US_ENGLISH,"No Selection Location Configured for Item","No Loc Conf",wow_data

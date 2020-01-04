@@ -1,0 +1,177 @@
+<command>
+  <name>calculate usr replen close to first seal time</name>
+  <description>calculate usr replen close to first seal time</description>
+  <type>Local Syntax</type>
+  <local-syntax>
+<![CDATA[
+        [select dstloc reploc,
+                wh_id,
+                effpri cur_effpri
+           from wrkque
+          where reqnum = @reqnum]
+         |
+         {
+            /* Considering higher priority replen work which should own
+             * smaller reqnum, if somehow larger reqnum work get high
+             * priority, then it will be reproirtized.
+             */
+            [select nvl(sum(pv.pckqty - pv.appqty), 0) high_repqty
+             from wrkque q
+             join pckwrk_hdr pv
+               on q.wrkref = pv.wrkref
+              and q.wh_id = pv.wh_id
+              and pv.pckqty > pv.appqty
+            where q.wh_id = @wh_id
+              and q.dstloc = @reploc
+              and q.effpri < @cur_effpri
+              and q.reqnum < @reqnum
+              and q.oprcod in ('PIARPL', 'PRP')]
+             |
+             [select nvl(sum(untqty), 0) ava_invqty
+              from invsum im
+             where im.stoloc = @reploc
+               and im.wh_id = @wh_id]
+             |
+             [select nvl(sum(iv.untqty), 0) on_the_way_invqty
+                from inventory_view iv
+                join invmov im
+                  on iv.lodnum = im.lodnum
+                 and iv.wh_id = im.wh_id
+                 and im.invmov_typ = 'PICK'
+                 and im.lodlvl = 'L'
+                 and im.stoloc = @reploc
+                 and im.wh_id = @wh_id]
+             |
+             save session variable
+               where name = 'remain_ava_qty'
+                 and value = @high_repqty + @ava_invqty + @on_the_way_invqty
+             |
+             [select sum(pv.pckqty - pv.appqty) pckqty,
+                     nvl(s.early_shpdte, (sysdate + 30)) early_shpdte
+                from pckwrk_view pv
+                join shipment s
+                  on pv.ship_id = s.ship_id
+                 and pv.wh_id = s.wh_id
+               where pv.srcloc = @reploc
+                 and pv.wh_id = @wh_id
+                 and pv.pckqty > pv.appqty
+               group by nvl(s.early_shpdte, (sysdate + 30))
+               order by early_shpdte] catch(-1403)
+             |
+             if(@? = 0)
+             {
+                  get session variable
+                    where name = 'my_early_shpdte' catch(-1403)
+                  |
+                  if (@? = -1403 or @value = '')
+                  {
+                      get session variable
+                        where name = 'remain_ava_qty'
+                      |
+                      if (to_number(@value) < to_number(@pckqty))
+                      {
+                          save session variable
+                            where name = 'my_early_shpdte'
+                              and value = @early_shpdte
+                      }
+                      else
+                      {
+                          save session variable
+                            where name = 'remain_ava_qty'
+                              and value = @value - @pckqty
+                      }
+                  }
+             };
+         }
+         |
+         get session variable
+           where name = 'my_early_shpdte' catch(-1403)
+         |
+         if (@? = -1403 or @value = '')
+         {
+             /* This should not happen, this means we are not able to locate
+              * which early_shpdte is for current replenishment work, so
+              * it becomes less important, we give lowest rank.
+              */
+              publish data
+                where rank_value_to_first_seal_time = 4
+         }
+         else
+         {
+             publish data
+               where min_replen_seal_time = @value
+             |
+             save session variable
+               where name = 'my_early_shpdte'
+                 and value = ''
+             |
+             publish data
+               where min_replen_seal_hr = substr(@min_replen_seal_time, 1, 10)
+             |
+             /* We count rank based on hour only as within hour there could be many different seal times for which we don't want to differentiate,
+              * and below query should including all shipping pick which has pending replen for it.
+              * also we only looking at current area_prefix.
+              * as we exclude 'LOCK' assignment when calculating min_seal_time, so add same clause here.
+              */
+             {
+                 publish top rows
+                   where resultset = @min_seal_res
+                     and rows = rowcount(@min_seal_res)
+                 |
+                 if (@min_seal_hr = @min_replen_seal_hr)
+                 {
+                     save session variable
+                       where name = 'seal_time_count_by_hr'
+                         and value = @rk 
+                 };
+             }
+             |
+             get session variable
+               where name = 'seal_time_count_by_hr' catch(-1403)
+             |
+             if(@? = 0)
+             {
+                 publish data
+                   where seal_time_count_by_hr = to_number(@value)
+             }
+             |
+             if (@seal_time_count_by_hr <= @stc1)
+             {
+                 publish data
+                   where rank_value_to_first_seal_time = 1
+             }
+             else if (@seal_time_count_by_hr > @stc1 and @seal_time_count_by_hr <= @stc2)
+             {
+                 publish data
+                   where rank_value_to_first_seal_time = 2
+             }
+             else if (@seal_time_count_by_hr > @stc2 and @seal_time_count_by_hr <= @stc3)
+             {
+                 publish data
+                   where rank_value_to_first_seal_time = 3
+             }
+             else
+             {
+                  publish data
+                    where rank_value_to_first_seal_time = 4
+             }
+        }
+]]>
+</local-syntax>
+<documentation>
+
+<remarks>
+<![CDATA[
+  <p>
+   This code is a part of job command 'process usr replenishment work priority setup'.
+   This command give 4 different values to represent how close this replenishment
+   is needed for shipment by seal time to the earliest seal time, considering
+   scenario that seal time between 2 adjacent trailers could be big, so we
+   use rank other than hours to provide ranking.
+  </p>
+]]>
+</remarks>
+<argument name="wh_id" required="yes" datatype="">Warehouse id</argument>
+
+</documentation>
+</command>

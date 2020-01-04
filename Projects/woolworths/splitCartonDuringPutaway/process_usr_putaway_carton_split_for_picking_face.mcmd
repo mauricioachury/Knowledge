@@ -1,0 +1,230 @@
+<command>
+  <name>process usr putaway carton split for picking face</name>
+  <description>process usr putaway carton split for picking face</description>
+  <type>Local Syntax</type>
+  <local-syntax>
+<![CDATA[
+if (@srcloc <> '' and
+    @lodnum <> '' and
+    @dstloc <> '' and
+    @wh_id <> '')
+{
+    /* Only fires if we move pallet from  receive stage location.
+     */
+    [select 'x'
+       from locmst lm
+       join loc_typ lt
+         on lm.loc_typ_id = lt.loc_typ_id
+        and lm.wh_id = lt.wh_id
+        and lt.rcv_stgflg = 1
+        and lm.stoloc = @srcloc
+        and lm.wh_id = @wh_id] catch(-1403)
+    |
+    if (@? = 0)
+    {
+        /* Make sure there is assigned loc, and inventory level(including pending)
+         * is under min value, and make sure the movement zone allow replenishment
+         * split, if so get how much qty needed to fill the assigned loc to max value.
+         */
+        [select r.stoloc asg_stoloc,
+                r.maxunt - nvl(im.untqty + im.pndqty, 0) needQty
+           from rplcfg r
+           join inventory_view iv
+             on r.prtnum = iv.prtnum
+            and r.prt_client_id = iv.prt_client_id
+            and r.wh_id = iv.wh_id
+           join locmst lm
+             on r.stoloc = lm.stoloc
+            and r.wh_id = lm.wh_id
+            and lm.useflg = 1
+            and lm.stoflg = 1
+            and lm.repflg = 1
+           join mov_zone mz
+             on lm.mov_zone_id = mz.mov_zone_id
+            and lm.wh_id = mz.wh_id
+            and mz.thresh_split_flg = 1
+           left
+           join invsum im
+             on r.stoloc = im.stoloc
+            and r.prtnum = im.prtnum
+            and r.prt_client_id = im.prt_client_id
+            and r.wh_id = im.wh_id
+          where r.wh_id = @wh_id
+            and iv.lodnum = @lodnum
+            and r.minunt > nvl(im.untqty + im.pndqty, 0)
+            order by needQty desc] catch(-1403) >> res
+        |
+        if (rowcount(@res) > 0)
+        {
+            /* If multiple assigned loc need replen, then replen the loc which
+             * need most qty first.
+             */
+            publish top rows
+              where rows = 1
+                and resultset = @res
+            |
+            /* If the pallet already pending to the assigned loc, then skip.
+             */
+            [select 'x'
+               from inventory_view iv
+              where iv.lodnum = @lodnum
+                and exists(select 'x'
+                             from invmov im
+                            where im.lodnum = iv.lodnum
+                              and im.lodlvl = 'L'
+                              and im.stoloc = @asg_stoloc
+                           union all
+                           select 'x'
+                             from invmov im
+                            where im.lodnum = iv.subnum
+                              and im.lodlvl = 'S'
+                              and im.stoloc = @asg_stoloc)
+                and rownum < 2] catch(-1403)
+            |
+            if (@? = -1403)
+            {
+                /* Check if there is older inventory somewhere else, if so skip putaway
+                 * to picking face.
+                 */
+                [select 'x'
+                 from invsum im
+                 join inventory_view iv
+                   on iv.prtnum = im.prtnum
+                  and iv.prt_client_id = im.prt_client_id
+                  and iv.invsts = im.invsts
+                  and iv.wh_id = im.wh_id
+                where im.wh_id = @wh_id
+                  and im.stoloc <> @asg_stoloc
+                  and im.olddte < iv.fifdte
+                  and im.untqty > 0
+                  and iv.lodnum = @lodnum
+                  and rownum < 2] catch(-1403)
+                |
+                if (@? = -1403)
+                {
+                    /* Convert the needed untqty by x number of cases, also make sure
+                     * quantity is not more than the pallet has.
+                     */
+                    [select round(decode(sign(@needQty - iv.untqty), 1, iv.untqty, @needQty) / pv.untcas) * pv.untcas needQtyForCase
+                       from (select sum(untqty) untqty,
+                                    prtnum,
+                                    prt_client_id,
+                                    ftpcod,
+                                    wh_id
+                               from inventory_view
+                              where lodnum = @lodnum
+                              group by prtnum,
+                                    prt_client_id,
+                                    ftpcod,
+                                    wh_id) iv
+                       join prtftp_view pv
+                         on iv.prtnum = pv.prtnum
+                        and iv.prt_client_id = pv.prt_client_id
+                        and iv.wh_id = pv.wh_id
+                        and iv.ftpcod = pv.ftpcod]
+                    |
+                    if (@needQtyForCase > 0)
+                    {
+                        /*
+                         * Below section we either do them all success,
+                         * or need to rollback all of them if any exception
+                         * happened, so the LPN still pending to allocated
+                         * location.
+                         */
+                        set savepoint 
+                          where savepoint = 'PUTAWAY_LPN_SPLIT_TO_CLS_FOR_' || @lodnum
+                        |
+                        /* If the pallet is currently pending to somewhere, e.g
+                         * storage location most likely, then deallocate it.
+                         */
+                        [select im.lodnum pnd_lodnum
+                           from invmov im
+                           join inventory_view iv
+                             on im.lodnum = iv.lodnum
+                            and im.wh_id = iv.wh_id
+                          where iv.lodnum = @lodnum
+                         union
+                         select im.lodnum pnd_subnum
+                           from invmov im
+                           join inventory_view iv
+                             on im.lodnum = iv.subnum
+                            and im.wh_id = iv.wh_id
+                          where iv.lodnum = @lodnum] catch(-1403)
+                        |
+                        if (@? = 0)
+                        {
+                            deallocate location
+                             where @+lodnum^pnd_lodnum
+                               and @+subnum^pnd_subnum
+                               and wh_id = @wh_id
+                        };
+                        /* Since the movement zone has thresh_split_flg on, so
+                         * it should success to book the entire LPN to the asg
+                         * location, as we pass alctyp = 'REPLEN' to skip
+                         * capacity check.
+                         */
+                        allocate location
+                        where stoloc = @asg_stoloc
+                          and lodnum = @lodnum
+                          and invmov_typ = 'PICK'
+                          and alctyp = 'REPLEN'
+                          and wh_id = @wh_id catch(@?)
+                        |
+                        if (@? = 0)
+                        {
+                            [select 'x'
+                               from invmov
+                              where lodnum = @lodnum
+                                and stoloc = @asg_stoloc] catch(-1403)
+                            |
+                            if (@? = 0)
+                            {
+                                publish data
+                                  where book_to_asgloc_flg = 1
+                            }
+                        }
+                        |
+                        /* If any reason the LPN can not be booked to asigned
+                         * location, then rollback to first point.
+                         */
+                        if (@book_to_asgloc_flg <> 1)
+                        {
+                            rollback to savepoint 
+                              where savepoint = 'PUTAWAY_LPN_SPLIT_TO_CLS_FOR_' || @lodnum
+                        }
+                        else
+                        {
+                            /* By pushing this device context value, deposita form will auto
+                             * flow to REPLEN_SPLIT form to do replenishment split.
+                             */
+                            push device context value
+                              where devcod = nvl(@devcod, @@devcod)
+                                and wh_id = @wh_id
+                                and dev_varnam = 'replen_load'
+                                and value = @lodnum
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+]]>
+</local-syntax>
+<documentation>
+
+<remarks>
+<![CDATA[
+  <p>
+   This code is used as a background workflow for 'move inventory' when user putaway
+   pallet, it checks if the picking face is under min value, if so split necessary
+   cartons to fulfill the picking face location, and return remainning back to storage.
+   This is done by booking the location and then push the device context, then
+   deposita form will automatically flows to REPLEN_SPLIT form for split, which
+   is same proccess as case replenishment split.
+  </p>
+]]>
+</remarks>
+
+</documentation>
+</command>

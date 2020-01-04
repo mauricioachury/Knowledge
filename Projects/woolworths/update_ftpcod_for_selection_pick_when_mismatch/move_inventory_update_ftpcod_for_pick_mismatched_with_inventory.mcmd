@@ -1,0 +1,43 @@
+if (@dstloc <> '')
+{
+    /* We find all picks from selection location where without a ftpcod matched
+     * inventory for it.
+     */
+    [select pv.srcloc pckloc,
+            pv.ftpcod,
+            pv.wrkref,
+            pv.prtnum,
+            pv.prt_client_id,
+            pv.wh_id
+       from pckwrk_view pv
+       join rplcfg r
+         on pv.srcloc = r.stoloc
+        and pv.wh_id = r.wh_id
+      where pv.srcloc = @dstloc
+        and exists (select 'x'
+                      from inventory_view iv
+                     where iv.stoloc = pv.srcloc
+                       and iv.wh_id = pv.wh_id)
+        and not exists (select 'x'
+                          from inventory_view iv
+                         where iv.stoloc = pv.srcloc
+                           and iv.wh_id = pv.wh_id
+                           and iv.ftpcod = pv.ftpcod)
+        and pv.pckqty > pv.appqty] catch(-1403)
+      |
+     if(@? = 0)
+     {
+         /* Update the pick work with ftpcod from inventory from the location*/
+         [select distinct ftpcod inv_ftpcod
+            from inventory_view iv
+           where iv.stoloc = @pckloc
+             and iv.wh_id = @wh_id
+             and iv.prtnum = @prtnum
+             and iv.prt_client_id = @prt_client_id
+             and rownum <2]
+          |
+          [update pckwrk_hdr
+              set ftpcod = @inv_ftpcod
+            where wrkref = @wrkref]
+     }
+}

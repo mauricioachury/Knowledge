@@ -1,0 +1,7 @@
+colnam,codval,srtseq,rqdflg,grp_nam
+rsncod,ALLINVPCK,0,0,wow_data
+rsncod,ALLINVCMT,0,0,wow_data
+rsncod,STSNOTALLOC,0,0,wow_data
+rsncod,INVONHOLD,0,0,wow_data
+rsncod,LOCOOS,0,0,wow_data
+rsncod,NOLOCFORITM,0,0,wow_data

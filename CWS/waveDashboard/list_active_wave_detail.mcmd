@@ -1,0 +1,200 @@
+<command>
+<name>list active wave detail</name>
+<description>list active wave detail</description>
+<type>Local Syntax</type>
+<local-syntax>
+<![CDATA[
+[select sl.schbat,
+          o.ordtyp,
+          to_char(min(s.late_shpdte), 'hh24:mi') cut_off,
+          pm.stoloc stgloc,
+          am.adrnam bc,
+          count(distinct o.ordnum) tot_ord_cnt
+     from ship_struct_view ssv
+     join adrmst am
+       on ssv.adr_id = am.adr_id
+     join shipment s
+       on ssv.ship_id = s.ship_id
+      and ssv.wh_id = s.wh_id
+     join shipment_line sl
+       on s.ship_id = sl.ship_id
+     join ord o
+       on o.ordnum = sl.ordnum
+      and o.wh_id = sl.wh_id
+     join pckwrk_view pv
+       on sl.ship_line_id = pv.ship_line_id
+      and sl.wh_id = pv.wh_id
+     join pckmov pm
+       on pv.cmbcod = pm.cmbcod
+      and pv.wh_id = pm.wh_id
+    where sl.schbat is not null
+      and @+sl.schbat
+      and @+s.late_shpdte
+      and @+o.ordtyp
+    group by sl.schbat,
+          o.ordtyp,
+          pm.stoloc,
+          am.adrnam]
+  |
+  if (@cut_off <> '')
+  {
+      publish data
+       where cut_off_cls = " to_char(s.late_shpdte, 'hh24:mi') = '" || @cut_off || "'"
+  }
+  else
+  {
+      publish data
+       where cut_off_cls = " s.late_shpdte is null "
+  }
+  |
+  if (@stgloc <> '')
+  {
+      publish data
+       where stgloc_cls = " pm.stoloc = '" || @stgloc || "'"
+  }
+  else
+  {
+      publish data
+       where stgloc_cls = " pm.stoloc is null "
+  }
+  |
+  [select sum(decode(shpsts, 'I', 1, 0)) tot_ord_allocated
+     from (select distinct o.ordnum,
+                  s.shpsts
+             from shipment s
+             join shipment_line sl
+               on s.ship_id = sl.ship_id
+              and s.wh_id = sl.wh_id
+             join ord_line ol
+               on sl.ordnum = ol.ordnum
+              and sl.ordlin = ol.ordlin
+              and sl.ordsln = ol.ordsln
+              and sl.wh_id = ol.wh_id
+             join ord o
+               on ol.ordnum = o.ordnum
+              and ol.wh_id = o.wh_id
+             join pckwrk_view pv
+               on sl.ship_line_id = pv.ship_line_id
+              and sl.wh_id = pv.wh_id
+             join pckmov pm
+               on pv.cmbcod = pm.cmbcod
+              and pv.wh_id = pm.wh_id
+            where @+sl.schbat
+              and @+o.ordtyp
+              and @stgloc_cls:raw
+              and @cut_off_cls:raw) tmp]
+  |
+  [select count(*) tot_ord_picked
+     from (select distinct o.ordnum
+             from shipment s
+             join shipment_line sl
+               on s.ship_id = sl.ship_id
+              and s.wh_id = sl.wh_id
+             join ord_line ol
+               on sl.ordnum = ol.ordnum
+              and sl.ordlin = ol.ordlin
+              and sl.ordsln = ol.ordsln
+              and sl.wh_id = ol.wh_id
+             join ord o
+               on ol.ordnum = o.ordnum
+              and ol.wh_id = o.wh_id
+             join pckwrk_view pv
+               on pv.ordnum = ol.ordnum
+              and pv.ordlin = ol.ordlin
+              and pv.ordsln = ol.ordsln
+              and pv.wh_id = ol.wh_id
+              and pv.appqty > 0
+             join pckmov pm
+               on pv.cmbcod = pm.cmbcod
+              and pv.wh_id = pm.wh_id
+            where @+sl.schbat
+              and @cut_off_cls:raw
+              and @stgloc_cls:raw
+              and @+o.ordtyp) tmp]
+  |
+  [select sum(decode(shpsts, 'S', 1, 0)) tot_ord_staged
+     from (select distinct o.ordnum,
+                  s.shpsts,
+                  ssv.dispatch_dte
+             from ship_struct_view ssv
+             join shipment s
+               on ssv.ship_id = s.ship_id
+              and ssv.wh_id = s.wh_id
+             join shipment_line sl
+               on s.ship_id = sl.ship_id
+              and s.wh_id = sl.wh_id
+             join ord_line ol
+               on sl.ordnum = ol.ordnum
+              and sl.ordlin = ol.ordlin
+              and sl.ordsln = ol.ordsln
+              and sl.wh_id = ol.wh_id
+             join ord o
+               on ol.ordnum = o.ordnum
+              and ol.wh_id = o.wh_id
+             join pckwrk_view pv
+               on pv.ordnum = ol.ordnum
+              and pv.ordlin = ol.ordlin
+              and pv.ordsln = ol.ordsln
+              and pv.wh_id = ol.wh_id
+              and pv.appqty > 0
+             join pckmov pm
+               on pv.cmbcod = pm.cmbcod
+              and pv.wh_id = pm.wh_id
+            where s.shpsts in ('C', 'S')
+              and @+sl.schbat
+              and @cut_off_cls:raw
+              and @stgloc_cls:raw
+              and @+o.ordtyp) tmp]
+  |
+  [select count(*) tot_ord_packed
+     from (select distinct o.ordnum
+             from shipment s
+             join shipment_line sl
+               on s.ship_id = sl.ship_id
+              and s.wh_id = sl.wh_id
+             join ord o
+               on sl.ordnum = o.ordnum
+              and sl.wh_id = o.wh_id
+             join inventory_view iv
+               on sl.ship_line_id = iv.ship_line_id
+              and sl.wh_id = iv.wh_id
+             join locmst lm
+               on iv.stoloc = lm.stoloc
+              and iv.wh_id = lm.wh_id
+             join loc_typ lt
+               on lm.loc_typ_id = lt.loc_typ_id
+              and lt.praflg = 1
+                  /*Assuming praflg processing flag is 1 means packed*/
+             join pckwrk_view pv
+               on pv.ship_line_id = sl.ship_line_id
+              and pv.wh_id = sl.wh_id
+              and pv.appqty > 0
+             join pckmov pm
+               on pv.cmbcod = pm.cmbcod
+              and pv.wh_id = pm.wh_id
+            where @+sl.schbat
+              and @cut_off_cls:raw
+              and @stgloc_cls:raw
+              and @+o.ordtyp) tmp]
+  |
+  publish data
+   where schbat = @schbat
+     and ordtyp = @ordtyp
+     and cut_off = @cut_off
+     and stgloc = @stgloc
+     and bc = @bc
+     and tot_ord_cnt = @tot_ord_cnt
+     and tot_ord_allocated = @tot_ord_allocated
+     and tot_ord_picked = @tot_ord_picked
+     and tot_ord_staged = @tot_ord_staged
+     and tot_ord_packed = @tot_ord_packed
+]]>
+</local-syntax>
+<documentation>
+<remarks>
+<![CDATA[
+     This list commmand is developped for list details for a wave for dashboard 'Active Waves'.
+]]>
+</remarks>
+</documentation>
+</command>

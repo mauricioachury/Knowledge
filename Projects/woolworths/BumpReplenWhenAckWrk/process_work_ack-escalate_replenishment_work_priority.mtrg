@@ -1,0 +1,24 @@
+<trigger>
+  <name>escalate replenishment work priority</name>
+  <on-command>process work ack</on-command>
+  <description />
+  <fire-sequence>900</fire-sequence>
+  <local-syntax>
+<![CDATA[
+create deferred execution
+  where deferred_cmd = "escalate demand replenishment work priority async where reqnum = " || @reqnum || " and wh_id = '" || @wh_id || "'"
+]]>
+</local-syntax>
+
+<documentation>
+
+<remarks>
+<![CDATA[
+  <p>
+     This trigger is aimed to prompt demand and triggered replenishment pick priority.
+  </p>
+]]>
+</remarks>
+
+</documentation>
+</trigger>

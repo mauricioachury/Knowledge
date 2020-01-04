@@ -1,0 +1,242 @@
+<command>
+  <name>process usr replenishment pick unlock based on min quantity</name>
+  <description>process usr replenishment pick unlock based on min quantity</description>
+  <type>Local Syntax</type>
+  <local-syntax>
+<![CDATA[
+     validate stack variable not null
+     where name = 'wh_id'
+     |
+     /* Get all replenishment picking face locations where meet conditions:
+      * 1. Inventory level <= minunt.
+      * 2. Has 'LOCK' Demand or Trigger Replenishment work, and not existing other status
+      *    Demand Replenishment work.
+      * 3. Unlock first Demand/Trigger Replenishment Work.
+      * 4. Fast move item for which we have minunt configured with more than 2
+      *    pallets, we update effpri to 20.
+      */
+     [select am.bldg_id,
+             r.stoloc,
+             r.minunt,
+             nvl(iv.totqty, 0) totqty,
+             r.prtnum,
+             r.prt_client_id,
+             decode(sign(r.minunt - 2 * pv.untpal), -1, 0, 1) fast_move_item_flg
+        from rplcfg r
+        join locmst lm
+          on r.stoloc = lm.stoloc
+         and r.wh_id = lm.wh_id
+        join prtftp_view pv
+          on r.prtnum = pv.prtnum
+         and r.prt_client_id = pv.prt_client_id
+         and r.wh_id = pv.wh_id
+         and pv.defftp_flg = 1
+        join aremst am
+          on lm.arecod = am.arecod
+         and lm.wh_id = am.wh_id
+        left
+        join (select stoloc,
+                     wh_id,
+                     sum(untqty) totqty
+                from invsum
+               group by stoloc,
+                     wh_id) iv
+          on lm.stoloc = iv.stoloc
+         and lm.wh_id = iv.wh_id
+       left
+       join (select sum(iv.untqty) on_the_way_invqty,
+                    im.stoloc,
+                    im.wh_id
+               from inventory_view iv
+               join invmov im
+                 on iv.lodnum = im.lodnum
+                and iv.wh_id = im.wh_id
+                and im.invmov_typ = 'PICK'
+                and im.lodlvl = 'L'
+              group by im.stoloc,
+                       im.wh_id) ov
+          on lm.stoloc = ov.stoloc
+         and lm.wh_id = ov.wh_id
+       where r.minunt >= nvl(iv.totqty, 0) + nvl(ov.on_the_way_invqty, 0)
+         and r.wh_id = @wh_id
+       order by stoloc]
+     |
+     if (@? = 0)
+     {
+         [select reqnum,
+                 effpri old_effpri
+            from wrkque q
+           where q.dstloc = @stoloc
+             and q.wh_id = @wh_id
+             and q.oprcod in ('PIARPL', 'PRP')
+             and q.wrksts = 'LOCK'
+             and not exists(select 'x'
+                              from wrkque q2
+                             where q2.oprcod in ('PIARPL', 'PRP')
+                               and q2.dstloc = @stoloc
+                               and q2.wrksts <> 'LOCK')
+           order by effpri,
+                 reqnum] catch(-1403) >> res
+         |
+         if (rowcount(@res) > 0)
+         {
+             /*Only unlock one Demand/Trigger Replenishment Work*/
+             publish top rows
+              where rows = 1
+                and resultset = @res
+             |
+             [update wrkque
+                 set wrksts = 'PEND',
+                     effpri = decode(sign(effpri - 20), 1, decode(@fast_move_item_flg, 1, 20, effpri), effpri)
+               where reqnum = @reqnum]
+             |
+             [select ph.prtnum,
+                     ph.pckqty,
+                     ph.wrkref,
+                     q.effpri,
+                     q.oprcod,
+                     q.srcloc frstol,
+                     q.dstloc tostol
+                from pckwrk_hdr ph
+                join wrkque q
+                  on ph.wrkref = q.wrkref
+                 and ph.wh_id = q.wh_id
+                 and q.reqnum = @reqnum]
+             |
+             write daily transaction log
+              where actcod = 'RPLUNLCK'
+                and fr_value = @reqnum || '| for ' || @wrkref || ' with ' || @oprcod || ' locked with old effpri:' || @old_effpri
+                and to_value = @reqnum || '| for ' || @wrkref || ' with ' || @oprcod || ' unlocked with new effpri:' || @effpri
+                and frstol = @frstol
+                and tostol = @tostol
+                and prtnum = @prtnum
+                and trnqty = @pckqty
+                and wh_id = @wh_id
+         }
+     };
+
+     /* This is second part of this job for unlocking Bulk selection location:
+      * Based on below policy:
+      * rtnum1: 1 enable, 0 disable.
+      * rtnum2: defines how many pallets you want they can be sit in the location,
+      *         including pallets in the location already as well as pallets unlocked
+      *         from replenishment.
+      * rtstr1: the begin location range.
+      * rtstr2: the end location range.
+      * 
+      */
+     [select rtnum2 unlockLpnCnt,
+             rtstr1 fr_stoloc,
+             rtstr2 to_stoloc
+        from poldat_view pv
+       where pv.polcod = 'USR'
+         and pv.polvar = 'BULK-SELECTION-REPLENISHMENT'
+         and pv.polval = 'UNLOCK-CONFIGURATION'
+         and pv.wh_id = @wh_id
+         and pv.rtnum1 = 1] catch(-1403)
+     |
+     if (@? = 0)
+     {
+         [select stoloc
+            from rplcfg r
+           where r.stoloc >= @fr_stoloc
+             and r.stoloc <= @to_stoloc
+           order by stoloc] catch(-1403)
+         |
+         if (@? = 0)
+         {
+             [select count(reqnum) rel_wrkcnt
+                from wrkque q
+               where q.dstloc = @stoloc
+                 and q.wh_id = @wh_id
+                 and q.oprcod in ('PIARPL', 'PRP')
+                 and q.wrksts <> 'LOCK'] catch(-1403)
+             |
+             [select count(distinct lodnum) lpncnt
+                from inventory_view
+               where stoloc = @stoloc
+                 and wh_id = @wh_id] catch(-1403)
+             |
+             publish data
+              where need_more_wrkcnt = @unlockLpnCnt - @rel_wrkcnt - @lpncnt
+             |
+             if (@need_more_wrkcnt > 0)
+             {
+                 save session variable
+                  where name = 'need_more_wrkcnt'
+                    and value = @need_more_wrkcnt
+                 |
+                 [select reqnum
+                    from wrkque q
+                   where q.dstloc = @stoloc
+                     and q.wh_id = @wh_id
+                     and q.oprcod in ('PIARPL', 'PRP')
+                     and q.wrksts = 'LOCK'
+                   order by q.effpri,
+                             reqnum] catch(-1403)
+                 |
+                 if (@? = 0)
+                 {
+                     get session variable
+                      where name = 'need_more_wrkcnt'
+                     |
+                     if (@value > 0)
+                     {
+                         [update wrkque
+                             set wrksts = 'PEND'
+                           where reqnum = @reqnum]
+                         |
+                         [select ph.prtnum,
+                                 ph.pckqty,
+                                 ph.wrkref,
+                                 q.effpri,
+                                 q.oprcod,
+                                 q.srcloc frstol,
+                                 q.dstloc tostol
+                            from pckwrk_hdr ph
+                            join wrkque q
+                              on ph.wrkref = q.wrkref
+                             and ph.wh_id = q.wh_id
+                             and q.reqnum = @reqnum]
+                         |
+                         write daily transaction log
+                          where actcod = 'RPLUNLCK'
+                            and to_value = @reqnum || '| for ' || @wrkref || ' with ' || @oprcod || ' for bulk loc unlocked with effpri:' || @effpri
+                            and frstol = @frstol
+                            and tostol = @tostol
+                            and prtnum = @prtnum
+                            and trnqty = @pckqty
+                            and wh_id = @wh_id
+                         |
+                         save session variable
+                          where name = 'need_more_wrkcnt'
+                            and value = @value - 1
+                     }
+                 }
+             }
+         }
+     }
+]]>
+</local-syntax>
+<documentation>
+
+<remarks>
+<![CDATA[
+  <p>
+   This command is developped for job 'USR-UNLOCK-RPL-FOR-MIN-QTY'
+   to auto unlock first Demand/Trigger Replenishment Work, only when If inventory level
+   reached min value.
+   Second part is for 'Bulk Selection Location', scenario as:
+       1. Location is in an open field, user do picking in front, and replenish
+          at the end.
+       2. The location is used as receiving stage lane as well, so by the end
+          of day, we want to cleanup the lane for get ready for next day receiving.
+       3. No trigger replenishment expected as it is only for outbound fast move
+          items, but this job does not take care of this.
+  </p>
+]]>
+</remarks>
+<argument name="wh_id" required="yes" datatype="">Warehouse id</argument>
+
+</documentation>
+</command>

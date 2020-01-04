@@ -1,0 +1,2 @@
+les_cmd_id,cust_lvl,syntax,moddte,mod_usr_id,grp_nam
+dyn_disable_pick_to_id,10,"if ('@ASSET_IDENTIFY.wrklst_id <> '') {publish data where dvc_var_nam = 'pick_to_id' and dvc_ena_flg = '0' and dvc_vis_flg = '1'}",,SUPER,wow_data

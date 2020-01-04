@@ -59,72 +59,177 @@ and to_char(ssv.loddte, 'yyyy-mm-dd') <= @end_dte
 
 
 /* Order fulfill rate*/
-publish data
-where start_dte = '2018-09-20'
-    and end_dte = '2018-09-26'
-|
-[select count(distinct ordnum||'|'||ordlin) line_count,
-        sum(NumOfUom_Ordered) NumOfUom_Ordered_Total,
-        sum(NumOfUom_Shipped) NumOfUom_Shipped_Total,
-        sum(NumOfUom_Shorted) NumOfUom_Shorted_Total,
-        sum(cancnt) Cancel_Count,
-        sum(can_usr_cnt) Cancel_user_count,
-        round(sum(NumOfUom_Shipped) / sum(NumOfUom_Ordered), 2) * 100 FullfillRate,
-        atDay
-from
-(select ol.ordnum,
-      ol.ordlin,
-      ol.prtnum,
-      round(ol.ordqty / decode(sign(pv.untpak), 0, pv.untcas, pv.untpak)) NumOfUom_Ordered,
-      round(pwk.appqty / decode(sign(pv.untpak), 0, pv.untcas, pv.untpak)) NumOfUom_Shipped,
-      round((ol.ordqty - pwk.appqty) / decode(sign(pv.untpak), 0, pv.untcas, pv.untpak)) NumOfUom_Shorted,
-      im.avaqty,
-      cp.cancnt,
-      loccnt,
-      can_usr_cnt,
-      to_char(ssv.loddte, 'yyyy-mm-dd') atDay
-from ord_line ol 
-join (select sum(appqty) appqty, ordnum, ordlin, wh_id from pckwrk_view group by ordnum, ordlin, wh_id) pwk
-on ol.ordnum = pwk.ordnum
-and ol.ordlin = pwk.ordlin
-and ol.wh_id = pwk.wh_id
-join prtmst_view pw
-on ol.prtnum = pw.prtnum
-and ol.prt_client_id = pw.prt_client_id
-and ol.wh_id = pw.wh_id
-join prtftp_view pv
-on ol.prtnum = pv.prtnum
-and ol.prt_client_id = pv.prt_client_id
-and ol.wh_id = pv.wh_id
-and pv.defftp_flg = 1
-join shipment_line sl 
-on ol.ordnum = sl.ordnum 
-and ol.ordlin = sl.ordlin 
-and ol.wh_id = sl.wh_id 
-join ship_struct_view ssv 
-on sl.ship_id = ssv.ship_id
-left join (select sum(untqty - comqty) avaqty, prtnum, prt_client_id, wh_id from invsum group by prtnum, prt_client_id, wh_id) im
-on ol.prtnum = im.prtnum
-and ol.prt_client_id = im.prt_client_id
-and ol.wh_id = im.wh_id
-left join (select count(*) cancnt,
-                count(distinct srcloc) loccnt,
-                count(distinct can_usr_id) can_usr_cnt,
-                ordnum,
-                ordlin,
-                wh_id
-      from canpck, cancod
-     where canpck.cancod = cancod.codval
-      and cancod.reaflg = 0
-     group by wh_id, ordnum, ordlin) cp
-on ol.ordnum = cp.ordnum
-and ol.ordlin = cp.ordlin
-and ol.wh_id = cp.wh_id
-where ol.shpqty < ol.ordqty
-and ssv.shpsts = 'C'
-and ol.prtnum not like '88888888%'
-and im.avaqty > 0
-and to_char(ssv.loddte, 'yyyy-mm-dd') >= @start_dte
-and to_char(ssv.loddte, 'yyyy-mm-dd') <= @end_dte
-) t
-group by atDay]
+        publish data
+        where start_dte = '2019-09-04'
+            and end_dte = '2019-09-14'
+        |
+        [select count(distinct ordnum||'|'||ordlin) line_count,
+                sum(NumOfUom_Ordered) NumOfUom_Ordered_Total,
+                sum(NumOfUom_Shipped) NumOfUom_Shipped_Total,
+                sum(NumOfUom_Shorted) NumOfUom_Shorted_Total,
+                sum(cancnt) Cancel_Count,
+                sum(can_usr_cnt) Cancel_user_count,
+                round(sum(NumOfUom_Shipped) / sum(NumOfUom_Ordered), 4) * 100 FullfillRate,
+                atDay
+        from
+        (select ol.ordnum,
+              ol.ordlin,
+              ol.prtnum,
+              round(ol.ordqty / decode(sign(pv.untpak), 0, pv.untcas, pv.untpak)) NumOfUom_Ordered,
+              round(nvl(pwk.appqty,0) / decode(sign(pv.untpak), 0, pv.untcas, pv.untpak)) NumOfUom_Shipped,
+              round((ol.ordqty - nvl(pwk.appqty,0)) / decode(sign(pv.untpak), 0, pv.untcas, pv.untpak)) NumOfUom_Shorted,
+              im.avaqty,
+              cp.cancnt,
+              loccnt,
+              can_usr_cnt,
+              to_char(ssv.loddte, 'yyyy-mm-dd') atDay
+        from ord_line ol 
+        left join (select sum(appqty) appqty, ordnum, ordlin, wh_id from pckwrk_view group by ordnum, ordlin, wh_id) pwk
+        on ol.ordnum = pwk.ordnum
+        and ol.ordlin = pwk.ordlin
+        and ol.wh_id = pwk.wh_id
+        join prtmst_view pw
+        on ol.prtnum = pw.prtnum
+        and ol.prt_client_id = pw.prt_client_id
+        and ol.wh_id = pw.wh_id
+        join prtftp_view pv
+        on ol.prtnum = pv.prtnum
+        and ol.prt_client_id = pv.prt_client_id
+        and ol.wh_id = pv.wh_id
+        and pv.defftp_flg = 1
+        join shipment_line sl 
+        on ol.ordnum = sl.ordnum 
+        and ol.ordlin = sl.ordlin 
+        and ol.wh_id = sl.wh_id 
+        join ship_struct_view ssv 
+        on sl.ship_id = ssv.ship_id
+        left join (select sum(untqty - comqty) avaqty, prtnum, prt_client_id, wh_id from invsum group by prtnum, prt_client_id, wh_id) im
+        on ol.prtnum = im.prtnum
+        and ol.prt_client_id = im.prt_client_id
+        and ol.wh_id = im.wh_id
+        left join (select count(*) cancnt,
+                        count(distinct srcloc) loccnt,
+                        count(distinct can_usr_id) can_usr_cnt,
+                        ordnum,
+                        ordlin,
+                        wh_id
+              from canpck, cancod
+             where canpck.cancod = cancod.codval
+              and cancod.reaflg = 0
+             group by wh_id, ordnum, ordlin) cp
+        on ol.ordnum = cp.ordnum
+        and ol.ordlin = cp.ordlin
+        and ol.wh_id = cp.wh_id
+        where ssv.shpsts = 'C'
+        and ol.prtnum not like '88888888%'
+        and to_char(ssv.loddte, 'yyyy-mm-dd') >= @start_dte
+        and to_char(ssv.loddte, 'yyyy-mm-dd') <= @end_dte
+        ) t
+        group by atDay]
+/* Detail for short*/
+                publish data
+                where start_dte = '2019-09-04'
+                    and end_dte = '2019-09-14'
+                |
+                [select ol.ordnum,
+                      ol.ordlin,
+                      ol.prtnum,
+                      round(ol.ordqty / decode(sign(pv.untpak), 0, pv.untcas, pv.untpak)) NumOfUom_Ordered,
+                      round(nvl(pwk.appqty,0) / decode(sign(pv.untpak), 0, pv.untcas, pv.untpak)) NumOfUom_Shipped,
+                      round((ol.ordqty - nvl(pwk.appqty,0)) / decode(sign(pv.untpak), 0, pv.untcas, pv.untpak)) NumOfUom_Shorted,
+                      im.avaqty,
+                      cp.cancnt,
+                      loccnt,
+                      can_usr_cnt,
+                      to_char(ssv.loddte, 'yyyy-mm-dd') atDay
+                from ord_line ol 
+                left join (select sum(appqty) appqty, ordnum, ordlin, wh_id from pckwrk_view group by ordnum, ordlin, wh_id) pwk
+                on ol.ordnum = pwk.ordnum
+                and ol.ordlin = pwk.ordlin
+                and ol.wh_id = pwk.wh_id
+                join prtmst_view pw
+                on ol.prtnum = pw.prtnum
+                and ol.prt_client_id = pw.prt_client_id
+                and ol.wh_id = pw.wh_id
+                join prtftp_view pv
+                on ol.prtnum = pv.prtnum
+                and ol.prt_client_id = pv.prt_client_id
+                and ol.wh_id = pv.wh_id
+                and pv.defftp_flg = 1
+                join shipment_line sl 
+                on ol.ordnum = sl.ordnum 
+                and ol.ordlin = sl.ordlin 
+                and ol.wh_id = sl.wh_id 
+                join ship_struct_view ssv 
+                on sl.ship_id = ssv.ship_id
+                left join (select sum(untqty - comqty) avaqty, prtnum, prt_client_id, wh_id from invsum group by prtnum, prt_client_id, wh_id) im
+                on ol.prtnum = im.prtnum
+                and ol.prt_client_id = im.prt_client_id
+                and ol.wh_id = im.wh_id
+                left join (select count(*) cancnt,
+                                count(distinct srcloc) loccnt,
+                                count(distinct can_usr_id) can_usr_cnt,
+                                ordnum,
+                                ordlin,
+                                wh_id
+                      from canpck, cancod
+                     where canpck.cancod = cancod.codval
+                      and cancod.reaflg = 0
+                     group by wh_id, ordnum, ordlin) cp
+                on ol.ordnum = cp.ordnum
+                and ol.ordlin = cp.ordlin
+                and ol.wh_id = cp.wh_id
+                where ssv.shpsts = 'C'
+                and im.avaqty > 0
+                and ol.ordqty > ol.shpqty
+                and ol.prtnum not like '88888888%'
+                and to_char(ssv.loddte, 'yyyy-mm-dd') >= @start_dte
+                and to_char(ssv.loddte, 'yyyy-mm-dd') <= @end_dte]
+/*Generate Trigger Replean*/
+                [select r.prtnum,
+                 r.prt_client_id,
+                 r.maxunt,
+                 r.stoloc,
+                 r.wh_id
+            from rplcfg r
+            left
+            join invsum im
+              on r.stoloc = im.stoloc
+             and r.wh_id = im.wh_id
+           where r.minunt > nvl(im.untqty, 0) + nvl(im.pndqty, 0)
+             and r.wh_id = 'SLDC']
+         |
+         generate replenishment
+          where prtnum = @prtnum
+            and prt_client_id = @prt_client_id
+            and wh_id = @wh_id
+            and invsts = 'A'
+            and srcqty = @maxunt
+            and pcktyp = 'TOPOFF-REPLEN'
+            and dstloc = @stoloc
+            and wrktyp = 'G'
+
+            /* ftpcod short*/
+                    [select a.prtnum,
+                     a.wrktyp,
+                     a.start_time,
+                     a.end_time,
+                     d.*
+                from alloc_stats a
+                join alloc_stats_dtl d
+                  on a.alloc_stats_id = d.alloc_stats_id
+               where to_char(a.start_time, 'yyyy-mm-dd hh24') = '2019-09-14 06'
+                 --and a.alloc_stats_id = '00000002OAOK'
+                 and d.message like '%but inventory detail has footprintCod%'
+               order by d.alloc_stats_id,
+                        d.alloc_stats_dtl_id]
+
+[select prtnum,
+        count (distinct stoloc) ,
+        count (distinct ftpcod) ftpcnt
+   from inventory_view iv
+  where ship_line_id is null
+    and stoloc not like 'PERM%'
+  group by prtnum having (count(distinct ftpcod) > 1)] 
+ |
+ [select prtnum, ftpcod, stoloc, untqty, expire_dte, fifdte from inventory_view iv where iv.prtnum = @prtnum and ship_line_id is null and stoloc not like 'PERM%']

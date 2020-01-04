@@ -1,0 +1,99 @@
+[select distinct que.wh_id,
+        que.dstloc,
+        min(que.reqnum) reqnum
+   from canpck can
+   join pckwrk_view rpl
+     on rpl.dstloc = can.srcloc
+   join wrkque que
+     on que.wrkref = rpl.wrkref
+    and que.wh_id = rpl.wh_id
+  where can.cancod in ('C-R-U', 'C-R-R-L', 'PRE-CAN')
+    and can.oprcod like '%LPCK%'
+    and rpl.pcksts = 'R'
+    and que.wrksts in ('PEND','WAIT')
+    and can.candte > (SYSDATE - (3 / 1440))
+  group by que.wh_id,
+        que.dstloc
+  order by 3, 2] CATCH(@?)
+|
+if (@? = 0)
+{
+    [select reqnum,
+            effpri,
+            wrksts,
+            oprcod,
+            srcloc,
+            dstloc
+       from wrkque
+      where reqnum = @reqnum
+        and wh_id = @wh_id
+        and effpri > 10
+        and wrksts in ('PEND','WAIT')] catch(-1403)
+    |
+    if (@? = 0) 
+    {
+        [select count(*) ack_count
+            from wrkque dwq
+          where dwq.dstloc = @dstloc
+            and dwq.wrksts = 'ACK'
+            and dwq.wh_id = nvl(@wh_id, @@wh_id)]
+        |
+        if (@ack_count = 0)
+        {
+            [select 'x'
+               from pckwrk_hdr ph
+               join wrkque q
+                 on ph.list_id = q.list_id
+                and ph.wh_id = q.wh_id
+              where q.wrksts = 'ACK'
+                and ph.srcloc = @dstloc
+                and ph.wh_id = @wh_id
+                and ph.pckqty > ph.appqty
+                and rownum < 2] catch(-1403)
+            |
+            /* If we have 'ACK' work, give 10, otherwise give 25 */
+            if (@? = 0)
+            {
+                [update wrkque
+                    set effpri = 10
+                  WHERE REQNUM = @reqnum
+                    and wh_id = @wh_id]
+                 |
+                 publish data
+                   where esc_flg = 1
+            }
+            else if (@effpri <> 25)
+            {
+                [update wrkque
+                    set effpri = 25 
+                  WHERE REQNUM = @reqnum
+                    and wh_id = @wh_id]
+                 |
+                 publish data
+                   where esc_flg = 1
+            }
+            |
+            if (@esc_flg = 1)
+            {
+                [select ph.prtnum,
+                        ph.pckqty,
+                        ph.wrkref,
+                        q.effpri new_effpri,
+                        q.oprcod
+                   from pckwrk_hdr ph
+                   join wrkque q
+                     on ph.wrkref = q.wrkref
+                    and ph.wh_id = q.wh_id
+                    and q.reqnum = @reqnum]
+                |
+                write daily transaction log
+                  where actcod = 'RPLPRIBUMP'
+                    and fr_value = @reqnum || ' for ' || @wrkref || ' with ' || @oprcod || ' escalating with effpri:' || @effpri
+                    and to_value = @reqnum || ' for ' || @wrkref || ' with ' || @oprcod || ' to effpri:' || @new_effpri
+                    and prtnum = @prtnum
+                    and trnqty = @pckqty
+                    and wh_id = @wh_id
+            }
+        }
+    }
+}

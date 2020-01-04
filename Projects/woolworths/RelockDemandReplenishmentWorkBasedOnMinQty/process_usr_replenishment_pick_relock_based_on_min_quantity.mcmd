@@ -1,0 +1,57 @@
+<command>
+  <name>process usr replenishment pick relock based on min quantity</name>
+  <description>process usr replenishment pick relock based on min quantity</description>
+  <type>Local Syntax</type>
+  <local-syntax>
+<![CDATA[
+    if (@srcloc <> '')
+    {
+        [select minunt
+           from rplcfg r
+          where r.stoloc = @srcloc
+            and r.wh_id = @wh_id
+            and exists (select 'x'
+                          from wrkque q
+                         where q.dstloc = r.stoloc
+                           and q.wrksts = 'PEND'
+                           and q.oprcod = 'PIARPL'
+                           and q.wh_id = @wh_id)] catch(-1403)
+        |
+        if (@? = 0)
+        {
+            [select sum(untqty) tot_untqty
+               from inventory_view iv
+              where iv.stoloc = @srcloc
+                and iv.wh_id = @wh_id
+              group by iv.stoloc
+              having(sum(untqty) > @minunt)] catch(-1403)
+             |
+             if (@? = 0)
+             {
+                  [update wrkque
+                      set wrksts = 'LOCK'
+                    where dstloc = @srcloc
+                      and oprcod = 'PIARPL'
+                      and wh_id = @wh_id]
+             }
+        }
+    }
+]]>
+</local-syntax>
+<documentation>
+
+<remarks>
+<![CDATA[
+  <p>
+   This code is developped as for background workflow 'RELOCK-DEMAND-WORK',
+   which is aimed to relock demand replenishment work which could be unlocked
+   by the trigger of 'move_inventory-change_emergency_replenishment_status_on_move.mtrg',
+   we can disable the traigger to fix this issue, however by using a workflow,
+   we can handle this with avoiding take a bounce.
+  </p>
+]]>
+</remarks>
+<argument name="wh_id" required="yes" datatype="">Warehouse id</argument>
+
+</documentation>
+</command>

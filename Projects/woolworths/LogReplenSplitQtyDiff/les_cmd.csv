@@ -1,0 +1,2 @@
+les_cmd_id,cust_lvl,syntax,moddte,mod_usr_id,grp_nam
+dyn_log_replen_splitqty_diff,10,"if ((@replenqty = 0 or '@spltdstloccnfrm' <> '') and '@spltlod' <> '') {log replenishment split quantity gap where wh_id = '@global.wh_id' and devcod = '@global.devcod' and prtnum = '@prtnum' and prt_client_id = '@prt_client_id' and lodnum = '@origlod' and ftpcod = '@ftpcod' and dst_asset_typ = '@dst_asset_typ' and splt_dstloc = '@spltdstloc' and existing_lpn = '@spltlod' and user_scan_qty = @replenqty and user_scan_uom = '@rpluom'}",,SUPER,wow_data

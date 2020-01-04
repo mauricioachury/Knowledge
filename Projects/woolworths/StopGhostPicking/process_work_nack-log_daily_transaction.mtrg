@@ -1,0 +1,39 @@
+<trigger>
+
+<name>log_daily_transaction</name>
+
+<on-command>process work nack</on-command>
+
+<fire-sequence>1000</fire-sequence>
+
+<local-syntax>
+
+<![CDATA[
+         write daily transaction log
+         where actcod = 'WORKNACK'
+           and oprcod = @oprcod
+           and fr_value = 'reqnum ' || @reqnum || ' for list/wrkref:' || nvl(@list_id, @wrkref)
+           and to_value =  " is nacked by user:" || nvl(@usr_id, @@usr_id) || ' with priorit:' || @effpri
+           and trnqty = @effpri
+           and frstol = @srcloc
+           and tostol = @dstloc
+           and devcod = @ackdevcod
+           and usr_id = nvl(@usr_id, @@usr_id)
+           and wh_id = @wh_id
+]]>
+</local-syntax>
+
+<documentation>
+<remarks>
+<![CDATA[
+  <p> 
+  This trigger is added to keep track who and when the work is nacked for tracking the issue of ghost picking:
+  When operator A is doing assignment picking, operator B go to webui, select 'resume work' to nack the work which is causing
+  ghost picking. this trigger is expected to give some clue to see how a 'ACK' work goes back to 'PEND'.
+   </p>
+]]>
+</remarks>
+
+</documentation>
+
+</trigger>

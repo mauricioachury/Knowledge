@@ -1,0 +1,174 @@
+job pick release manager;
+/* We find all picks from selection location where without a ftpcod matched
+ * inventory for it.
+ */
+[select pv.srcloc,
+        pv.ftpcod,
+        pv.wrkref,
+        pv.prtnum,
+        pv.prt_client_id,
+        pv.pckqty,
+        pv.wh_id
+   from pckwrk_hdr pv
+   join rplcfg r
+     on pv.srcloc = r.stoloc
+    and pv.wh_id = r.wh_id
+  where exists (select 'x'
+                  from inventory_view iv
+                 where iv.stoloc = pv.srcloc
+                   and iv.prtnum = pv.prtnum
+                   and iv.prt_client_id = pv.prt_client_id
+                   and iv.wh_id = pv.wh_id)
+    and not exists (select 'x'
+                      from inventory_view iv
+                     where iv.stoloc = pv.srcloc
+                       and iv.wh_id = pv.wh_id
+                       and iv.prtnum = pv.prtnum
+                       and iv.prt_client_id = pv.prt_client_id
+                       and iv.ftpcod = pv.ftpcod)
+    and pv.pckqty > pv.appqty] catch(-1403)
+  |
+ if(@? = 0)
+ {
+     /* Update the pick work with ftpcod from inventory from the location*/
+     [select distinct ftpcod inv_ftpcod
+        from inventory_view iv
+       where iv.stoloc = @srcloc
+         and iv.wh_id = @wh_id
+         and iv.prtnum = @prtnum
+         and iv.prt_client_id = @prt_client_id
+         and rownum <2] catch(-1403)
+      |
+      [update pckwrk_hdr
+          set ftpcod = @inv_ftpcod
+        where wrkref = @wrkref] catch(-1403)
+     |
+     write daily transaction log
+     where actcod = 'FTCUPD'
+       and fr_value = @wrkref || ' old ftpcod:' || @ftpcod
+       and to_value = @wrkref || ' new ftpcod:' || @inv_ftpcod
+       and prtnum = @prtnum
+       and trnqty = @pckqty
+       and wh_id = @wh_id
+ }
+;
+/*Check if DR or TR is picking inventory with different ftpcod,
+ *If so need to update ftpcod on reserve to match selection,
+ *This will avoid PIA glom ftpcod mismatch issue when allocating
+ *next wave, also update the replenishment pick with same ftpcod
+ *to allow picking.
+ *The update should only happen when there is outbound pick exists.
+ */
+[select distinct
+        pv.srcloc rsloc,
+        iv.ftpcod inv_ftpcod,
+        pv.prtnum,
+        pv.prt_client_id,
+        rsiv.dtlnum rsiv_dtlnum,
+        rsiv.ftpcod rsiv_ftpcod,
+        pv.wrkref rep_wrkref,
+        pv.pckqty
+   from pckwrk_view pv
+   join inventory_view iv
+     on pv.dstloc = iv.stoloc
+    and pv.wh_id = iv.wh_id
+   join inventory_view rsiv
+     on pv.prtnum = rsiv.prtnum
+    and pv.prt_client_id = rsiv.prt_client_id
+    and pv.wh_id = rsiv.wh_id
+    and pv.srcloc = rsiv.stoloc
+    and iv.ftpcod <> rsiv.ftpcod
+  where pv.pckqty > pv.appqty
+    and pv.prtnum = iv.prtnum
+    and pv.prt_client_id = iv.prt_client_id
+    and pv.wrktyp in ('D','G')
+    and exists (select 'x'
+                  from pckwrk_view pv2
+                 where pv2.srcloc = iv.stoloc
+                   and pv2.wh_id = iv.wh_id
+                   and pv2.ship_line_id is not null
+                   and pv2.pckqty > pv2.appqty)
+    and pv.wh_id = iv.wh_id] catch(-1403)
+|
+if (@? = 0)
+{
+    [update invdtl
+        set ftpcod = @inv_ftpcod
+      where dtlnum = @rsiv_dtlnum] catch(-1403)
+    |
+    [update pckwrk_hdr
+        set ftpcod = @inv_ftpcod
+     where wrkref = @rep_wrkref] catch(-1403)
+    ;
+    write daily transaction log
+    where actcod = 'FTCUPD'
+      and fr_value = @rsiv_dtlnum || '|' || @wrkref || ' old ftpcod:' || @rsiv_ftpcod
+      and to_value = @rsiv_dtlnum || '|' || @wrkref || ' new ftpcod:' || @inv_ftpcod
+      and prtnum = @prtnum
+      and trnqty = @pckqty
+      and wh_id = @wh_id
+}
+;
+/* We update ftpcod back to proper ftpcod for pallet with single detail
+ * from reserve not allocated to make sure new ftpcod PA qty equals
+ * to the qty on the pallet to make it allocatble as pallet pick.
+ * use deferred execution to avoid performance impact to this job.
+ */
+create deferred execution where deferred_cmd = "
+[select iv.dtlnum upd_dtlnum,
+        iv.prtnum,
+        iv.wh_id,
+        iv.untqty,
+        iv.ftpcod old_ftpcod,
+        pv2.ftpcod new_ftpcod
+   from inventory_view iv
+   join prtftp_view pv
+     on iv.prtnum = pv.prtnum
+    and iv.prt_client_id = pv.prt_client_id
+    and iv.ftpcod = pv.ftpcod
+    and iv.wh_id = pv.wh_id
+    and iv.untqty <> pv.untpal
+   join locmst lm
+     on iv.stoloc = lm.stoloc
+    and iv.wh_id = lm.wh_id
+   join loc_typ lt
+     on lm.loc_typ_id = lt.loc_typ_id
+    and lm.wh_id = lt.wh_id
+    and lt.stoare_flg = 1
+    and lt.fwiflg = 1
+   join prtftp_view pv2
+     on pv2.prtnum = iv.prtnum
+    and pv2.prt_client_id = iv.prt_client_id
+    and pv2.wh_id = iv.wh_id
+    and pv2.untcas = pv.untcas
+    and pv2.untpak = pv.untpak
+    and pv2.ftpcod <> iv.ftpcod
+    and pv2.untpal = iv.untqty
+   join invsum im
+     on iv.stoloc = im.stoloc
+    and iv.wh_id = im.wh_id
+    and im.comqty = 0
+  where iv.ship_line_id is null
+    and not exists (select 'x'
+                      from inventory_view iv2
+                     where iv2.lodnum = iv.lodnum
+                       and iv2.dtlnum <> iv.dtlnum)
+    and not exists (select 'x'
+                      from rplcfg r
+                     where r.stoloc = iv.stoloc
+                       and r.wh_id = iv.wh_id)] catch(-1403)
+ |
+ if (@? = 0)
+ {
+     [update invdtl
+         set ftpcod = @new_ftpcod
+       where dtlnum = @upd_dtlnum] catch(-1403)
+     ;
+     write daily transaction log
+     where actcod = 'FTCUPD'
+       and fr_value = @upd_dtlnum || ' old ftpcod:' || @old_ftpcod
+       and to_value = @upd_dtlnum || ' new ftpcod:' || @new_ftpcod
+       and prtnum = @prtnum
+       and trnqty = @untqty
+       and wh_id = @wh_id
+ }"

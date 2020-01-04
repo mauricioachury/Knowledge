@@ -1,0 +1,146 @@
+<command>
+<name>escalate demand replenishment work priority async</name>
+<description>If bump-replenishment policy is enabled, then escalate associated work from same location</description>
+<type>Local Syntax</type>
+<local-syntax>
+<![CDATA[
+/*Check if bump-replenishment policy is enabled and proceed further only if it is enabled*/
+list policies
+ where polcod = 'USR'
+   and polvar = 'BUMP-REPLN'
+   and polval = 'ENABLED'
+   and wh_id  = @wh_id catch(@?)
+|
+if (@rtnum1 = 1)
+{
+    /* maxloc_for_higher_pri:
+     * means if the demand work present from a location which is in the range
+     * of [1, maxloc_for_higher_pri] of the assignment, then update the priority
+     * to higher priority which is 14, otherwise bump to 15, default with 25.
+     */
+    publish data
+      where maxloc_for_higher_pri = nvl(@rtnum2, 25)
+    |
+    [select list_id,
+            wh_id
+       from wrkque
+      where reqnum = @reqnum
+        and list_id is not null] catch(-1403)
+    |
+    if (@? = 0)
+    {
+        /* If multiple users acknowledged multiple work assigments which need
+         * to pick inventory from same location, we need to consider all
+         * these work assignments to make sure bump demand replenishment picks
+         * to satisify these work assignments.
+         */
+        [select srcloc reploc,
+                prtnum,
+                prt_client_id,
+                wh_id,
+                to_number(pv.list_seqnum) locpos_in_list,
+                sum(pckqty - appqty) tot_pckqty
+           from pckwrk_hdr pv
+          where pv.list_id is not null
+            and pv.srcloc in (select srcloc
+                                from pckwrk_hdr pv2
+                               where pv2.list_id = @list_id
+                                 and pv2.pckqty > pv2.appqty)
+            and exists (select 'x'
+                          from wrkque
+                         where wrkque.list_id = pv.list_id
+                           and wrkque.wrksts = 'ACK')
+            and pv.wh_id = @wh_id
+            and pv.pckqty > pv.appqty
+            and exists (select 'x'
+                          from wrkque
+                         where wrkque.dstloc = pv.srcloc
+                           and wrkque.oprcod in ('PIARPL', 'PRP')
+                           and wrkque.wrksts in ('PEND', 'LOCK')
+                           and wrkque.effpri > 15)
+           group by srcloc,
+                    prtnum,
+                    prt_client_id,
+                    wh_id
+            order by reploc] catch(-1403)
+        |
+        if (@? = 0)
+        {
+            [select nvl(sum(untqty),0) ava_invqty
+               from inventory_view iv
+              where iv.prtnum = @prtnum
+                and iv.prt_client_id = @prt_client_id
+                and iv.wh_id = @wh_id
+                and iv.stoloc = @reploc]
+            |
+            [select nvl(sum(pckwrk_hdr.pckqty - pckwrk_hdr.appqty), 0) hghpri_rep_pckqty
+               from wrkque
+               join pckwrk_hdr
+                 on wrkque.wrkref = pckwrk_hdr.wrkref
+                and wrkque.wh_id = pckwrk_hdr.wh_id
+                and pckwrk_hdr.prtnum = @prtnum
+                and pckwrk_hdr.prt_client_id = @prt_client_id
+              where wrkque.oprcod in ('PIARPL', 'PRP')
+                and wrkque.dstloc = @reploc
+                and wrkque.wh_id = @wh_id
+                and wrkque.effpri <= 15]
+            |
+            publish data
+              where tot_pckqty = @tot_pckqty
+                and ava_invqty = @ava_invqty + @hghpri_rep_pckqty
+            |
+            if (@tot_pckqty > @ava_invqty)
+            {
+                save session variable
+                  where name = 'need_invqty'
+                    and value = @tot_pckqty - @ava_invqty
+                |
+                [select reqnum rep_reqnum,
+                        pckwrk_hdr.pckqty rep_invqty
+                   from wrkque
+                   join pckwrk_hdr
+                     on wrkque.wrkref = pckwrk_hdr.wrkref
+                    and wrkque.wh_id = pckwrk_hdr.wh_id
+                    and pckwrk_hdr.prtnum = @prtnum
+                    and pckwrk_hdr.prt_client_id = @prt_client_id
+                  where wrkque.oprcod in ('PIARPL', 'PRP')
+                    and wrkque.dstloc = @reploc
+                    and wrkque.wh_id = @wh_id
+                    and wrkque.wrksts in ('PEND', 'LOCK')
+                    and wrkque.effpri > 15
+                  order by decode(wrkque.wrksts, 'PEND', 1, 2),
+                           reqnum] catch(-1403)
+                |
+                if (@? = 0)
+                {
+                    get session variable
+                      where name = 'need_invqty'
+                    |
+                    publish data
+                      where need_invqty = @value
+                    |
+                    if (@need_invqty > 0)
+                    {
+                        [update wrkque
+                            set effpri = decode(sign(@locpos_in_list - @maxloc_for_higher_pri), -1, 14, 15)
+                          where reqnum = @rep_reqnum] catch(-1403)
+                        |
+                        if (@? = 0) 
+                        {
+                            save session variable
+                              where name = 'need_invqty'
+                                and value = @need_invqty - @rep_invqty
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+]]>
+</local-syntax>
+<documentation>
+<remarks>
+</remarks>
+</documentation>
+</command>

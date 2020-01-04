@@ -1,0 +1,55 @@
+[select r.prtnum,
+        r.wh_id,
+        r.stoloc,
+        mz.mov_zone_cod
+   from rplcfg r
+   join locmst lm
+     on r.stoloc = lm.stoloc
+    and r.wh_id = lm.wh_id
+    and lm.loccod = 'V'
+   join mov_zone mz
+     on lm.mov_zone_id = mz.mov_zone_id
+  where exists(select 'x'
+                 from invsum im
+                where im.prtnum = r.prtnum
+                  and im.stoloc <> r.stoloc)]
+|
+[select sum(iv.untqty / pd.untqty * pd.len *pd.wid*pd.hgt) + max(ass.asset_len * ass.asset_wid* ass.asset_hgt) pallet_vol
+   from prtftp_dtl iv
+   join prtftp_dtl pd
+     on iv.ftpcod = pd.ftpcod
+    and iv.prtnum = pd.prtnum
+    and iv.prt_client_id = pd.prt_client_id
+    and iv.wh_id = pd.wh_id
+    and pd.uomcod = 'CS'
+    and iv.uomcod = 'PA'
+   join prtftp p
+     on iv.prtnum = p.prtnum
+    and iv.prt_client_id = p.prt_client_id
+    and iv.wh_id = p.wh_id
+    and iv.ftpcod = p.ftpcod
+    and p.defftp_flg = 1
+   join asset_typ ass
+     on 'CP' = ass.asset_typ
+  where iv.prtnum = @prtnum
+    and iv.wh_id = @wh_id] catch(-1403)
+|
+if (@? = 0)
+{
+    [select maxqvl*nvl(lm.erfpct, 100) / 100 loc_vol,
+            lm.erfpct
+       from locmst lm
+      where lm.stoloc = @stoloc
+        and lm.wh_id = @wh_id]
+    |
+    if (@pallet_vol > @loc_vol)
+    {
+        publish data
+         where stoloc = @stoloc
+           and mov_zone_cod = @mov_zone_cod
+           and prtnum = @prtnum
+           and pallet_vol = @pallet_vol
+           and loc_vol = @loc_vol
+           and erfpct = @erfpct
+    }
+};
