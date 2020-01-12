@@ -74,25 +74,34 @@ if (@? = 0)
     |
     if (@pck_needed_qty > @dmd_replen_qty + @ava_invqty + @on_the_way_invqty)
     {
+        [select baspri dmd_baspri
+           from wrkopr_view ov
+          where ov.oprcod = 'PIARPL'
+            and ov.wh_id = @wh_id]
+        |
         [update wrkque
-            set oprcod = 'PIARPL'
+            set oprcod = 'PIARPL',
+                effpri = decode(sign(effpri - @dmd_baspri), 1, @dmd_baspri, effpri)
           where reqnum = @reqnum] catch(-1403)
         |
         [update pckwrk_hdr
             set wrktyp = 'D',
                 oprcod = 'PIARPL'
-          where wrkref = @wrkref]
-        ;
-        write daily transaction log
-          where actcod = 'TRTODR'
-            and fr_value = 'reqnum: ' || @reqnum || ', wrkref:' || @wrkref || ', wrktyp:' || @wrktyp || ', effpri:' || @effpri
-            and to_value = 'converted to demand replenishment work'
-            and frstol = @srcloc
-            and tostol = @dstloc
-            and prtnum = @prtnum
-            and trnqty = @pckqty
-            and usr_id = 'USR_REPLEN_CONVERTION_JOB'
-            and wh_id = @wh_id
+          where wrkref = @wrkref] catch(-1403)
+       |
+       if (@? = 0)
+       {
+            write daily transaction log
+              where actcod = 'TRTODR'
+                and fr_value = 'reqnum: ' || @reqnum || ', wrkref:' || @wrkref || ', wrktyp:' || @wrktyp || ', effpri:' || @effpri
+                and to_value = 'converted to demand replenishment work'
+                and frstol = @srcloc
+                and tostol = @dstloc
+                and prtnum = @prtnum
+                and trnqty = @pckqty
+                and usr_id = 'USR_REPLEN_CONVERTION_JOB'
+                and wh_id = @wh_id
+       }
     }
 }
 ]]>

@@ -1,0 +1,455 @@
+/*Standard code call below command:
+ * process invalid list estimates where list_id = @list_id and wh_id = @wh_id
+ * See:create_lm_assignment.mcmd.
+ */
+publish data where plan_date = to_char(sysdate, 'MMDDYYYY') 
+and list_id = 'LST000000340521'
+and wh_id = 'PRDC'
+and publish_record_set_only = 1
+| 
+/*
+** Select the picks on this list in order and run the remote command
+** to create obtain assignments/details for them
+*/
+/*
+** We will only send in new pick work entries from here when list has
+** not yet begun picking.  If the list has begun picking we can assume
+** the LM data has been updated from somewhere else so all we have to
+** do is handle retrieving a new estimate
+*/
+/*
+** Get the last wrkref which will send a P record (be deposited)
+*/
+/*
+** We have to do this so we can tell LM which record we are sending
+** them last.  They cache these until we tell them we are done so
+** any processing and error checking on them will only happen when
+** the last 'P' record is sent to them
+*/
+[select * from (select pckwrk_view.wrkref last_wrkref 
+from pckwrk_view 
+join pckmov 
+ on pckmov.cmbcod = pckwrk_view.cmbcod 
+and pckmov.seqnum = 0 
+left join locmst 
+ on locmst.stoloc = pckmov.stoloc 
+and locmst.wh_id = pckmov.wh_id 
+where pckwrk_view.list_id = @list_id 
+order by locmst.trvseq desc, 
+     pckwrk_view.list_seqnum desc) topRow
+where rownum = 1
+] 
+| 
+/* Get the maximum list sequence number for math later */
+[select max(pckwrk_view.list_seqnum) max_seqnum 
+from pckwrk_view 
+where pckwrk_view.list_id = @list_id] 
+|
+/*
+** Get the pckwrk_view records, whether they are the last P record
+** according to travel sequence (determined above), the deposit
+** location, and the travel sequence of that location for sorting later
+*/
+[select pckwrk_view.*, 
+decode(pckwrk_view.wrkref, @last_wrkref, 1, 0) last_discrete_record, 
+    locmst.stoloc deposit_location, 
+    locmst.trvseq, 
+    pckmov.mov_zone_id deposit_move_zone_id, 
+    invlod.lodnum pallet_load, 
+    pcklst.totvol, 
+    pcklst.totwgt 
+from pckwrk_view 
+join pckmov 
+ on pckmov.cmbcod = pckwrk_view.cmbcod 
+and pckmov.seqnum = 0 
+join pcklst 
+ on pcklst.list_id = pckwrk_view.list_id 
+join invlod 
+ on invlod.stoloc = pckwrk_view.srcloc 
+join invsub 
+ on invsub.lodnum = invlod.lodnum 
+join invdtl 
+ on invdtl.subnum = invsub.subnum 
+and invdtl.prtnum = pckwrk_view.prtnum 
+left join locmst 
+ on locmst.stoloc = pckmov.stoloc 
+and locmst.wh_id = pckmov.wh_id 
+where pckwrk_view.list_id = @list_id 
+and not exists (select 1 
+                  from pckwrk_view pw 
+                 where pw.list_id = pckwrk_view.list_id
+                   and pw.appqty > 0) 
+order by locmst.trvseq, 
+       pckwrk_view.list_seqnum 
+] >> picks 
+/*
+** If we get here(the command above does not -1403) then we are
+** not just updating the estimate so we can reset the assignment
+** number and sequence number on pckwrk_hdr.
+** Passing the machine identification to the process discrete
+** in order for the labour management to calculate the future
+** assignment.
+*/
+| 
+[update pckwrk_hdr 
+set lm_assign_num = list_id, 
+    lm_assign_seqnum = list_seqnum 
+where list_id = @list_id]
+|
+{
+    {
+        publish data combination where rs = @picks 
+        | 
+        get actcod by pick type where wrkref = @wrkref
+        |
+        get cached worktype and assignment type where actcod = nvl(@actcod,' ')
+        |
+        get lms move event uom quantities 
+        where srcloc = @srcloc 
+          and srclod = @pallet_load 
+          and dstloc = @dstloc 
+          and srcqty = @pckqty 
+          and lmstyp = 'O' 
+          and actcod = @actcod 
+          and wrkref = @wrkref 
+          and wh_id = @wh_id 
+        catch(-1403) 
+        |
+        publish data 
+        where palvol = @untvol 
+          and estwgt = @untwgt 
+          and palqty = @palqty 
+          and layqty = @layqty 
+          and casqty = @casqty 
+          and inpqty = @inpqty 
+          and untqty = @untqty 
+        | 
+        /*
+        ** Returns ObjectCb and ObjectWt as converted values
+        ** for cube and weight according to HOST MU policies
+        */
+        get lms Object wt and cb quantities 
+        where untvol = @palvol 
+          and untwgt = @estwgt 
+          and wh_id = @wh_id 
+        catch(-1403) 
+        | 
+        publish data 
+        where func_id = nvl(@func_id,'N') 
+          and plan_date = @plan_date 
+          and assign_num = @list_id 
+          and trans_num = @cmbcod 
+          and container_license = nvl(@pallet_load, @subnum) 
+          and seq_num = (@list_seqnum) + 1 
+          and ref_id = @cmbcod 
+          and client_id = nvl(@client_id,'----') 
+          and cstnum = @stcust 
+          and activity_type = 'O' 
+          and worktype_id = @worktype_id 
+          and warehouse_id = @wh_id 
+          and client_slot_id = @srcloc 
+          and num_pallet = @palqty 
+          and num_layer = @layqty 
+          and num_case = @casqty 
+          and num_inner = @inpqty 
+          and num_each = @untqty 
+          and num_ship = decode(@palqty,0,decode(@layqty,0,decode(@casqty,0,decode(@inpqty,0,@untqty,@inpqty),@casqty),@layqty),@palqty) 
+          and item_num = @prtnum 
+          and cube = @ObjectCb 
+          and weight = @ObjectWt 
+          and last_discrete_record = 0 
+          and assignment_flg = decode(@asgn_typ,'O',decode(@list_seqnum,0,1,0),0)
+    } >> obtainResultSet  
+    |
+    /*
+    ** Re-sort the picks data set based on the depositing travel
+    ** sequence then the list sequence number. The one with
+    ** last_discrete_record set to 1 should end up last after this
+    ** sort and we should have the  list in depositing order now.
+    ** Passing the machine identification to the process discrete
+    ** in order for the labour management to calculate the future
+    ** assignment.
+    */
+    {
+         sort result set where rs = @picks and sort_list = 'trvseq, list_seqnum' 
+         | 
+         /*
+         ** If we are processing a list pick, create only one Place record
+         */
+         if(@wrktyp = 'P' and @last_discrete_record = 1)
+         {
+              if (@deposit_location is null)
+              {
+                  determine approximate location for labor 
+                    where mov_zone_id = @deposit_move_zone_id 
+                  | 
+                  publish data where deposit_location = @approx_stoloc 
+              }
+              |
+              get actcod by pick type where wrkref = @wrkref
+              |
+              get cached worktype and assignment type where actcod = nvl(@actcod,' ')
+              |
+              get lms move event uom quantities 
+                   where srcloc = @srcloc 
+                     and dstloc = @dstloc 
+                     and dstlod = @pallet_load 
+                     and lmstyp = 'P' 
+                     and actcod = @actcod 
+                     and wh_id = @wh_id catch(-1403) 
+              | 
+              publish data 
+                where palqty = @palqty 
+                  and layqty = @layqty 
+                  and casqty = @casqty 
+                  and inpqty = @inpqty 
+                  and untqty = @untqty 
+              |
+              get lms Object wt and cb quantities 
+                     where untvol = @totvol and untwgt = @totwgt and wh_id = @wh_id
+               catch(-1403) 
+              | 
+              publish data 
+               where func_id = nvl(@func_id,'N') 
+                 and plan_date = @plan_date 
+                 and assign_num = @list_id 
+                 and trans_num = @cmbcod 
+                 and container_license = nvl(@lodnum, @subnum) 
+                 and seq_num = ((@max_seqnum) + 2)
+                 and ref_id = @cmbcod 
+                 and client_id = nvl(@client_id,'----') 
+                 and cstnum = @stcust 
+                 and activity_type = 'P' 
+                 and worktype_id = @worktype_id 
+                 and warehouse_id = @wh_id 
+                 and client_slot_id = @deposit_location 
+                 and num_pallet = @palqty 
+                 and num_layer = @layqty 
+                 and num_case = @casqty 
+                 and num_inner = @inpqty 
+                 and num_each = @untqty 
+                 and num_ship = 0 
+                 and item_num = 'MIXEDPART' 
+                 and cube = @ObjectCb 
+                 and weight = @ObjectWt 
+                 and last_discrete_record = @last_discrete_record 
+                 and assignment_flg = decode(@asgn_typ,'P',decode(@list_seqnum,0,1,0),0)
+         }
+         /*
+         ** If not list pick, we are processing a list replenishment,
+         ** create a Place record for every Obtain record.
+         */
+         else if (@wrktyp='T' or @wrktyp='D' or @wrktyp='E') 
+         {
+             get actcod by pick type where wrkref = @wrkref 
+             | 
+             get cached worktype and assignment type where actcod = nvl(@actcod,' ') 
+             | 
+             get lms move event uom quantities 
+                where srcloc = @srcloc 
+                and dstloc = @dstloc 
+                and dstlod = decode(@last_discrete_record,1,@pallet_load,) 
+                and srclod = decode(@last_discrete_record,0,@pallet_load,)
+                and srcqty = @pckqty 
+                and lmstyp = 'P' 
+                and actcod = @actcod 
+                and wrkref = @wrkref 
+                and wh_id  = @wh_id 
+              catch(-1403) 
+             | 
+             publish data 
+                 where palvol = @untvol 
+                   and estwgt = @untwgt 
+                   and palqty = @palqty 
+                   and layqty = @layqty 
+                   and casqty = @casqty 
+                   and inpqty = @inpqty 
+                   and untqty = @untqty 
+             | 
+             get lms Object wt and cb quantities 
+               where untvol = @palvol and untwgt = @estwgt and wh_id = @wh_id
+              catch(-1403) 
+             | 
+             publish data 
+              where func_id = nvl(@func_id,'N') 
+                and plan_date = @plan_date 
+                and assign_num = @list_id 
+                and trans_num = @cmbcod 
+                and container_license = nvl(@lodnum, @subnum) 
+                and seq_num =  ((@list_seqnum) + 1) + ((@max_seqnum + 1)) 
+                and ref_id = @cmbcod 
+                and client_id = nvl(@client_id,'----') 
+                and cstnum = @stcust 
+                and activity_type = 'P' 
+                and worktype_id = @worktype_id 
+                and warehouse_id = @wh_id 
+                and client_slot_id = @dstloc 
+                and num_pallet = @palqty 
+                and num_layer = @layqty 
+                and num_case = @casqty 
+                and num_inner = @inpqty 
+                and num_each = @untqty 
+                and num_ship = 0 
+                and item_num = @prtnum 
+                and cube = @ObjectCb 
+                and weight = @ObjectWt 
+                and last_discrete_record = @last_discrete_record 
+                and assignment_flg = decode(@asgn_typ,'P',1,0) 
+         }
+    } >> placeResultSet 
+    | 
+    /*
+    ** Combine both obtain and place result sets. The resultant result set
+    ** contains all the records needed for the list.
+    */
+    { 
+        publish data combination where r = @obtainResultSet  
+        & 
+        publish data combination where r = @placeResultSet 
+    } >> discrete_records  
+}
+|
+if (@publish_record_set_only = 1)
+{
+    publish data combination where r = @discrete_records
+}
+else
+{
+    /*create assignment from result set */
+    publish data
+      where discrete_records = @discrete_records
+      and assign_key = @list_id
+      and assign_typ = 'LST' 
+      and lm_remote_string = @lm_remote_string
+      and plan_date = @plan_date
+      and wh_id = @wh_id
+    |
+    /*
+    ** Adds a transaction hook to asynchronously create future assignments
+    ** data on remote LM system and updates pcklst table with the estimated
+    ** goal time after this transaction commits
+    */
+    {
+        /* Get the Assign_num required to be logged in process log*/
+        if (@assign_typ = 'PICK' or @assign_typ = 'REPL')
+        {
+            publish data where assign_key = " where pckwrk_view.schbat in (" || @assign_key || ")"
+            |
+            [select wrkref
+               from pckwrk_view
+               join pck_mthd 
+                 on pck_mthd.pck_mthd_id = pckwrk_view.pck_mthd_id
+                and pck_mthd.list_flg != 1
+               @assign_key:raw] catch(-1403)
+            |
+            publish data where assign_key = @wrkref  catch(-1403)
+        }
+        else
+        {
+            publish data where assign_key = @assign_key  catch(-1403)
+        }
+    }>>assignkey
+    |
+    {
+       {
+            /* Get the LMS Warehouse Transfer Policy Value*/
+    
+            list policies
+                 where wh_id = nvl(@wh_id_log,'----')
+                   and polcod = 'lm' 
+                   and polvar = 'system' 
+                   and polval = 'ENABLE_WAREHOUSE_TRANSFER'
+                   and srtseq = '0' 
+                   catch(-1403)
+            |
+            if(@?=0)
+            {
+            publish data where enable_wh_transfer = @rtnum1 catch(-1403)
+            }
+            |
+            list policies  
+                 where wh_id = nvl(@wh_id_log,'----')
+                   and polcod = 'lm' 
+                   and polvar = 'system' 
+                   and polval = 'ENABLE_IMPORT_PROCESSING'
+                   and srtseq = '0'
+                   catch(-1403)   
+            |
+            if(@?=0)
+            {
+            publish data where enable_import_processing= @rtnum1
+                           and  enable_wh_transfer = @enable_wh_transfer  catch(-1403)
+            }
+       }
+       |
+       /* check to see if we a warehouse transfer is in progress */
+       /* If yes don't create future assignment else continue with future creation */
+        if(@enable_wh_transfer = 0 and @enable_import_processing = 0)
+        {
+           get mls text where mls_id = 'inf34957' and locale_id = nvl(@locale_id, @@locale_id) catch(-1403)
+           |
+           publish data combination where resultset = @assignkey
+           |
+           create process log
+            where Msg_Type='I' 
+              and Msg_Number = '34957'
+              and Process_Name = 'Warehouse Map Transfer'
+              and Program_Name = 'Model to Prod'
+              and NotificationMessage = @mls_text
+              and wh_id = nvl(@wh_id_log,'----')
+              and ASSIGNMENT_NBR = @assign_key catch(-1403)
+        }
+        else
+        {
+           {
+                /* Get the threadId to be passed as task_id*/
+                [[ 
+                  import com.redprairie.moca.MocaException;
+                  import com.redprairie.moca.util.MocaUtils;
+                
+                  //Get the AsyncThread Id
+                  long threadId = Thread.currentThread().getId();
+                ]]catch(-1403)
+                |
+                if(@?=0)
+                {
+                   Publish data where threadId = @result catch(-1403)
+                }
+                else
+                {
+                   write trace message where msg = "Unable to get the AsyncThreadId"
+                }
+            }
+            |
+            publish data combination where resultset = @discrete_records
+            |
+            process wms
+                where func_id = nvl(@func_id,'N')
+                  and plan_date = @plan_date
+                  and assign_num = @assign_num
+                  and trans_num = @trans_num
+                  and container_license = @container_license
+                  and seq_num = @seq_num
+                  and ref_id = @ref_id
+                  and client_id = nvl(@client_id,'----')
+                  and cstnum = @cstnum
+                  and activity_type = @activity_type
+                  and worktype_id = @worktype_id
+                  and wh_id = @warehouse_id
+                  and client_slot_id = @client_slot_id
+                  and num_each = @num_each
+                  and num_inner = @num_inner
+                  and num_case = @num_case
+                  and num_layer = @num_layer
+                  and num_pallet = @num_pallet
+                  and num_ship = @num_ship
+                  and item_num = @item_num
+                  and cube = @cube
+                  and weight = @weight
+                  and last_discrete_record = @last_discrete_record
+                  and assignment_flg = @assignment_flg
+                  and task_id = nvl(@threadId,@assign_num)
+                catch(-1403)
+        }
+    }
+}
