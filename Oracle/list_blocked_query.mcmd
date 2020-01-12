@@ -60,27 +60,74 @@
     and sql_id = '7bgc8jdg3jvaa'
     and child_number = 0]
 
-/* Vivid query for what is blocking what */
-[select s1.username || '@' || s1.machine || '(SID=' || s1.sid || ') is blocking ' || s2.username || '@' || s2.machine || ' (SID=' || s2.sid || ')' blocking_status,
-     q1.sql_id sql_id_src,
-     q1.sql_text sql_text_src,
-     'Is blocking' action,
-     q2.sql_id sql_id_dst,
-     q2.sql_text sql_text_dst
-from gv$lock l1,
-     gv$session s1,
-     gv$sql q1,
-     gv$lock l2,
-     gv$session s2,
-     gv$sql q2
+/* Vivid query for what is blocking what:
+/*blocking_status                                         blocker_session victim_session  locker_object   lock_hold_minutes   locker_type sql_id_src     sql_text_src                                                 param_src           action      waiter_object   lock_wait_minutes   wait_lock_type  sql_id_dst      sql_text_dst                                                param_dst
+  PRDC@LAPTOP-LM4Q6GR9 is blocking PRDC@LAPTOP-LM4Q6GR9   268,50775       16,25283        INVLOD          29.95               TX          awnrhcx4fc6s1   update invlod     set lodnum = lodnum   where lodnum = :1   393102640800447201  Is blocking INVLOD          29.85               TX              g87t8grw1njhy   update invlod     set lodnum = lodnum   where stoloc = :1   RA001
+  PRDC@LAPTOP-LM4Q6GR9 is blocking PRDC@LAPTOP-LM4Q6GR9   268,50775       270,19065       INVLOD          29.95               TX          awnrhcx4fc6s1   update invlod     set lodnum = lodnum   where lodnum = :1   393102640800447201  Is blocking INVLOD          10.53               TX              awnrhcx4fc6s1   update invlod     set lodnum = lodnum   where lodnum = :1   393102640800447201
+*/
+[select s1.username || '@' || s1.machine || ' is blocking ' || s2.username || '@' || s2.machine blocking_status,
+      s1.sid || ',' || s1.serial# blocker_session,
+      s2.sid || ',' || s2.serial# victim_session,
+      o1.object_name locker_object,
+      round(l1.ctime / 60, 2) lock_hold_minutes,
+      l1.type locker_type,
+      q1.sql_id sql_id_src,
+      q1.sql_text sql_text_src,
+      sb1.value_string param_src,
+      'Is blocking' action,
+      o2.object_name waiter_object,
+      round(l2.ctime / 60, 2) lock_wait_minutes,
+      l2.type wait_lock_type,
+      q2.sql_id sql_id_dst,
+      q2.sql_text sql_text_dst,
+      sb2.value_string param_dst
+ from gv$lock l1,
+      gv$session s1,
+      gv$sql q1,
+      gv$sql_bind_capture sb1,
+      gv$locked_object lo1,
+      dba_objects o1,
+      gv$lock l2,
+      gv$session s2,
+      gv$sql q2,
+      gv$sql_bind_capture sb2,
+      gv$locked_object lo2,
+      dba_objects o2
 where s1.sid = l1.sid
- and nvl(s1.sql_id, s1.prev_sql_id) = q1.sql_id
- and s2.sid = l2.sid
- and s2.sql_id = q2.sql_id
- and l1.block = 1
- and l2.request > 0
- and l1.id1 = l2.id1
- and l1.id2 = l2.id2]
+  and nvl(s1.sql_id, s1.prev_sql_id) = q1.sql_id
+  and q1.sql_id = sb1.sql_id
+  and sb1.child_number = 0
+  and lo1.session_id = s1.sid
+  and lo1.object_id = o1.object_id
+  and s2.sid = l2.sid
+  and s2.sql_id = q2.sql_id
+  and q2.sql_id = sb2.sql_id
+  and sb2.child_number = 0
+  and lo2.session_id = s2.sid
+  and lo2.object_id = o2.object_id
+  and l1.block = 1
+  and l2.request > 0
+  and l1.id1 = l2.id1
+  and l1.id2 = l2.id2]
+
+/* Quicker check wait/hold session:
+ waiting_session  waiting_con_id  holding_session holding_con_id  lock_type     mode_held   mode_requested  lock_id1    lock_id2
+ 16               0               16              0               Transaction   None        Exclusive       589829      20254
+ 270              0               16              0               Transaction   None        Exclusive       589829      20254
+ 16               0               268             0               Transaction   Exclusive   Exclusive       589829      20254
+ 270              0               268             0               Transaction   Exclusive   Exclusive       589829      20254
+ Note: Check column 'mode_held', 'Exclusive' shows the root blocker session is 268, both 16 and 270 are victims.
+ */
+[select *
+ from dba_waiters]
+
+/* dba_blockers shows all blockers, from above 268 block 16 and 270, and 16 also block 270, but 268 is root blocker.
+ * holding_session  con_id
+   16               0
+   268              0
+ */
+[select *
+ from dba_blockers]
  
 /* List top 10 expensive query */
 [select *
