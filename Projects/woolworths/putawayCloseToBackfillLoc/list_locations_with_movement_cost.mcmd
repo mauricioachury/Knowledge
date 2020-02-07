@@ -1,0 +1,87 @@
+<command>
+    
+<name>list locations with movement cost</name>
+
+<description>Calculate Movement Cost Between Locations</description>
+<type>Local Syntax</type>
+
+<argument name="rs" datatype="results"> </argument>
+<argument name="from_loc" datatype="string"> </argument>
+<argument name="to_loc" datatype="string"> </argument>
+<argument name="wh_id" datatype="string"> </argument>
+<argument name="useStoSeq" datatype="integer"> </argument>
+
+<local-syntax>
+<![CDATA[
+if (rowcount(@rs) > 0 and @from_loc <> '')
+{
+    [select to_number(decode(@useStoSeq, 1, lm.sto_seq, lm.trvseq)) from_loc_seq,
+            substr(nvl(bckfill_loc, stoloc), 1, 2) aisle_str
+       from locmst lm
+      where lm.stoloc = @from_loc
+        and lm.wh_id = @wh_id]
+    |
+    [[
+          import com.redprairie.moca.*
+          import com.redprairie.moca.util.*
+          
+          rs.addColumn("detAisleNum", MocaType.INTEGER);
+          rs.addColumn("detSeq", MocaType.INTEGER);
+          
+          int bckfill_aisle_num = Integer.parseInt(aisle_str, 36);
+          for(int i=0; i<rs.getRowCount(); i++)
+          {
+              rs.next();
+              int aisle_num = 9999;
+              int loc_seq = 0;
+              
+              try
+              {
+                  if (useStoSeq == 1)
+                  {
+                    loc_seq = rs.getInt("sto_seq");
+                  }
+                  else
+                  {
+                    loc_seq = rs.getInt("trvseq");
+                  }
+                  aisle_num = Integer.parseInt(rs.getString("stoloc").substring(0,2), 36);
+              }
+              catch(Exception e)
+              {
+                  //Catch any exception.
+                  moca.trace("Exception happened:" + e.getMessage());
+              }
+              int detVal = (from_loc_seq - loc_seq) > 0 ? (from_loc_seq - loc_seq) : (loc_seq - from_loc_seq);
+              int detAisleNum = (aisle_num - bckfill_aisle_num) > 0 ? (aisle_num - bckfill_aisle_num) : (bckfill_aisle_num - aisle_num);
+              rs.setIntValue("detSeq", detVal);
+              rs.setIntValue("detAisleNum", detAisleNum);
+          };
+          rs
+    ]] >> rs
+    |
+    sort result set
+     where rs = @rs
+       and sort_list = 'detAisleNum, detSeq' >> rs
+}
+|
+^list locations with movement cost
+  where @*
+
+]]>
+</local-syntax>
+
+<documentation>
+<remarks>
+<![CDATA[
+ This command is a wrapper of standard version, it provide a re-order resultset
+ rs by respecting aisle of the bckfill location first, then delta value
+ of sto_seq or delta value of trvseq to from_loc, so we can send locations
+ to LM to calculate distance in the order of closest locations on the top,
+ best location can be found quicker before ACCEPTABLE-DELAY for LM distance
+ calculation, comparing to if we sending location list in default order.
+]]>
+</remarks>
+
+</documentation>
+</command>

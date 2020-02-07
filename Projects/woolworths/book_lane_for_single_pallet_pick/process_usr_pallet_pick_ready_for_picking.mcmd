@@ -34,6 +34,7 @@ process usr lane assignment for pallet pick
     and pv.cmbcod = pm.cmbcod
     and pv.appqty = 0
     and pm.stoloc is not null
+    and pm.seqnum = (select max(seqnum) from pckmov pm2 where pm2.cmbcod = pm.cmbcod)
     and pv.wh_id = @wh_id] catch(@?)
 |
 if (@? = 0)
@@ -92,7 +93,7 @@ if (@? = 0)
                           and pv2.pckqty > pv2.appqty
                           and pv2.list_id is not null
                           and pv2.oprcod <> 'LPCKSHRT'
-                          and t2.car_move_id = t.car_move_id)
+                          and t2.stop_id = t.stop_id)
         and pv.wh_id = @wh_id] catch(-1403)
     |
     if (@? = 0)

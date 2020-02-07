@@ -1,0 +1,57 @@
+<command>
+    
+<name>calculate discrete distance</name>
+
+<description>Calculate Movement Cost Between Locations</description>
+<type>Local Syntax</type>
+
+<local-syntax>
+<![CDATA[
+if (@Previous_Slot_Id <> '' and @Warehouse_id <> '')
+{
+    /* If there is backfill location and it is configured in LM, then use it
+     * for calculating distance.
+     */
+    [select bckfill_loc
+       from locmst lm
+      where lm.stoloc = @Previous_Slot_Id
+        and lm.wh_id = @Warehouse_id
+        and lm.bckfill_loc is not null
+        and exists (select 'x'
+                      from slot_face sf
+                     where sf.client_slot_id = lm.bckfill_loc
+                       and sf.wh_id = lm.wh_id)] catch(-1403)
+    |
+    if (@? = 0)
+    {
+        if (@Current_Slot_Id = @Previous_Slot_Id)
+        {
+            publish data
+              where Previous_Slot_Id = @bckfill_loc
+                and Current_Slot_Id = @bckfill_loc
+        }
+        else
+        {
+            publish data
+              where Previous_Slot_Id = @bckfill_loc
+        }
+    }
+}
+|
+^calculate discrete distance
+  where @*
+
+]]>
+</local-syntax>
+
+<documentation>
+<remarks>
+<![CDATA[
+ This command is a wrapper of standard version, it override Previous_Slot_Id
+ with backfill location if configured, so system can suggest location which is
+ near to the backfill location.
+]]>
+</remarks>
+
+</documentation>
+</command>

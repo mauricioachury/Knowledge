@@ -9,111 +9,371 @@
 <local-syntax>
 
 <![CDATA[
-    /* Get any shipment which has lane booked for some pick, but has pallet
-     * pick not booked with lane.
+/* We book lanes based on ship_id first, this is to make sure lane utilization
+ * can be hit with booking all pallet picks together, if not able to book lane
+ * then next step is booking lane one pallet by one pallet.
+ * Make sure the same shipment all assignments are booked already before booking
+ * lane for pallet pick.
+ */
+  [select distinct
+          s.ship_id,
+          s.stop_id,
+          pv.pcksts,
+          pv.schbat,
+          pv.wh_id
+     from wrkque wq,
+          pckwrk_view pv,
+          pckmov pm,
+          shipment s,
+          stop t
+    where wq.wrkref = pv.wrkref
+      and wq.oprcod = pv.oprcod
+      and wq.oprcod = 'PCK'
+      and pv.cmbcod = pm.cmbcod
+      and pv.appqty = 0
+      and pv.ship_id = s.ship_id
+      and pv.wh_id = s.wh_id
+      and s.stop_id = t.stop_id
+      and pm.stoloc is null
+      and pm.alcflg = 0
+      and pv.wh_id = @wh_id] catch(@?)
+    |
+    if (@? = 0)
+    {
+        [select 'x'
+           from pckwrk_view p1
+           join pckmov p2
+             on p2.cmbcod = p1.cmbcod
+            and p2.stoloc is not null
+            and p2.seqnum = (select max(seqnum) from pckmov pm3 where pm3.cmbcod = p2.cmbcod)
+           join shipment s1
+             on p1.ship_id = s1.ship_id
+            and p1.wh_id = s1.wh_id
+           join stop t1
+             on s1.stop_id = t1.stop_id
+          where t1.stop_id = @stop_id
+            and rownum < 2] catch(-1403)
+        |
+        if (@? = 0)
+        {
+            publish data
+              where stop_has_lane_assigned = 1
+        }
+        |
+        [select 'x'
+           from pckwrk_view p1
+           join shipment s1
+             on p1.ship_id = s1.ship_id
+            and p1.wh_id = s1.wh_id
+           join stop t1
+             on s1.stop_id = t1.stop_id
+          where t1.stop_id = @stop_id
+            and p1.list_id is not null
+            and rownum < 2] catch(-1403)
+         |
+         if (@? = -1403)
+         {
+             /* The stop has no list pick, only has pallet pick,
+              * check if exists ANY pallet pick need to be picked from
+              * pick zone where need to delay lane allocation,
+              * if so skip booking lane.
+              */
+             [select 'x'
+                from pckwrk_view p1
+                join locmst lm
+                  on p1.srcloc = lm.stoloc
+                 and p1.wh_id = lm.wh_id
+                join shipment s1
+                  on p1.ship_id = s1.ship_id
+                 and p1.wh_id = s1.wh_id
+                join stop t1
+                  on s1.stop_id = t1.stop_id
+               where t1.stop_id = @stop_id
+                 and p1.oprcod = 'PCK'
+                 and p1.pckqty > p1.appqty
+                 and exists (select 'x'
+                               from poldat_view pv
+                              where pv.polcod = 'VAR-WOW'
+                                and pv.polvar = 'LATE-STAGE-ALLOC'
+                                and pv.polval = 'NO-ALLOC-PICK-ZONE'
+                                and pv.rtstr1 = lm.pck_zone_id
+                                and pv.wh_id = @wh_id)
+                 and rownum < 2] catch(-1403)
+               |
+               if (@? = -1403)
+               {
+                  publish data
+                    where book_lane_for_pallet_pick_only = 1
+               }
+         }
+         |
+         [select 'x'
+            from pckwrk_view p1
+            join pckmov p2
+              on p2.cmbcod = p1.cmbcod
+             and p2.stoloc is null
+             and p2.seqnum = (select max(seqnum) from pckmov pm3 where pm3.cmbcod = p2.cmbcod)
+            join shipment s1
+              on p1.ship_id = s1.ship_id
+             and p1.wh_id = s1.wh_id
+            join stop t1
+              on s1.stop_id = t1.stop_id
+           where t1.stop_id = @stop_id
+             and p1.list_id is not null
+             and p1.pckqty > p1.appqty
+             and rownum < 2] catch(-1403)
+          |
+          if (@? = 0)
+          {
+              publish data
+                where stop_has_list_not_booked_lane = 1
+          }
+          |
+          /* We only run booking lane logic, if stop has pick assigned with stage lane or no list pick for the stop(only pallet pick
+           * from picking zone where no delay lane booking.),
+           * and no list pick not booked with lane for the stop.
+           */
+          if ((@stop_has_lane_assigned = 1 or @book_lane_for_pallet_pick_only = 1) and @stop_has_list_not_booked_lane <> 1)
+          {
+              /*If we can not book lane success, need to rollback to this point*/
+              set savepoint 
+                where savepoint = 'BOOK_LANE_FOR_SHIP_' || @ship_id
+              |
+              /*
+               * Try to book lane for all pallet picks from same stop as a batch.
+               */
+               process var pick release allocation
+                 where ship_id = @ship_id
+                   and schbat = @schbat
+                   and pcksts = @pcksts
+                   and pickconfirm = 0
+                   and skip_cache_flg=1
+                   and wh_id = @wh_id catch(@?)
+               |
+               if (@? <> 0)
+               {
+                   rollback to savepoint 
+                     where savepoint = 'BOOK_LANE_FOR_SHIP_' || @ship_id
+               }
+               else
+               {
+                   /* Successfully process a ship_id, commit it to avoid rollback*/
+                   commit;
+               }
+              ;
+              process var pick release allocation  
+                where cache_locs = 0
+                  and pickconfirm = 0
+                  and schbat = ''
+                  and wh_id = @wh_id catch(@?);
+          }
+    };
+
+    /* Try again to get pallet pick not booked with lane which is
+     * in a STOP with other pick booked with lane already, if any record found,
+     * it means these pallet picks were not able to be booked lane as a batch
+     * by stop, so we book pallet by pallet.
+     * Make sure the same stop all assignments are booked already before booking
+     * lane for pallet pick.
      */
     [select distinct
-            pv.ship_id
+            pv.ship_id,
+            s.stop_id
        from wrkque wq,
             pckwrk_view pv,
-            pckmov pm
+            pckmov pm,
+            shipment s,
+            stop t
       where wq.wrkref = pv.wrkref
         and wq.oprcod = pv.oprcod
         and wq.oprcod = 'PCK'
         and pv.cmbcod = pm.cmbcod
         and pv.appqty = 0
+        and pv.ship_id = s.ship_id
+        and pv.wh_id = s.wh_id
+        and s.stop_id = t.stop_id
         and pm.stoloc is null
         and pm.alcflg = 0
-        and pv.wh_id = @wh_id
-        and exists (select 'x'
-                      from pckwrk_view p1
-                      join pckmov p2
-                        on p2.cmbcod = p1.cmbcod
-                       and p2.stoloc is not null
-                     where p1.ship_id = pv.ship_id)] catch(@?)
+        and pv.wh_id = @wh_id] catch(@?)
     |
     if (@? = 0)
     {
-        /* Get all pallet picks which are not booked with lane, and book
-         * then one by one.
-         */
-        [select distinct pv.wrkref,
-                wq.reqnum,
-                wq.effpri,
-                pv.schbat,
-                pv.pcksts
-           from wrkque wq,
-                pckwrk_view pv,
-                pckmov pm
-          where wq.wrkref = pv.wrkref
-            and wq.oprcod = pv.oprcod
-            and wq.oprcod = 'PCK'
-            and pv.cmbcod = pm.cmbcod
-            and pv.appqty = 0
-            and pm.stoloc is null
-            and pm.alcflg = 0
-            and pv.ship_id = @ship_id
-            and pv.wh_id = @wh_id
-            order by wq.effpri,
-                     wq.reqnum]
+        [select 'x'
+           from pckwrk_view p1
+           join pckmov p2
+             on p2.cmbcod = p1.cmbcod
+            and p2.stoloc is not null
+            and p2.seqnum = (select max(seqnum) from pckmov pm3 where pm3.cmbcod = p2.cmbcod)
+           join shipment s1
+             on p1.ship_id = s1.ship_id
+            and p1.wh_id = s1.wh_id
+           join stop t1
+             on s1.stop_id = t1.stop_id
+          where t1.stop_id = @stop_id
+            and rownum < 2] catch(-1403)
+       |
+       if (@? = 0)
+       {
+           publish data
+             where stop_has_lane_assigned = 1
+       }
+       |
+       [select 'x'
+          from pckwrk_view p1
+          join shipment s1
+            on p1.ship_id = s1.ship_id
+           and p1.wh_id = s1.wh_id
+          join stop t1
+            on s1.stop_id = t1.stop_id
+         where t1.stop_id = @stop_id
+           and p1.list_id is not null
+           and rownum < 2] catch(-1403)
+       |
+       if (@? = -1403)
+       {
+           /* The stop has no list pick, only has pallet pick,
+            * check if exists ANY pallet pick need to be picked from
+            * pick zone where need to delay lane allocation,
+            * if so skip booking lane.
+            */
+           [select 'x'
+              from pckwrk_view p1
+              join locmst lm
+                on p1.srcloc = lm.stoloc
+               and p1.wh_id = lm.wh_id
+              join shipment s1
+                on p1.ship_id = s1.ship_id
+               and p1.wh_id = s1.wh_id
+              join stop t1
+                on s1.stop_id = t1.stop_id
+             where t1.stop_id = @stop_id
+               and p1.oprcod = 'PCK'
+               and p1.pckqty > p1.appqty
+               and exists (select 'x'
+                             from poldat_view pv
+                            where pv.polcod = 'VAR-WOW'
+                              and pv.polvar = 'LATE-STAGE-ALLOC'
+                              and pv.polval = 'NO-ALLOC-PICK-ZONE'
+                              and pv.rtstr1 = lm.pck_zone_id
+                              and pv.wh_id = @wh_id)
+               and rownum < 2] catch(-1403)
+             |
+             if (@? = -1403)
+             {
+                publish data
+                  where book_lane_for_pallet_pick_only = 1
+             }
+       }
+       |
+       [select 'x'
+          from pckwrk_view p1
+          join pckmov p2
+            on p2.cmbcod = p1.cmbcod
+           and p2.stoloc is null
+           and p2.seqnum = (select max(seqnum) from pckmov pm3 where pm3.cmbcod = p2.cmbcod)
+          join shipment s1
+            on p1.ship_id = s1.ship_id
+           and p1.wh_id = s1.wh_id
+          join stop t1
+            on s1.stop_id = t1.stop_id
+         where t1.stop_id = @stop_id
+           and p1.list_id is not null
+           and p1.pckqty > p1.appqty
+           and rownum < 2] catch(-1403)
         |
-        /*If we can not book lane success, need to rollback to this point*/
-        set savepoint 
-          where savepoint = 'BOOK_LANE_FOR_PICK_' || @wrkref
-        |
-        /*Put other possible pallet pick into 'alcflg = 1', so only book lane
-         * for current pick.
-         */
-        [update pckmov
-            set alcflg = 1
-          where cmbcod in (select cmbcod
-                             from pckwrk_view pv
-                            where pv.ship_id = @ship_id
-                              and pv.wh_id = @wh_id
-                              and pv.oprcod = 'PCK'
-                              and pv.lodlvl = 'L'
-                              and pv.pckqty > pv.appqty
-                              and pv.wrkref <> @wrkref)
-             and stoloc is null
-             and alcflg = 0] catch(-1403)
-         |
-         process var pick release allocation
-           where ship_id = @ship_id
-             and schbat = @schbat
-             and pcksts = @pcksts
-             and pickconfirm = 0
-             and skip_cache_flg=1
-             and wh_id = @wh_id catch(@?)
-         |
-         if (@? <> 0)
-         {
-             rollback to savepoint 
-               where savepoint = 'BOOK_LANE_FOR_PICK_' || @wrkref
-         }
-         else
-         {
-             /* Successfully booked lane for current pallet pick, now reset back
-              * other pallet picks to alcflg = 0, so they can be booked as well.
-              */
-             [update pckmov
-                 set alcflg = 0
-               where cmbcod in (select cmbcod
-                                  from pckwrk_view pv
-                                 where pv.ship_id = @ship_id
-                                   and pv.wh_id = @wh_id
-                                   and pv.oprcod = 'PCK'
-                                   and pv.lodlvl = 'L'
-                                   and pv.pckqty > pv.appqty
-                                   and pv.wrkref <> @wrkref)
-                  and stoloc is null
-                  and alcflg = 1] catch(-1403)
+        if (@? = 0)
+        {
+            publish data
+              where stop_has_list_not_booked_lane = 1
         }
-        ;
-        process var pick release allocation  
-          where cache_locs = 0
-            and pickconfirm = 0
-            and schbat = ''
-            and wh_id = @wh_id catch(@?);
+        |
+        /* We only run booking lane logic, if stop has pick assigned with stage lane or no list pick for the stop(only pallet pick
+         * from picking zone where no delay lane booking),
+         * and no list pick not booked with lane for the stop.
+         */
+        if ((@stop_has_lane_assigned = 1 or @book_lane_for_pallet_pick_only = 1) and @stop_has_list_not_booked_lane <> 1)
+        {
+            /* Get all pallet picks which are not booked with lane, and book
+             * them one by one.
+             */
+            [select distinct pv.wrkref,
+                    wq.reqnum,
+                    wq.effpri,
+                    pv.schbat,
+                    pv.pcksts
+               from wrkque wq,
+                    pckwrk_view pv,
+                    pckmov pm
+              where wq.wrkref = pv.wrkref
+                and wq.oprcod = pv.oprcod
+                and wq.oprcod = 'PCK'
+                and pv.cmbcod = pm.cmbcod
+                and pv.appqty = 0
+                and pm.stoloc is null
+                and pm.alcflg = 0
+                and pv.ship_id = @ship_id
+                and pv.wh_id = @wh_id
+                order by wq.effpri,
+                         wq.reqnum]
+            |
+            /*If we can not book lane success, need to rollback to this point*/
+            set savepoint 
+              where savepoint = 'BOOK_LANE_FOR_PICK_' || @wrkref
+            |
+            /*Put other possible pallet pick into 'alcflg = 1', so only book lane
+             * for current pick.
+             */
+            [update pckmov
+                set alcflg = 1
+              where cmbcod in (select cmbcod
+                                 from pckwrk_view pv
+                                where pv.ship_id = @ship_id
+                                  and pv.wh_id = @wh_id
+                                  and pv.oprcod = 'PCK'
+                                  and pv.lodlvl = 'L'
+                                  and pv.pckqty > pv.appqty
+                                  and pv.wrkref <> @wrkref)
+                 and stoloc is null
+                 and alcflg = 0] catch(-1403)
+             |
+             process var pick release allocation
+               where ship_id = @ship_id
+                 and schbat = @schbat
+                 and pcksts = @pcksts
+                 and pickconfirm = 0
+                 and skip_cache_flg=1
+                 and wh_id = @wh_id catch(@?)
+             |
+             if (@? <> 0)
+             {
+                 rollback to savepoint 
+                   where savepoint = 'BOOK_LANE_FOR_PICK_' || @wrkref
+             }
+             else
+             {
+                 /* Successfully booked lane for current pallet pick, now reset back
+                  * other pallet picks to alcflg = 0, so they can be booked as well.
+                  */
+                 [update pckmov
+                     set alcflg = 0
+                   where cmbcod in (select cmbcod
+                                      from pckwrk_view pv
+                                     where pv.ship_id = @ship_id
+                                       and pv.wh_id = @wh_id
+                                       and pv.oprcod = 'PCK'
+                                       and pv.lodlvl = 'L'
+                                       and pv.pckqty > pv.appqty
+                                       and pv.wrkref <> @wrkref)
+                      and stoloc is null
+                      and alcflg = 1] catch(-1403)
+            }
+            ;
+            process var pick release allocation  
+              where cache_locs = 0
+                and pickconfirm = 0
+                and schbat = ''
+                and wh_id = @wh_id catch(@?);
+        }
     }
 ]]>
 </local-syntax>

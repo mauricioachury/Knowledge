@@ -1,0 +1,95 @@
+/* find locked short lists without a lane where a shipment on the list has a location with arrived inventory in the same movement zone and hop (or no hop) sequence,
+ * If it is hop pckmov record, arrqty may all 0 as all picks are staged, except for short assignment, in this case should not look at arrqty > 0
+ */
+[select pwv.list_id,
+        pwv.schbat,
+        pwv.srcloc,
+        pwv.srcare,
+        pwv.prtnum,
+        pwv.pckqty,
+        pwv.untcas,
+        pwv.pckqty / pwv.untcas pckqty_uom,
+        pwv.pck_uom,
+        pwv.ship_id,
+        pwv.ship_line_id,
+        pwv.ordnum,
+        pwv.ordlin,
+        pwv.stcust,
+        pm.cmbcod,
+        pm.seqnum,
+        max(pm2.stoloc) maxloc
+   from wrkque wq,
+        pckwrk_view pwv,
+        pckwrk_view pwv2,
+        pckmov pm,
+        pckmov pm2
+  where wq.oprcod = 'LPCKSHRT'
+    and wq.wrksts = 'LOCK'
+    and pwv.list_id = wq.list_id
+    and pwv.cmbcod = pm.cmbcod
+    and pm.stoloc is null
+    and pwv.ship_id = pwv2.ship_id
+    and pwv2.cmbcod = pm2.cmbcod
+    and pm.rescod = pm2.rescod
+    and pm2.stoloc is not null
+    and pm2.seqnum = pm.seqnum
+    and (pm2.arrqty > 0 or exists (select 'x' from pckmov pm3 where pm3.cmbcod = pm2.cmbcod and pm3.seqnum > pm2.seqnum))
+  group by pwv.list_id,
+        pwv.schbat,
+        pwv.srcloc,
+        pwv.srcare,
+        pwv.prtnum,
+        pwv.pckqty,
+        pwv.untcas,
+        pwv.pckqty / pwv.untcas,
+        pwv.pck_uom,
+        pwv.ship_id,
+        pwv.ship_line_id,
+        pwv.ordnum,
+        pwv.ordlin,
+        pwv.stcust,
+        pm.cmbcod,
+        pm.seqnum
+  order by list_id] catch(@?)
+|
+/* update pckmov location to be the same as that from another list where same sequence */
+if (@? = 0)
+{
+   [update pckmov
+       set stoloc = @maxloc,
+           alcflg = 1
+     where cmbcod = @cmbcod
+       and seqnum = @seqnum] catch(@?)
+   |
+   get session variable
+    where name = 'allocated_list_id' catch(-1403)
+   |
+   if (@? = 0 and @value <> @list_id)
+   {
+       add qvl for list
+        where list_id = @value
+   }
+   |
+   save session variable
+    where name = 'allocated_list_id'
+      and value = @list_id
+   |
+   write daily transaction log
+     where actcod = 'PCKCNFRMJOB'
+       and fr_value = 'SCO List : ' || @list_id || ' CMBCOD : ' || @cmbcod || ' SEQNUM : ' || @seqnum || ' Wave: ' || @schbat || ' old stoloc:' 
+       and to_value = 'SCO List : ' || @list_id || ' CMBCOD : ' || @cmbcod || ' SEQNUM : ' || @seqnum || ' Wave: ' || @schbat || ' new stoloc:' || @maxloc
+       and prtnum = @prtnum
+       and trnqty = @untqty
+       and stoloc = @srcloc
+       and wh_id = @wh_id
+       and ordnum = @ordnum
+       and ship_id = @ship_id
+};
+get session variable
+where name = 'allocated_list_id' catch(-1403)
+|
+if (@? = 0)
+{
+   add qvl for list
+    where list_id = @value
+}

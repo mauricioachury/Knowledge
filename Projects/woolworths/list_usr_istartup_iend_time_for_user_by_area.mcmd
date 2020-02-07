@@ -28,6 +28,8 @@ if (@arenam <> '')
 |
 if (@start_dte <> '')
 {
+    publish data where start_dte = to_char(@start_dte ,'yyyy-mm-dd')
+    |
     publish data
      where startDateClause = " to_char(ks.start_time, 'yyyy-mm-dd') >= '" || @start_dte || "'"
 }
@@ -39,6 +41,8 @@ else
 |
 if (@end_dte <> '')
 {
+    publish data where end_dte = to_char(@end_dte ,'yyyy-mm-dd')
+    |
     publish data
      where endDateClause = " to_char(ks.start_time, 'yyyy-mm-dd') <= '" || @end_dte || "'"
 }
@@ -74,11 +78,13 @@ if (@jobcodeid = 'ISTARTUP')
       where usr_id = @usr_id
         and lmsasn > @assign_num
         and srcare is not null
-        and lmsasn is not null]
+        and lmsasn is not null
+        and actcod <> 'INEXT']
     |
     if (@nxt_assignment <> '')
     {
-        [select min(decode(sam.logic_flg, 1, dam.arecod, sam.arecod)) arecod
+        [select min(decode(sam.logic_flg, 1, dam.arecod, sam.arecod)) arecod,
+                min(lm.actcod) lm_actcod
            from lmstrn lm
            join aremst sam
              on lm.srcare = sam.arecod
@@ -87,6 +93,11 @@ if (@jobcodeid = 'ISTARTUP')
              on lm.dstare = dam.arecod
             and lm.wh_id = dam.wh_id
             and lm.lmsasn = @nxt_assignment]
+         |
+         [select nvl(max(jobcodeid), @lm_actcod) nxt_jobcodeid,
+                 @arecod arecod
+            from kvi_summary k
+           where k.assign_num = @nxt_assignment]
     }
 }
 else
@@ -96,11 +107,13 @@ else
       where usr_id = @usr_id
         and lmsasn < @assign_num
         and srcare is not null
-        and lmsasn is not null]
+        and lmsasn is not null
+        and actcod <> 'INEXT']
     |
     if (@lst_assignment <> '')
     {
-        [select min(decode(sam.logic_flg, 1, dam.arecod, sam.arecod)) arecod
+        [select min(decode(sam.logic_flg, 1, dam.arecod, sam.arecod)) arecod,
+                min(lm.actcod) lm_actcod
            from lmstrn lm
            join aremst sam
              on lm.srcare = sam.arecod
@@ -109,6 +122,11 @@ else
              on lm.dstare = dam.arecod
             and lm.wh_id = dam.wh_id
             and lm.lmsasn = @lst_assignment]
+         |
+         [select nvl(max(jobcodeid), @lm_actcod) lst_jobcodeid,
+                 @arecod arecod
+            from kvi_summary k
+           where k.assign_num = @lst_assignment]
     }
 }
 |
@@ -204,8 +222,8 @@ if (@duration_by_sec < 0)
      where duration_by_sec = 0
 }
 |
-[select round(@duration_by_sec / (60*60)) hrs,
-        round(mod(@duration_by_sec, 3600) / 60) ms,
+[select floor(@duration_by_sec / (60*60)) hrs,
+        floor(mod(@duration_by_sec, 3600) / 60) ms,
         mod(@duration_by_sec, 60) ss
    from dual]
 |
@@ -215,6 +233,8 @@ if (@exclude_data = 0)
      where usr_id = @usr_id
        and usr_dsp = @usr_dsp
        and jobcodeid = @jobcodeid
+       and nxt_jobcodeid = @nxt_jobcodeid
+       and lst_jobcodeid = @lst_jobcodeid
        and bldg_id = @bldg_id
        and arecod = decode(@arenam,'SHIP', @bldg_id, @arecod)
        and area_dsp = decode(@arenam,'SHIP', @bldg_id, @area_dsp)
